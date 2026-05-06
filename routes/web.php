@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
+Route::get('/', [TransactionController::class, 'index'])->name('home');
+
+Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
