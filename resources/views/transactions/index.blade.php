@@ -125,7 +125,7 @@
                                 class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all h-24"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1">
-                            Simpan Transaksi
+                            Simpan
                         </button>
                     </form>
                 </div>
