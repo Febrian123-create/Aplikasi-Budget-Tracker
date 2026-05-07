@@ -8,6 +8,10 @@ Route::get('/', [TransactionController::class, 'index'])->name('home');
 
 Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
 
+Route::get('/history', function () {
+    return view('transactions.history');
+})->middleware(['auth'])->name('transactions.history');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
