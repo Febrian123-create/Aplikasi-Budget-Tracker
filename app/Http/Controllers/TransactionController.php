@@ -48,9 +48,8 @@ class TransactionController extends Controller
             'category' => 'required|exists:category,category_id',
         ]);
 
-        $transactionTypeId = DB::table('transactiontype')
-            ->where('name', $validated['type'])
-            ->value('transactionType_id');
+        // Ambil ID langsung dari model TransactionType
+        $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
         Transaction::create([
             'user_id' => Auth::id(),
@@ -69,4 +68,43 @@ class TransactionController extends Controller
         $transaction->delete();
         return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
     }
+
+    public function history(Request $request)
+    {
+        $query = Transaction::where('user_id', Auth::id());
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('transactionType_id')) {
+            $query->where('transactionType_id', $request->transactionType_id);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
+        }
+
+        $transactions = $query->with(['category', 'transactionType'])
+            ->orderBy('transaction_date', 'desc')
+            ->get();
+
+        $totalIncome = $transactions->where('transactionType_id', 1)->sum('total_amount');
+        $totalExpense = $transactions->where('transactionType_id', 2)->sum('total_amount');
+        $balance = $totalIncome - $totalExpense;
+
+        $totalFiltered = $transactions->sum('total_amount');
+
+        $categories = Category::all();
+
+        return view('transactions.history', compact(
+            'transactions',
+            'totalIncome',
+            'totalExpense',
+            'balance',
+            'totalFiltered',
+            'categories'
+        ));
+    }
+
 }

@@ -11,9 +11,8 @@ Route::resource('transactions', TransactionController::class)
     ->only(['index', 'store', 'destroy'])
     ->middleware(['auth']);
 
-Route::get('/history', function () {
-    return view('transactions.history');
-})->middleware(['auth'])->name('transactions.history');
+Route::get('/history', [TransactionController::class, 'history'])->name('transactions.history');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -28,10 +27,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('transactions', TransactionController::class)
         ->only(['store', 'destroy']);
-
-    Route::get('/history', function () {
-        return view('transactions.history');
-    })->name('transactions.history');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
