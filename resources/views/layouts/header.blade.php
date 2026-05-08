@@ -26,7 +26,7 @@
   </div>
   <!-- Navbar Header -->
   <nav
-    class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom"
+    class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom mb-10"
   >
     <div class="container-fluid">
       <nav

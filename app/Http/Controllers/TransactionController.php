@@ -37,7 +37,7 @@ class TransactionController extends Controller
         $balance = $totalIncome - $totalExpense;
         $categories = Category::all();
 
-        return view('dashboard', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'categories'));
+        return view('transactions.index', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'categories'));
     }
 
     public function store(Request $request)
