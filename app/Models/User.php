@@ -45,4 +45,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relasi ke Membership (Free / Premium).
+     * Digunakan oleh Fitur 8 untuk batasan akses chart.
+     */
+    public function membership()
+    {
+        return $this->belongsTo(\App\Models\Membership::class, 'membership_id', 'membership_id');
+    }
 }

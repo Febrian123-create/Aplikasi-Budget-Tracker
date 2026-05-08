@@ -73,6 +73,11 @@
                   <span class="sub-item">History</span>
                 </a>
               </li>
+              <li>
+                <a href="{{ route('charts.index') }}">
+                  <span class="sub-item">Visualisasi</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>

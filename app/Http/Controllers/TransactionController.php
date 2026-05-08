@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaction;
+use App\Models\TransactionType;
 use App\Models\Category;
+use App\Observers\TransactionSubject;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -51,7 +53,7 @@ class TransactionController extends Controller
         // Ambil ID langsung dari model TransactionType
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
-        Transaction::create([
+        $transaction = Transaction::create([
             'user_id' => Auth::id(),
             'category_id' => $validated['category'],
             'transactionType_id' => $transactionTypeId,
@@ -60,12 +62,20 @@ class TransactionController extends Controller
             'description' => $validated['description'],
         ]);
 
+        // Notify observers (Observer Pattern — Fitur 8)
+        TransactionSubject::getInstance()->notifyObservers('created', $transaction);
+
         return redirect()->back()->with('success', 'Transaksi berhasil ditambahkan!');
     }
 
     public function destroy(Transaction $transaction)
     {
+        $deletedTransaction = clone $transaction;
         $transaction->delete();
+
+        // Notify observers (Observer Pattern — Fitur 8)
+        TransactionSubject::getInstance()->notifyObservers('deleted', $deletedTransaction);
+
         return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
     }
 
