@@ -7,8 +7,8 @@ Anggota Tim dan Pembagian Tugas
 Berikut adalah rincian tugas yang dikerjakan oleh masing-masing anggota tim pada sprint minggu pertama ini:
 
 1. Bryan Christian (2472022)
-Fitur: User Authentication (Register, Login, Logout) & Security
-Implementasi: Menggunakan sistem otentikasi bawaan Laravel (Breeze/UI) yang dimodifikasi.
+Fitur: User Authentication (Register, Login, Logout)
+Implementasi: Menggunakan sistem otentikasi bawaan Laravel (Breeze/UI) yang masih simple.
 Detail Pengerjaan:
 - Membuat sistem registrasi pengguna baru, login, dan logout dengan manajemen session yang aman.
 - Memastikan isolasi data: Setiap transaksi, kategori, dan pengaturan terikat pada user_id yang spesifik. Pengguna hanya dapat melihat dan memanipulasi data keuangan milik mereka sendiri.
@@ -16,7 +16,6 @@ Detail Pengerjaan:
 
 2. Errvin Junius (2472024)
 Fitur: Filter, Pencarian Transaksi, & Manajemen Kategori
-Implementasi: Menggunakan teknik Chain of Responsibility untuk memproses filter secara berurutan.
 Detail Pengerjaan:
 - Membangun fitur History/Riwayat Transaksi.
 - Implementasi filter multi-kriteria: pengguna dapat menyaring data transaksi berdasarkan rentang tanggal (Start Date - End Date), tipe transaksi (Pemasukan/Pengeluaran), dan Kategori.
@@ -24,7 +23,7 @@ Detail Pengerjaan:
 
 3. Rafael Adiputra (2472025)
 Fitur: Manajemen Transaksi Harian (CRUD)
-Implementasi: Mengelola operasi Create, Read, Update, Delete (CRUD) menggunakan arsitektur Laravel Eloquent ORM.
+Implementasi: Mengelola operasi Create, Read, Update, Delete (CRUD).
 Detail Pengerjaan:
 - Membuat form pencatatan transaksi harian yang sederhana (Input Pemasukan & Pengeluaran).
 - Mengelola penyimpanan data transaksi yang mencakup: tanggal, jumlah (amount), deskripsi, tipe transaksi (dihubungkan ke tabel transactiontype), dan kategori (dihubungkan ke tabel category).
