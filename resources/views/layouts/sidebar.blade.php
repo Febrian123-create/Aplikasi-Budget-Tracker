@@ -78,6 +78,11 @@
                   <span class="sub-item">Visualisasi</span>
                 </a>
               </li>
+              <li>
+                <a href="{{ route('recurring.index') }}">
+                  <span class="sub-item">Transaksi Rutin</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>

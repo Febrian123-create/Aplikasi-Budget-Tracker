@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\RecurringTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +33,14 @@ Route::middleware('auth')->group(function () {
     // Fitur 8 — Visualisasi Data (Pie Chart & Bar Chart)
     Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
     Route::get('/charts/data', [ChartController::class, 'getData'])->name('charts.data');
+
+    // Fitur 11 — Recurring Transaction
+    Route::get('/recurring', [RecurringTransactionController::class, 'index'])->name('recurring.index');
+    Route::post('/recurring', [RecurringTransactionController::class, 'store'])->name('recurring.store');
+    Route::get('/recurring/{id}/edit', [RecurringTransactionController::class, 'edit'])->name('recurring.edit');
+    Route::put('/recurring/{id}', [RecurringTransactionController::class, 'update'])->name('recurring.update');
+    Route::delete('/recurring/{id}', [RecurringTransactionController::class, 'destroy'])->name('recurring.destroy');
+    Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])->name('recurring.toggle');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
