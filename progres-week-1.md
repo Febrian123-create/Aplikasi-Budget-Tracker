@@ -23,7 +23,7 @@ Detail Pengerjaan:
 
 3. Rafael Adiputra (2472025)
 Fitur: Manajemen Transaksi Harian (CRUD)
-Implementasi: Mengelola operasi Create, Read, Update, Delete (CRUD).
+Implementasi: Mengelola operasi Create, Read,Delete.
 Detail Pengerjaan:
 - Membuat form pencatatan transaksi harian yang sederhana (Input Pemasukan & Pengeluaran).
 - Mengelola penyimpanan data transaksi yang mencakup: tanggal, jumlah (amount), deskripsi, tipe transaksi (dihubungkan ke tabel transactiontype), dan kategori (dihubungkan ke tabel category).
