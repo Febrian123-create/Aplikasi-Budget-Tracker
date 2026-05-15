@@ -9,15 +9,22 @@ use App\Models\Category;
 use App\Observers\TransactionSubject;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
     public function index()
     {
+        $today = Carbon::today()->toDateString();
+
+        // Transaksi harian — hanya hari ini
         $transactions = Transaction::where('user_id', Auth::id())
+            ->where('transaction_date', $today)
+            ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
 
+        // Total keseluruhan (semua waktu) untuk summary cards
         $totalIncome = Transaction::where('user_id', Auth::id())
             ->whereIn('transactionType_id', function ($query) {
                 $query->select('transactionType_id')
@@ -37,7 +44,7 @@ class TransactionController extends Controller
         $balance = $totalIncome - $totalExpense;
         $categories = Category::all();
 
-        return view('transactions.index', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'categories'));
+        return view('transactions.index', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'categories', 'today'));
     }
 
     public function store(Request $request)
@@ -66,6 +73,38 @@ class TransactionController extends Controller
         TransactionSubject::getInstance()->notifyObservers('created', $transaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil ditambahkan!');
+    }
+
+    public function edit(Transaction $transaction)
+    {
+        $categories = Category::all();
+        return view('transactions.edit', compact('transaction', 'categories'));
+    }
+
+    public function update(Request $request, Transaction $transaction)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'type' => 'required|in:income,expense',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'required|string|max:255',
+            'category' => 'required|exists:category,category_id',
+        ]);
+
+        $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
+
+        $transaction->update([
+            'category_id' => $validated['category'],
+            'transactionType_id' => $transactionTypeId,
+            'total_amount' => $validated['amount'],
+            'transaction_date' => $validated['date'],
+            'description' => $validated['description'],
+        ]);
+
+        // Notify observers (Observer Pattern — Fitur 8)
+        TransactionSubject::getInstance()->notifyObservers('updated', $transaction);
+
+        return redirect()->back()->with('success', 'Transaksi berhasil diperbarui!');
     }
 
     public function destroy(Transaction $transaction)
