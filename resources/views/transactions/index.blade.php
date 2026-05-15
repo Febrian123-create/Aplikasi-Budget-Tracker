@@ -113,8 +113,16 @@
                     <!-- Tabel Transaksi -->
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header">
-                                <h5>Riwayat Transaksi</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Transaksi Hari Ini — {{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y') }}</h5>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('transactions.export.excel') }}" class="btn btn-success btn-sm" id="btnExportExcelTx">
+                                        <i class="fas fa-file-excel"></i> Export Excel
+                                    </a>
+                                    <a href="{{ route('transactions.export.pdf') }}" class="btn btn-danger btn-sm" id="btnExportPdfTx">
+                                        <i class="fas fa-file-pdf"></i> Export PDF
+                                    </a>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -151,18 +159,26 @@
                                                     <td>{{ 'Rp' }} {{ number_format($t->total_amount, 0, ',', '.') }}
                                                     </td>
                                                     <td>
-                                                        <form action="{{ route('transactions.destroy', $t->transaction_id) }}"
-                                                            method="POST" style="display:inline;"
-                                                            onsubmit="return confirm('Hapus transaksi?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                                        </form>
+                                                        <div class="d-flex gap-1">
+                                                            <a href="{{ route('transactions.edit', $t->transaction_id) }}"
+                                                                class="btn btn-sm btn-warning">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                            <form action="{{ route('transactions.destroy', $t->transaction_id) }}"
+                                                                method="POST" style="display:inline;"
+                                                                onsubmit="return confirm('Hapus transaksi?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="fas fa-trash"></i> Hapus
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="5" class="text-center text-muted">Belum ada transaksi</td>
+                                                    <td colspan="6" class="text-center text-muted">Belum ada transaksi hari ini</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
