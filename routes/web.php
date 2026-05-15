@@ -30,9 +30,15 @@ Route::middleware('auth')->group(function () {
     Route::resource('transactions', TransactionController::class)
         ->only(['store', 'destroy']);
 
-    // Fitur 8 — Visualisasi Data (Pie Chart & Bar Chart)
-    Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
-    Route::get('/charts/data', [ChartController::class, 'getData'])->name('charts.data');
+    // Membership routes
+    Route::get('/membership', [\App\Http\Controllers\MembershipController::class, 'index'])->name('membership.index');
+    Route::post('/membership/upgrade', [\App\Http\Controllers\MembershipController::class, 'upgrade'])->name('membership.upgrade');
+
+    // Fitur 8 — Visualisasi Data (Pie Chart & Bar Chart) - Premium Only
+    Route::middleware([\App\Http\Middleware\CheckPremiumMembership::class])->group(function () {
+        Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
+        Route::get('/charts/data', [ChartController::class, 'getData'])->name('charts.data');
+    });
 
     // Fitur 11 — Recurring Transaction
     Route::get('/recurring', [RecurringTransactionController::class, 'index'])->name('recurring.index');

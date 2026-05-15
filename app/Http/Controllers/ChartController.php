@@ -23,8 +23,8 @@ class ChartController extends Controller
     public function __construct()
     {
         $transactionRepository = new TransactionRepository();
-        $this->chartService    = new ChartService($transactionRepository);
-        $this->chartObserver   = new ChartObserver($this->chartService);
+        $this->chartService = new ChartService($transactionRepository);
+        $this->chartObserver = new ChartObserver($this->chartService);
     }
 
     /**
@@ -33,7 +33,7 @@ class ChartController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::id();
-        $now    = Carbon::now();
+        $now = Carbon::now();
 
         // Subscribe ChartObserver ke TransactionSubject
         $this->chartObserver->subscribe();
@@ -65,9 +65,9 @@ class ChartController extends Controller
             ->format('Y-m-d');
 
         // Ambil data dari ChartService
-        $metricCards          = $this->chartService->getMetricCards($userId, $bulan, $tahun);
+        $metricCards = $this->chartService->getMetricCards($userId, $bulan, $tahun);
         $categoryDistribution = $this->chartService->getCategoryDistribution($userId, $bulan, $tahun);
-        $monthlyChartData     = $this->chartService->getMonthlyChartData($userId, $startDate);
+        $monthlyChartData = $this->chartService->getMonthlyChartData($userId, $startDate);
 
         // Warna chart
         $chartColors = ChartHelper::getChartColors();
@@ -79,8 +79,8 @@ class ChartController extends Controller
         $availableMonths = [];
         for ($m = 1; $m <= 12; $m++) {
             $availableMonths[] = [
-                'value'    => $m,
-                'label'    => ChartHelper::formatBulanLengkap($m),
+                'value' => $m,
+                'label' => ChartHelper::formatBulanLengkap($m),
                 'selected' => $m === $bulan,
             ];
         }
@@ -90,8 +90,8 @@ class ChartController extends Controller
         $availableYears = [];
         for ($y = $currentYear - 2; $y <= $currentYear; $y++) {
             $availableYears[] = [
-                'value'    => $y,
-                'label'    => (string) $y,
+                'value' => $y,
+                'label' => (string) $y,
                 'selected' => $y === $tahun,
             ];
         }
@@ -119,8 +119,8 @@ class ChartController extends Controller
     public function getData(Request $request)
     {
         $userId = Auth::id();
-        $bulan  = (int) $request->get('bulan', Carbon::now()->month);
-        $tahun  = (int) $request->get('tahun', Carbon::now()->year);
+        $bulan = (int) $request->get('bulan', Carbon::now()->month);
+        $tahun = (int) $request->get('tahun', Carbon::now()->year);
 
         // Cek membership
         $user = Auth::user();
@@ -129,24 +129,24 @@ class ChartController extends Controller
             $isPremium = strtolower($user->membership->membership_name) === 'premium';
         }
 
-        $barRange  = (int) $request->get('range', 3);
-        $maxRange  = $isPremium ? 12 : 3;
-        $barRange  = min($barRange, $maxRange);
+        $barRange = (int) $request->get('range', 3);
+        $maxRange = $isPremium ? 12 : 3;
+        $barRange = min($barRange, $maxRange);
 
         $startDate = Carbon::create($tahun, $bulan, 1)
             ->subMonths($barRange - 1)
             ->startOfMonth()
             ->format('Y-m-d');
 
-        $metricCards          = $this->chartService->getMetricCards($userId, $bulan, $tahun);
+        $metricCards = $this->chartService->getMetricCards($userId, $bulan, $tahun);
         $categoryDistribution = $this->chartService->getCategoryDistribution($userId, $bulan, $tahun);
-        $monthlyChartData     = $this->chartService->getMonthlyChartData($userId, $startDate);
+        $monthlyChartData = $this->chartService->getMonthlyChartData($userId, $startDate);
 
         return response()->json([
-            'metricCards'          => $metricCards,
+            'metricCards' => $metricCards,
             'categoryDistribution' => $categoryDistribution,
-            'monthlyChartData'     => $monthlyChartData,
-            'chartColors'          => ChartHelper::getChartColors(),
+            'monthlyChartData' => $monthlyChartData,
+            'chartColors' => ChartHelper::getChartColors(),
         ]);
     }
 }
