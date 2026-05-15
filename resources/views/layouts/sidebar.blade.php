@@ -75,12 +75,22 @@
               </li>
               <li>
                 <a href="{{ route('charts.index') }}">
-                  <span class="sub-item">Visualisasi</span>
+                  <span class="sub-item">
+                    Visualisasi 
+                    @if(!app(\App\Features\MembershipFeatureInterface::class)->canViewChart())
+                      <i class="fas fa-lock text-warning ml-2"></i>
+                    @endif
+                  </span>
                 </a>
               </li>
               <li>
                 <a href="{{ route('recurring.index') }}">
                   <span class="sub-item">Transaksi Rutin</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ route('membership.index') }}">
+                  <span class="sub-item text-primary"><b>Membership</b></span>
                 </a>
               </li>
             </ul>
