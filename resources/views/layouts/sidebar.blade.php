@@ -90,7 +90,7 @@
               </li>
               <li>
                 <a href="{{ route('membership.index') }}">
-                  <span class="sub-item text-primary"><b>Membership</b></span>
+                  <span class="sub-item"><b>Membership</b></span>
                 </a>
               </li>
             </ul>
