@@ -15,3 +15,8 @@
 - Kelas Strategi Excel: Membuat ExcelExportStrategy yang berisi logika spesifik untuk menggunakan library PhpSpreadsheet.
 - Kelas Strategi PDF: Membuat PdfExportStrategy yang berisi logika spesifik untuk menggunakan library DomPDF.
 - Refaktor Controller: Memperbarui ExportController sehingga hanya bertugas menyiapkan data, lalu mendelegasikan pembuatan file ke kelas strategi yang sesuai.
+
+4. Bryan Christian (2472022)
+- Membuat fitur overview saldo menggunakan Design Pattern Observer Pattern
+- Membuat Middleware untuk user
+- Memperbaiki tampilan overview saldo
