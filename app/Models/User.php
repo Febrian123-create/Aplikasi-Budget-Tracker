@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(\App\Models\Membership::class, 'membership_id', 'membership_id');
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'role_id');
+    }
 }
