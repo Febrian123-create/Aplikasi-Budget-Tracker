@@ -9,26 +9,38 @@
                 <!-- Summary Cards -->
                 <div class="row mb-4">
                     <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">Total Saldo</h6>
-                                <h3>Rp {{ number_format($balance ?? 0, 0, ',', '.') }}</h3>
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Overview Saldo</h6>
+
+                                <h2 class="fw-bold text-primary">
+                                    Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
+                                </h2>
+
                             </div>
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">Pemasukan</h6>
-                                <h3>Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}</h3>
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <h6 class="text-success">Total Pemasukan</h6>
+
+                                <h3 class="fw-bold text-success">
+                                    Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}
+                                </h3>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">Pengeluaran</h6>
-                                <h3>Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}</h3>
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <h6 class="text-danger">Total Pengeluaran</h6>
+
+                                <h3 class="fw-bold text-danger">
+                                    Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}
+                                </h3>
                             </div>
                         </div>
                     </div>
