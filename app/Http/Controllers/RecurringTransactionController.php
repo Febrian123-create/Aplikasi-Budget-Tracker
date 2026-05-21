@@ -11,14 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-/**
- * RecurringTransactionController — HTTP Layer untuk Fitur 11.
- *
- * Single Responsibility: hanya terima request HTTP,
- * delegasikan ke RecurringTransactionService.
- *
- * Controller TIDAK boleh langsung new RecurringTransaction().
- */
+
 class RecurringTransactionController extends Controller
 {
     public function __construct(
@@ -26,21 +19,18 @@ class RecurringTransactionController extends Controller
         private RecurringScheduler $scheduler
     ) {}
 
-    /**
-     * GET /recurring — Tampilkan daftar recurring milik user.
-     * Otomatis eksekusi recurring yang jatuh tempo.
-     */
+    
     public function index()
     {
         $userId = Auth::id();
 
-        // Auto-eksekusi recurring yang jatuh tempo saat halaman dibuka
+        
         $executedCount = $this->scheduler->executeDueForUser($userId);
 
-        // Ambil semua recurring
+        
         $recurrings = $this->recurringService->getAll($userId);
 
-        // Data untuk form
+        
         $categories = Category::all();
         $user = Auth::user();
         $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
@@ -63,9 +53,7 @@ class RecurringTransactionController extends Controller
         ));
     }
 
-    /**
-     * POST /recurring — Tambah recurring baru.
-     */
+    
     public function store(RecurringTransactionRequest $request)
     {
         $userId = Auth::id();
@@ -73,7 +61,7 @@ class RecurringTransactionController extends Controller
         $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
         $isPremium = strtolower($membershipName) === 'premium';
 
-        // Cek batas membership Free
+        
         if (!$isPremium) {
             $activeCount = $this->recurringService->countActive($userId);
             if ($activeCount >= 3) {
@@ -82,7 +70,7 @@ class RecurringTransactionController extends Controller
                     ->withInput();
             }
 
-            // Cek frekuensi yang diizinkan
+            
             $allowedFrequencies = ['bulanan', 'tahunan'];
             if (!in_array($request->frequency, $allowedFrequencies)) {
                 return redirect()->back()
@@ -93,7 +81,7 @@ class RecurringTransactionController extends Controller
 
         $data = $request->validated();
 
-        // Warning jika start_date sudah lewat
+        
         $startDate = Carbon::parse($data['start_date']);
         $warningMessage = null;
         if ($startDate->isBefore(Carbon::today())) {
@@ -110,9 +98,7 @@ class RecurringTransactionController extends Controller
         return redirect()->route('recurring.index')->with('success', $successMessage);
     }
 
-    /**
-     * PUT /recurring/{id} — Update recurring.
-     */
+    
     public function update(RecurringTransactionRequest $request, int $id)
     {
         $userId = Auth::id();
@@ -120,7 +106,7 @@ class RecurringTransactionController extends Controller
         $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
         $isPremium = strtolower($membershipName) === 'premium';
 
-        // Cek frekuensi yang diizinkan untuk Free user
+        
         if (!$isPremium) {
             $allowedFrequencies = ['bulanan', 'tahunan'];
             if (!in_array($request->frequency, $allowedFrequencies)) {
@@ -140,9 +126,7 @@ class RecurringTransactionController extends Controller
         return redirect()->route('recurring.index')->with('success', 'Transaksi rutin berhasil diperbarui!');
     }
 
-    /**
-     * DELETE /recurring/{id} — Hapus recurring.
-     */
+    
     public function destroy(int $id)
     {
         $userId = Auth::id();
@@ -155,9 +139,7 @@ class RecurringTransactionController extends Controller
         return redirect()->route('recurring.index')->with('success', 'Transaksi rutin berhasil dihapus! Transaksi yang sudah tercatat tidak terhapus.');
     }
 
-    /**
-     * PATCH /recurring/{id}/toggle — Toggle status aktif/dijeda.
-     */
+    
     public function toggleStatus(int $id)
     {
         $userId = Auth::id();
@@ -171,9 +153,7 @@ class RecurringTransactionController extends Controller
         return redirect()->route('recurring.index')->with('success', "Transaksi rutin berhasil {$statusLabel}!");
     }
 
-    /**
-     * GET /recurring/{id}/edit — Tampilkan form edit.
-     */
+    
     public function edit(int $id)
     {
         $userId = Auth::id();

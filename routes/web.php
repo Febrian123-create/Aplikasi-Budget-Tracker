@@ -15,25 +15,25 @@ Route::get('/', function () {
 });
 
 
-//User Routes
+
 Route::middleware(['auth', 'role:user'])->group(function () {
-    //Dashboard
+    
     Route::get('/dashboard', [TransactionController::class, 'index'])
         ->name('dashboard');
 
-    //Transactions
+    
     Route::resource('transactions', TransactionController::class)
         ->only(['index', 'store', 'edit', 'update', 'destroy']);
     Route::get('/history', [TransactionController::class, 'history'])
         ->name('transactions.history');
 
-    //Membership
+    
     Route::get('/membership', [\App\Http\Controllers\MembershipController::class, 'index'])
         ->name('membership.index');
     Route::post('/membership/upgrade', [\App\Http\Controllers\MembershipController::class, 'upgrade'])
         ->name('membership.upgrade');
 
-    // Premium Features
+    
     Route::middleware([\App\Http\Middleware\CheckPremiumMembership::class])
         ->group(function () {
             Route::get('/charts', [ChartController::class, 'index'])
@@ -42,7 +42,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
                 ->name('charts.data');
         });
 
-    //Recurring Transactions
+    
     Route::get('/recurring', [RecurringTransactionController::class, 'index'])
         ->name('recurring.index');
     Route::post('/recurring', [RecurringTransactionController::class, 'store'])
@@ -56,7 +56,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
         ->name('recurring.toggle');
 
-    //Export
+    
     Route::get('/history/export/excel', [ExportController::class, 'historyExportExcel'])
         ->name('history.export.excel');
     Route::get('/history/export/pdf', [ExportController::class, 'historyExportPdf'])
@@ -66,7 +66,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/transactions/export/pdf', [ExportController::class, 'transactionsExportPdf'])
         ->name('transactions.export.pdf');
 
-    //Profile
+    
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])

@@ -15,19 +15,13 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+    
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
+    
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -36,16 +30,24 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'otp_code' => $otpCode,
+            'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        event(new Registered($user));
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerificationOtpMail($otpCode, $user->name));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal mengirim email OTP pendaftaran: ' . $e->getMessage());
+        }
 
-        Auth::login($user);
+        $request->session()->put('pending_user_id', $user->id);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('verification.otp');
     }
 }

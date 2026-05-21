@@ -11,10 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-/**
- * ChartController — Single Responsibility: terima request,
- * panggil ChartService, dan kembalikan view/data.
- */
+
 class ChartController extends Controller
 {
     private ChartService $chartService;
@@ -27,34 +24,32 @@ class ChartController extends Controller
         $this->chartObserver = new ChartObserver($this->chartService);
     }
 
-    /**
-     * Halaman utama visualisasi data (Fitur 8).
-     */
+    
     public function index(Request $request)
     {
         $userId = Auth::id();
         $now = Carbon::now();
 
-        // Subscribe ChartObserver ke TransactionSubject
+        
         $this->chartObserver->subscribe();
 
-        // Tentukan bulan & tahun aktif
+        
         $bulan = (int) $request->get('bulan', $now->month);
         $tahun = (int) $request->get('tahun', $now->year);
 
-        // Cek membership user
+        
         $user = Auth::user();
         $isPremium = false;
 
-        // Cek apakah user punya relasi membership
+        
         if ($user && method_exists($user, 'membership') && $user->membership) {
             $isPremium = strtolower($user->membership->membership_name) === 'premium';
         }
 
-        // Batasi akses berdasarkan membership
-        $canSelectMonth = $isPremium; // Free: hanya bulan aktif
+        
+        $canSelectMonth = $isPremium; 
 
-        // Tentukan rentang bar chart
+        
         $barRange = (int) $request->get('range', 3);
         $maxRange = $isPremium ? 12 : 3;
         $barRange = min($barRange, $maxRange);
@@ -64,18 +59,18 @@ class ChartController extends Controller
             ->startOfMonth()
             ->format('Y-m-d');
 
-        // Ambil data dari ChartService
+        
         $metricCards = $this->chartService->getMetricCards($userId, $bulan, $tahun);
         $categoryDistribution = $this->chartService->getCategoryDistribution($userId, $bulan, $tahun);
         $monthlyChartData = $this->chartService->getMonthlyChartData($userId, $startDate);
 
-        // Warna chart
+        
         $chartColors = ChartHelper::getChartColors();
 
-        // Reset observer
+        
         $this->chartObserver->resetRefresh();
 
-        // Bulan-bulan untuk selector (Premium)
+        
         $availableMonths = [];
         for ($m = 1; $m <= 12; $m++) {
             $availableMonths[] = [
@@ -85,7 +80,7 @@ class ChartController extends Controller
             ];
         }
 
-        // Tahun untuk selector
+        
         $currentYear = $now->year;
         $availableYears = [];
         for ($y = $currentYear - 2; $y <= $currentYear; $y++) {
@@ -112,17 +107,14 @@ class ChartController extends Controller
         ));
     }
 
-    /**
-     * API endpoint untuk refresh data chart via AJAX.
-     * Digunakan oleh ChartObserver untuk auto-refresh.
-     */
+    
     public function getData(Request $request)
     {
         $userId = Auth::id();
         $bulan = (int) $request->get('bulan', Carbon::now()->month);
         $tahun = (int) $request->get('tahun', Carbon::now()->year);
 
-        // Cek membership
+        
         $user = Auth::user();
         $isPremium = false;
         if ($user && method_exists($user, 'membership') && $user->membership) {

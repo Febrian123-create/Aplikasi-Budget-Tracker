@@ -84,7 +84,7 @@
 @section('content')
 <div class="container">
     <div class="page-inner">
-        {{-- Header --}}
+        
         <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap" style="gap:12px;">
             <div>
                 <h3 class="fw-bold mb-1" style="color:#1a1a2e;">Transaksi Rutin</h3>
@@ -103,7 +103,7 @@
             @endif
         </div>
 
-        {{-- Flash Messages --}}
+        
         @if(session('success'))
             <div class="info-banner success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
         @endif
@@ -114,7 +114,7 @@
             <div class="info-banner info"><i class="fas fa-sync-alt"></i> {{ $executedCount }} transaksi rutin telah dicatat otomatis untuk periode yang terlewat.</div>
         @endif
 
-        {{-- Membership Limit Warning --}}
+        
         @if(!$isPremium && $activeCount >= $maxFreeRecurring)
             <div class="upgrade-card">
                 <h6><i class="fas fa-crown me-1"></i> Batas Recurring Tercapai</h6>
@@ -122,7 +122,7 @@
             </div>
         @endif
 
-        {{-- Mini Metrics --}}
+        
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="metric-mini mc-total">
@@ -144,7 +144,7 @@
             </div>
         </div>
 
-        {{-- Recurring List --}}
+        
         @if($recurrings->isEmpty())
             <div class="form-card">
                 <div class="empty-state">
@@ -217,7 +217,7 @@
     </div>
 </div>
 
-{{-- Modal Tambah Recurring --}}
+
 <div class="modal fade" id="addRecurringModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" style="border-radius:16px;border:none;">

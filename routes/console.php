@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Fitur 11 — Jalankan recurring scheduler setiap hari jam 00:05
+
 Schedule::command('recurring:execute')->dailyAt('00:05');
