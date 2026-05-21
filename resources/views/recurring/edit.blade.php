@@ -2,57 +2,78 @@
 
 @push('styles')
 <style>
-.form-card {
-    background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    border: 1px solid #f0f0f0; padding: 28px; max-width: 700px; margin: 0 auto;
-}
-.form-card .form-label { font-weight: 600; font-size: 13px; color: #333; }
-.form-card .form-control, .form-card .form-select {
-    border-radius: 10px; border: 1px solid #e0e0e0; padding: 10px 14px; font-size: 14px;
-}
-.form-card .form-control:focus, .form-card .form-select:focus {
-    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-}
-.section-title {
-    font-size: 18px; font-weight: 700; color: #1a1a2e;
-    display: flex; align-items: center; gap: 10px;
-}
-.section-title i { color: #6366f1; }
 .preview-box {
-    background: linear-gradient(135deg,#f3f0ff,#ede7f6); border-radius: 10px;
-    padding: 14px 18px; font-size: 13px; color: #5e35b1; font-weight: 500; margin-top: 16px;
+    background: var(--primary-50);
+    border: 1px dashed var(--primary-light);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--fs-xs);
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-top: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
-.preview-box i { margin-right: 6px; }
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-muted);
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--primary-50);
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container">
-    <div class="page-inner">
-        <div class="d-flex align-items-center mb-4" style="gap:12px;">
-            <a href="{{ route('recurring.index') }}" class="btn btn-light" style="border-radius:10px;">
-                <i class="fas fa-arrow-left"></i>
-            </a>
-            <div>
-                <h3 class="fw-bold mb-0" style="color:#1a1a2e;">Edit Transaksi Rutin</h3>
-                <p class="text-muted mb-0">{{ $recurring->description }}</p>
-            </div>
+<div class="content-inner" style="max-width: 720px; margin: 0 auto;">
+    
+    <!-- Page Header -->
+    <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <a href="{{ route('recurring.index') }}" class="back-btn" title="Kembali ke Daftar">
+            <i class="bi bi-arrow-left" style="font-size: 1.1rem; font-weight: bold;"></i>
+        </a>
+        <div>
+            <h1 style="font-family: var(--font-heading); font-weight: 800; color: var(--text-dark); margin: 0; font-size: var(--fs-2xl);">Edit Transaksi Rutin</h1>
+            <p style="color: var(--text-muted); font-size: var(--fs-sm); margin: 0; margin-top: 2px;">
+                Mengubah detail transaksi rutin: <strong>{{ $recurring->description }}</strong>
+            </p>
         </div>
+    </div>
 
-        <div class="form-card">
+    <!-- Edit Form Card -->
+    <div class="bunrek-card">
+        <div class="bunrek-card-header">
+            <h2 class="bunrek-card-title">Detail Transaksi Rutin</h2>
+        </div>
+        <div class="bunrek-card-body">
             <form action="{{ route('recurring.update', $recurring->recurring_id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">Nama / Deskripsi</label>
-                        <input type="text" name="description" class="form-control" required
-                               value="{{ old('description', $recurring->description) }}">
-                        @error('description') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Kategori</label>
-                        <select name="category_id" class="form-select" required>
+
+                <div class="bunrek-form-group">
+                    <label class="bunrek-label">Deskripsi / Nama</label>
+                    <input type="text" name="description" class="bunrek-input" required value="{{ old('description', $recurring->description) }}">
+                    @error('description') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
+                </div>
+
+                <div class="bunrek-form-group text-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div>
+                        <label class="bunrek-label">Kategori</label>
+                        <select name="category_id" class="bunrek-select" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->category_id }}"
@@ -61,24 +82,29 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('category_id') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('category_id') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tipe</label>
-                        <select name="amount_type" class="form-select" required>
+
+                    <div>
+                        <label class="bunrek-label">Tipe Transaksi</label>
+                        <select name="amount_type" class="bunrek-select" required>
                             <option value="pengeluaran" {{ old('amount_type', $recurring->amount_type) === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
                             <option value="pemasukan" {{ old('amount_type', $recurring->amount_type) === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
                         </select>
+                        @error('amount_type') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Nominal (Rp)</label>
-                        <input type="number" name="amount" class="form-control" required min="1"
-                               value="{{ old('amount', intval($recurring->amount)) }}">
-                        @error('amount') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+
+                <div class="bunrek-form-group text-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div>
+                        <label class="bunrek-label">Nominal (Rp)</label>
+                        <input type="number" name="amount" class="bunrek-input" required min="1" value="{{ old('amount', intval($recurring->amount)) }}">
+                        @error('amount') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Frekuensi</label>
-                        <select name="frequency" class="form-select" required id="editFrequency">
+
+                    <div>
+                        <label class="bunrek-label">Frekuensi Ulang</label>
+                        <select name="frequency" class="bunrek-select" required id="editFrequency">
                             @foreach($frequencies as $val => $label)
                                 <option value="{{ $val }}"
                                     {{ old('frequency', $recurring->frequency) === $val ? 'selected' : '' }}>
@@ -86,35 +112,44 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('frequency') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('frequency') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tanggal Mulai</label>
-                        <input type="date" name="start_date" class="form-control" required
+                </div>
+
+                <div class="bunrek-form-group text-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div>
+                        <label class="bunrek-label">Tanggal Mulai</label>
+                        <input type="date" name="start_date" class="bunrek-input" required
                                value="{{ old('start_date', $recurring->start_date->format('Y-m-d')) }}" id="editStartDate">
-                        @error('start_date') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('start_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tanggal Berakhir <small class="text-muted">(opsional)</small></label>
-                        <input type="date" name="end_date" class="form-control"
+
+                    <div>
+                        <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted); font-weight: 500;">(Opsional)</small></label>
+                        <input type="date" name="end_date" class="bunrek-input"
                                value="{{ old('end_date', $recurring->end_date ? $recurring->end_date->format('Y-m-d') : '') }}" id="editEndDate">
-                        @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('end_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
 
-                <div class="preview-box" id="editPreview">
-                    <i class="fas fa-info-circle"></i> <span id="editPreviewText"></span>
+                <div class="preview-box" id="editPreview" style="display: none;">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span id="editPreviewText"></span>
                 </div>
 
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{{ route('recurring.index') }}" class="btn btn-light" style="border-radius:10px;">Batal</a>
-                    <button type="submit" class="btn btn-primary" style="border-radius:10px;background:#6366f1;border:none;padding:10px 28px;font-weight:600;">
-                        Simpan Perubahan
+                <!-- Footer Buttons -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-xl); border-top: 1px solid var(--border-light); padding-top: var(--space-lg);">
+                    <a href="{{ route('recurring.index') }}" class="btn-bunrek btn-outline" style="min-width: 100px;">
+                        Batal
+                    </a>
+                    <button type="submit" class="btn-bunrek btn-primary" style="min-width: 140px;">
+                        <i class="bi bi-check-lg"></i> Simpan Perubahan
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
 </div>
 @endsection
 
@@ -125,15 +160,16 @@ $(document).ready(function() {
         const freq = $('#editFrequency').val();
         const startDate = $('#editStartDate').val();
         if (freq && startDate) {
-            const freqLabels = {harian:'setiap hari',mingguan:'setiap minggu',bulanan:'setiap bulan',tahunan:'setiap tahun'};
+            const freqLabels = { harian: 'setiap hari', mingguan: 'setiap minggu', bulanan: 'setiap bulan', tahunan: 'setiap tahun' };
             const d = new Date(startDate);
-            const formatted = d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-            $('#editPreviewText').text('Akan tercatat otomatis ' + (freqLabels[freq]||freq) + ' mulai ' + formatted);
+            const formatted = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            $('#editPreviewText').text('Akan tercatat otomatis ' + (freqLabels[freq] || freq) + ' mulai ' + formatted);
             $('#editPreview').show();
         } else {
             $('#editPreview').hide();
         }
     }
+    
     $('#editFrequency, #editStartDate').on('change', updateEditPreview);
     updateEditPreview();
 });

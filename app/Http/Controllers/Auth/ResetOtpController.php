@@ -91,6 +91,7 @@ class ResetOtpController extends Controller
             $user->reset_otp_expires_at = now()->addMinutes(10);
             $user->save();
 
+            Log::info("Resent Reset Password OTP Code for {$user->email}: {$otpCode}");
             try {
                 Mail::to($user->email)->send(new \App\Mail\ResetPasswordOtpMail($otpCode, $user->name));
             } catch (\Exception $e) {
