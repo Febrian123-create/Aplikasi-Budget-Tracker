@@ -32,6 +32,7 @@ class PasswordResetLinkController extends Controller
             $user->reset_otp_expires_at = now()->addMinutes(10);
             $user->save();
 
+            \Illuminate\Support\Facades\Log::info("Reset Password OTP Code for {$user->email}: {$otpCode}");
             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ResetPasswordOtpMail($otpCode, $user->name));
             } catch (\Exception $e) {
