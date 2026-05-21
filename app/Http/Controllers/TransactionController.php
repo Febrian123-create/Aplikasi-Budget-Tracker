@@ -138,22 +138,11 @@ class TransactionController extends Controller
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        $totalIncome = $transactions->where('transactionType_id', 1)->sum('total_amount');
-        $totalExpense = $transactions->where('transactionType_id', 2)->sum('total_amount');
-        $balance = $totalIncome - $totalExpense;
-
-        $totalFiltered = $transactions->sum('total_amount');
-
         $categories = Category::all();
 
         return view('transactions.history', compact(
             'transactions',
-            'totalIncome',
-            'totalExpense',
-            'balance',
-            'totalFiltered',
             'categories'
         ));
     }
-
 }
