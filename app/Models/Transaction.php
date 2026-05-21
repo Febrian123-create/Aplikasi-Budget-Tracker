@@ -28,7 +28,7 @@ class Transaction extends Model
     {
         return 'transaction_id';
     }
-    // App\Models\Transaction.php
+    
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
