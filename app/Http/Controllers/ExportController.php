@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use App\Strategies\Export\ExportStrategyInterface;
 use App\Strategies\Export\ExcelExportStrategy;
 use App\Strategies\Export\PdfExportStrategy;
+use App\Features\MembershipFeatureInterface;
 
 class ExportController extends Controller
 {
@@ -68,12 +69,15 @@ class ExportController extends Controller
      */
     public function historyExportExcel(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $transactions = $this->buildFilteredQuery($request)->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan History Transaksi';
         $data['filters'] = $this->getActiveFilters($request);
         $filename = 'history_' . $data['exportDateFile'] . '.xlsx';
-
         return $this->export(new ExcelExportStrategy(), $data, $filename);
     }
 
@@ -82,12 +86,15 @@ class ExportController extends Controller
      */
     public function historyExportPdf(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $transactions = $this->buildFilteredQuery($request)->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan History Transaksi';
         $data['filters'] = $this->getActiveFilters($request);
         $filename = 'history_' . $data['exportDateFile'] . '.pdf';
-
         return $this->export(new PdfExportStrategy(), $data, $filename);
     }
 
@@ -96,18 +103,20 @@ class ExportController extends Controller
      */
     public function transactionsExportExcel(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $today = Carbon::today()->toDateString();
         $transactions = Transaction::where('user_id', Auth::id())
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
-
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
         $data['filters'] = ['Tanggal: ' . Carbon::today()->format('d-m-Y')];
         $filename = 'transaksi_harian_' . $data['exportDateFile'] . '.xlsx';
-
         return $this->export(new ExcelExportStrategy(), $data, $filename);
     }
 
@@ -116,18 +125,20 @@ class ExportController extends Controller
      */
     public function transactionsExportPdf(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $today = Carbon::today()->toDateString();
         $transactions = Transaction::where('user_id', Auth::id())
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
-
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
         $data['filters'] = ['Tanggal: ' . Carbon::today()->format('d-m-Y')];
         $filename = 'transaksi_harian_' . $data['exportDateFile'] . '.pdf';
-
         return $this->export(new PdfExportStrategy(), $data, $filename);
     }
 

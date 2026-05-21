@@ -127,6 +127,10 @@
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Transaksi Hari Ini — {{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y') }}</h5>
+                                @php
+                                    $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
+                                @endphp
+                                @if ($membershipFeature->canExportPdf())
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('transactions.export.excel') }}" class="btn btn-success btn-sm" id="btnExportExcelTx">
                                         <i class="fas fa-file-excel"></i> Export Excel
@@ -135,6 +139,11 @@
                                         <i class="fas fa-file-pdf"></i> Export PDF
                                     </a>
                                 </div>
+                                @else
+                                <div class="alert alert-warning mb-0">
+                                    Fitur export hanya tersedia untuk member <b>Premium</b>.
+                                </div>
+                                @endif
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
