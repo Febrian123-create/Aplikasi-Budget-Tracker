@@ -19,7 +19,7 @@ class TransactionType extends Model
         'name',
     ];
 
-    // Relasi ke Transaction
+    
     public function transactions()
     {
         return $this->hasMany(Transaction::class, 'transactionType_id', 'transactionType_id');

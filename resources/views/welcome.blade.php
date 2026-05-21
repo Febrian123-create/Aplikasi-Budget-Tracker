@@ -5,29 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BUNREK | Aplikasi Pengatur Keuangan & Budget Tracker Cerdas</title>
 
-    <!-- SEO Meta Tags -->
+    
     <meta name="description" content="Kuasai keuangan pribadi Anda dengan BUNREK. Pantau pengeluaran harian, atur anggaran bulanan, analisis grafik keuangan, dan ekspor laporan PDF/Excel secara instan.">
     <meta name="keywords" content="budget tracker, aplikasi keuangan, pencatat pengeluaran, dompet digital, hemat uang, excel pdf export, keuangan keluarga">
     <meta name="author" content="BUNREK Team">
 
-    <!-- Bootstrap 5 CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Bootstrap Icons CDN -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     
-    <!-- Google Fonts -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Custom Premium Styles -->
+    
     <style>
         :root {
-            --primary-color: #6366f1; /* Indigo */
+            --primary-color: #6366f1; 
             --primary-light: #818cf8;
             --primary-dark: #4f46e5;
-            --accent-color: #a855f7; /* Purple */
+            --accent-color: #a855f7; 
             --bg-light: #fdfdff;
             --bg-glass-white: rgba(255, 255, 255, 0.45);
             --bg-glass-white-thick: rgba(255, 255, 255, 0.75);
@@ -57,7 +57,7 @@
             color: var(--text-dark);
         }
 
-        /* --- Navbar Sticky Glassmorphism --- */
+        
         .navbar-glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(16px);
@@ -108,7 +108,7 @@
             width: 80%;
         }
 
-        /* --- Glassmorphism Card --- */
+        
         .glass-card {
             background: var(--bg-glass-white);
             backdrop-filter: blur(14px);
@@ -126,7 +126,7 @@
             box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.12);
         }
 
-        /* --- Buttons --- */
+        
         .btn-indigo {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white !important;
@@ -159,7 +159,7 @@
             transform: translateY(-2px);
         }
 
-        /* --- Hero Section --- */
+        
         .hero-section {
             padding: 160px 0 100px;
             position: relative;
@@ -184,7 +184,7 @@
             max-width: 550px;
         }
 
-        /* --- Dashboard Mockup (Pure CSS) --- */
+        
         .mockup-container {
             position: relative;
             width: 100%;
@@ -293,7 +293,7 @@
             filter: blur(20px);
         }
 
-        /* CSS Chart */
+        
         .mockup-chart-container {
             background: rgba(255, 255, 255, 0.5);
             border-radius: 18px;
@@ -348,7 +348,7 @@
             margin-top: 4px;
         }
 
-        /* Mock Transactions */
+        
         .mockup-transaction-list {
             display: flex;
             flex-direction: column;
@@ -396,7 +396,7 @@
             font-weight: 700;
         }
 
-        /* Decorative Float Items */
+        
         .float-element-1 {
             position: absolute;
             top: -20px;
@@ -419,7 +419,7 @@
             100% { transform: translateY(0px) rotate(0deg); }
         }
 
-        /* --- Stats Bar --- */
+        
         .stats-section {
             padding: 3rem 0;
             position: relative;
@@ -446,7 +446,7 @@
             margin-bottom: 0.25rem;
         }
 
-        /* --- Section Styling --- */
+        
         .section-padding {
             padding: 100px 0;
         }
@@ -465,7 +465,7 @@
             font-size: 1.05rem;
         }
 
-        /* --- Features Section --- */
+        
         .feature-icon-wrapper {
             width: 56px;
             height: 56px;
@@ -486,7 +486,7 @@
             transform: scale(1.1);
         }
 
-        /* --- How It Works --- */
+        
         .step-card {
             position: relative;
         }
@@ -522,7 +522,7 @@
             box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
         }
 
-        /* --- Pricing Section --- */
+        
         .pricing-card {
             border-radius: 26px;
             position: relative;
@@ -585,7 +585,7 @@
             font-size: 1.1rem;
         }
 
-        /* --- CTA Banner --- */
+        
         .cta-container {
             position: relative;
             overflow: hidden;
@@ -633,7 +633,7 @@
             z-index: 2;
         }
 
-        /* --- Footer --- */
+        
         footer {
             background-color: #090d16;
             color: #94a3b8;
@@ -666,7 +666,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- Scroll Reveal System --- */
+        
         .reveal {
             opacity: 0;
             transform: translateY(30px);
@@ -678,7 +678,7 @@
             transform: translateY(0);
         }
 
-        /* Make responsive adjustments */
+        
         @media (max-width: 991.98px) {
             .hero-section {
                 padding: 130px 0 60px;
@@ -707,7 +707,7 @@
 </head>
 <body>
 
-    <!-- Navbar Sticky Glassmorphism -->
+    
     <nav class="navbar navbar-expand-lg navbar-glass fixed-top py-3" id="mainNavbar">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center fw-bold fs-3" href="#">
@@ -737,7 +737,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center g-5">
@@ -754,7 +754,7 @@
                 </div>
                 <div class="col-lg-6 reveal" id="heroRightContent" style="transition-delay: 0.15s">
                     <div class="mockup-container">
-                        <!-- Floating graphic card 1 -->
+                        
                         <div class="glass-card float-element-1 py-2 px-3 shadow" style="border-radius: 16px; background: rgba(255,255,255,0.8);">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-success text-white rounded-circle p-1 d-flex" style="font-size: 0.8rem;">
@@ -767,7 +767,7 @@
                             </div>
                         </div>
 
-                        <!-- Floating graphic card 2 -->
+                        
                         <div class="glass-card float-element-2 py-2 px-3 shadow" style="border-radius: 16px; background: rgba(255,255,255,0.85);">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-warning text-white rounded-circle p-1 d-flex" style="font-size: 0.7rem;">
@@ -780,7 +780,7 @@
                             </div>
                         </div>
 
-                        <!-- Mockup Base Screen -->
+                        
                         <div class="mockup-base">
                             <div class="mockup-header">
                                 <div class="mockup-profile">
@@ -803,7 +803,7 @@
                                 </div>
                             </div>
 
-                            <!-- Interactive Mock Chart -->
+                            
                             <div class="mockup-chart-container">
                                 <div class="mockup-chart-title">
                                     <span>Alokasi Budget Pengeluaran</span>
@@ -833,7 +833,7 @@
                                 </div>
                             </div>
 
-                            <!-- Recent Transaction Mini list -->
+                            
                             <div class="mockup-transaction-list">
                                 <div class="mockup-transaction-item">
                                     <div class="mockup-tx-info">
@@ -867,7 +867,7 @@
         </div>
     </section>
 
-    <!-- Stats Bar -->
+    
     <section class="stats-section">
         <div class="container">
             <div class="stats-inner reveal" id="statsBar">
@@ -889,7 +889,7 @@
         </div>
     </section>
 
-    <!-- Features Section -->
+    
     <section id="features" class="section-padding">
         <div class="container">
             <div class="text-center reveal">
@@ -898,7 +898,7 @@
             </div>
             
             <div class="row g-4">
-                <!-- Feature 1: Catat Transaksi -->
+                
                 <div class="col-md-6 col-lg-4 reveal">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -909,7 +909,7 @@
                     </div>
                 </div>
                 
-                <!-- Feature 2: Riwayat & Filter -->
+                
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: 0.05s">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -920,7 +920,7 @@
                     </div>
                 </div>
 
-                <!-- Feature 3: Visualisasi Grafik -->
+                
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: 0.1s">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -931,7 +931,7 @@
                     </div>
                 </div>
 
-                <!-- Feature 4: Export PDF/Excel -->
+                
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: 0.15s">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -942,7 +942,7 @@
                     </div>
                 </div>
 
-                <!-- Feature 5: Transaksi Rutin -->
+                
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: 0.2s">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -953,7 +953,7 @@
                     </div>
                 </div>
 
-                <!-- Feature 6: Membership Premium -->
+                
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: 0.25s">
                     <div class="glass-card h-100">
                         <div class="feature-icon-wrapper">
@@ -967,7 +967,7 @@
         </div>
     </section>
 
-    <!-- How It Works Section -->
+    
     <section id="how-it-works" class="section-padding bg-light bg-opacity-20" style="background-color: rgba(99, 102, 241, 0.01);">
         <div class="container">
             <div class="text-center reveal">
@@ -976,7 +976,7 @@
             </div>
 
             <div class="row g-4">
-                <!-- Step 1 -->
+                
                 <div class="col-md-4 reveal">
                     <div class="glass-card h-100 step-card">
                         <div class="step-number">01</div>
@@ -988,7 +988,7 @@
                     </div>
                 </div>
 
-                <!-- Step 2 -->
+                
                 <div class="col-md-4 reveal" style="transition-delay: 0.1s">
                     <div class="glass-card h-100 step-card">
                         <div class="step-number">02</div>
@@ -1000,7 +1000,7 @@
                     </div>
                 </div>
 
-                <!-- Step 3 -->
+                
                 <div class="col-md-4 reveal" style="transition-delay: 0.2s">
                     <div class="glass-card h-100 step-card">
                         <div class="step-number">03</div>
@@ -1015,7 +1015,7 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
+    
     <section id="pricing" class="section-padding">
         <div class="container">
             <div class="text-center reveal">
@@ -1024,7 +1024,7 @@
             </div>
 
             <div class="row g-4 justify-content-center">
-                <!-- Plan 1: Free -->
+                
                 <div class="col-md-5 col-lg-4 reveal">
                     <div class="glass-card h-100 pricing-card d-flex flex-column justify-content-between">
                         <div>
@@ -1050,7 +1050,7 @@
                     </div>
                 </div>
 
-                <!-- Plan 2: Premium -->
+                
                 <div class="col-md-5 col-lg-4 reveal" style="transition-delay: 0.1s">
                     <div class="glass-card h-100 pricing-card premium-highlight d-flex flex-column justify-content-between">
                         <div class="premium-ribbon">Rekomendasi</div>
@@ -1080,7 +1080,7 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
+    
     <section class="container mb-5 reveal">
         <div class="cta-container text-center">
             <div class="cta-content max-width-600 mx-auto">
@@ -1093,7 +1093,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    
     <footer>
         <div class="container">
             <div class="row g-4 mb-5">
@@ -1137,10 +1137,10 @@
         </div>
     </footer>
 
-    <!-- Bootstrap 5 JS Bundle -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom Scroll Animation Script (Intersection Observer) -->
+    
     <script>
         // Navbar Scrolled Class
         const navbar = document.getElementById('mainNavbar');
