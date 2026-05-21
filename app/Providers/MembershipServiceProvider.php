@@ -9,9 +9,7 @@ use App\Features\StandardMembership;
 
 class MembershipServiceProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     */
+    
     public function register(): void
     {
         $this->app->bind(MembershipFeatureInterface::class, function ($app) {
@@ -23,11 +21,9 @@ class MembershipServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Bootstrap services.
-     */
+    
     public function boot(): void
     {
-        //
+        
     }
 }

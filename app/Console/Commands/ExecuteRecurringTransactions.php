@@ -5,12 +5,7 @@ namespace App\Console\Commands;
 use App\Services\RecurringScheduler;
 use Illuminate\Console\Command;
 
-/**
- * ExecuteRecurringTransactions — Artisan Command untuk Fitur 11.
- *
- * Menjalankan scheduler secara manual atau via cron job.
- * Usage: php artisan recurring:execute
- */
+
 class ExecuteRecurringTransactions extends Command
 {
     protected $signature = 'recurring:execute';
