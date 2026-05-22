@@ -26,8 +26,10 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email'    => ['required', 'string', 'lowercase', 'email:filter', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'email.email' => 'Format email tidak valid. Harus mengandung domain lengkap, contoh: nama@email.com.',
         ]);
 
         $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
