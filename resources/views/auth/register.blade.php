@@ -60,9 +60,13 @@
                         <input type="email" id="email" name="email" class="bunrek-input"
                                value="{{ old('email') }}"
                                placeholder="nama@email.com"
+                               pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                                required autocomplete="username">
+                        <p id="email-error" class="bunrek-alert bunrek-alert-error" style="display: none; margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <span id="email-error-text">Format email tidak valid. Harus mengandung domain lengkap, contoh: nama@email.com</span>
+                        </p>
                         @error('email')
-                            <p class="bunrek-alert bunrek-alert-error" style="margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
+                            <p class="bunrek-alert bunrek-alert-error server-error" style="margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
                                 <i class="bi bi-exclamation-triangle-fill"></i> {{ $message }}
                             </p>
                         @enderror
@@ -106,5 +110,71 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const emailInput = document.getElementById('email');
+            const emailError = document.getElementById('email-error');
+            const emailErrorText = document.getElementById('email-error-text');
+            const serverError = document.querySelector('.server-error');
+            const form = emailInput.closest('form');
+
+            // Regex untuk validasi email dengan dot dan TLD minimal 2 karakter
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            function validateEmail() {
+                const emailValue = emailInput.value.trim();
+                
+                // Sembunyikan error dari server saat user mengedit
+                if (serverError) {
+                    serverError.style.display = 'none';
+                }
+
+                if (emailValue === '') {
+                    hideError();
+                    return true;
+                }
+
+                if (!emailRegex.test(emailValue)) {
+                    showError('Format email tidak valid. Harus mengandung domain lengkap, contoh: nama@email.com');
+                    return false;
+                } else {
+                    hideError();
+                    return true;
+                }
+            }
+
+            function showError(message) {
+                emailErrorText.textContent = message;
+                emailError.style.display = 'block';
+                emailInput.style.borderColor = '#ef4444';
+                emailInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
+            }
+
+            function hideError() {
+                emailError.style.display = 'none';
+                emailInput.style.borderColor = '';
+                emailInput.style.boxShadow = '';
+            }
+
+            // Validasi real-time saat mengetik
+            emailInput.addEventListener('input', function () {
+                validateEmail();
+            });
+
+            // Validasi saat input kehilangan fokus
+            emailInput.addEventListener('blur', function () {
+                validateEmail();
+            });
+
+            // Mencegah submit form jika email tidak valid
+            form.addEventListener('submit', function (event) {
+                if (!validateEmail()) {
+                    event.preventDefault();
+                    emailInput.focus();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

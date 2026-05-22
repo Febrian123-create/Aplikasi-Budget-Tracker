@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (!Schema::hasTable('role')) {
             Schema::create('role', function (Blueprint $table) {
-                $table->id('role_id');
+                $table->unsignedBigInteger('role_id')->primary();
                 $table->string('role_name', 50);
             });
 

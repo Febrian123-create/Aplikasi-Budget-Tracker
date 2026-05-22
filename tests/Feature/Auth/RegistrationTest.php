@@ -26,20 +26,40 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertRedirect(route('verification.otp'));
+        
+        // Assert that registration is pending in session
+        $pending = session('pending_registration');
+        $this->assertNotNull($pending);
+        $this->assertEquals('test@example.com', $pending['email']);
+        $otpCode = $pending['otp_code'];
+        $this->assertNotNull($otpCode);
+
+        // Verify OTP
+        $response = $this->post('/verify-otp', [
+            'otp_code' => $otpCode,
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+        
+        // Now the user should be stored in the database and authenticated
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
         ]);
 
         $user = User::where('email', 'test@example.com')->first();
-        $this->assertNotNull($user->otp_code);
-
-        
-        $response = $this->withSession(['pending_user_id' => $user->id])
-            ->post('/verify-otp', [
-                'otp' => $user->otp_code,
-            ]);
-
-        $response->assertRedirect(route('dashboard'));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_registration_fails_with_invalid_email_format(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => '2472022@maranatha',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors(['email']);
+        $this->assertNull(session('pending_registration'));
     }
 }

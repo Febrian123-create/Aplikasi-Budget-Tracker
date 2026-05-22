@@ -39,6 +39,11 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px var(--primary-50);
         }
+        .btn-link:disabled {
+            color: var(--text-muted) !important;
+            cursor: not-allowed !important;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
@@ -97,11 +102,11 @@
                         Kode berlaku dalam: <strong id="countdown">10:00</strong>
                     </div>
                     
-                    <form method="POST" action="{{ route('password.resend-otp') }}" id="resendForm" style="display: none;">
+                    <form method="POST" action="{{ route('password.resend-otp') }}" id="resendForm">
                         @csrf
                         Belum menerima email? 
-                        <button type="submit" class="btn-link" style="background: none; border: none; font-weight: 600; color: var(--primary-color); cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">
-                            Kirim Ulang OTP
+                        <button type="submit" id="resendBtn" class="btn-link" style="background: none; border: none; font-weight: 600; color: var(--primary-color); cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;" disabled>
+                            Kirim ulang OTP dalam 60 detik
                         </button>
                     </form>
                 </div>
@@ -155,20 +160,43 @@
             let timeLeft = 600; // 10 minutes in seconds
             const countdownEl = document.getElementById('countdown');
             const timerContainer = document.getElementById('timerContainer');
-            const resendForm = document.getElementById('resendForm');
+            
+            // Cooldown for resending (60 seconds)
+            let cooldownTime = 60;
+            const resendBtn = document.getElementById('resendBtn');
 
             const timerInterval = setInterval(function() {
-                const minutes = Math.floor(timeLeft / 60);
-                let seconds = timeLeft % 60;
-                seconds = seconds < 10 ? '0' + seconds : seconds;
+                // Expiration timer
+                if (timeLeft >= 0) {
+                    const minutes = Math.floor(timeLeft / 60);
+                    let seconds = timeLeft % 60;
+                    seconds = seconds < 10 ? '0' + seconds : seconds;
 
-                countdownEl.textContent = `${minutes}:${seconds}`;
-                timeLeft--;
+                    if (countdownEl) {
+                        countdownEl.textContent = `${minutes}:${seconds}`;
+                    }
+                    timeLeft--;
+                } else {
+                    if (timerContainer) {
+                        timerContainer.innerHTML = '<strong>Kode OTP telah kedaluwarsa. Silakan kirim ulang kode baru.</strong>';
+                    }
+                }
 
-                if (timeLeft < 0) {
+                // Cooldown timer
+                if (cooldownTime > 0) {
+                    cooldownTime--;
+                    if (resendBtn) {
+                        resendBtn.textContent = `Kirim ulang OTP dalam ${cooldownTime} detik`;
+                    }
+                } else {
+                    if (resendBtn) {
+                        resendBtn.removeAttribute('disabled');
+                        resendBtn.textContent = 'Kirim Ulang OTP';
+                    }
+                }
+
+                if (timeLeft < 0 && cooldownTime <= 0) {
                     clearInterval(timerInterval);
-                    timerContainer.style.display = 'none';
-                    resendForm.style.display = 'block';
                 }
             }, 1000);
         });
