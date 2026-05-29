@@ -337,7 +337,7 @@
 @section('content')
     <div class="container">
         <div class="page-inner">
-            {{-- Page Header --}}
+            
             <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap" style="gap:12px;">
                 <div>
                     <h3 class="fw-bold mb-1" style="color:#1a1a2e;">Visualisasi Keuangan</h3>
@@ -367,7 +367,7 @@
                 @endif
             </div>
 
-            {{-- Warning Banner (Saldo Negatif) --}}
+            
             @if($metricCards['overBudgetAmount'])
                 <div class="warning-banner">
                     <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i>
@@ -376,7 +376,7 @@
                 </div>
             @endif
 
-            {{-- Kartu Metrik --}}
+            
             <div class="row g-3 mb-4">
                 <div class="col-lg-3 col-md-6">
                     <div class="metric-card mc-income">
@@ -413,9 +413,9 @@
                 </div>
             </div>
 
-            {{-- Charts Row --}}
+            
             <div class="row g-4">
-                {{-- Pie/Donut Chart --}}
+                
                 <div class="col-lg-5">
                     <div class="chart-card">
                         <div class="section-title"><i class="fas fa-chart-pie"></i> Distribusi Pengeluaran</div>
@@ -453,7 +453,7 @@
                     </div>
                 </div>
 
-                {{-- Bar Chart --}}
+                
                 <div class="col-lg-7">
                     <div class="chart-card">
                         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
@@ -492,7 +492,7 @@
                         @endif
                     </div>
 
-                    {{-- Premium Blur for Free users trying 4+ months --}}
+                    
                     @if(!$isPremium && $barRange >= 3)
                         <div class="chart-card mt-3 blur-overlay" style="min-height:120px;">
                             <div class="upgrade-badge">

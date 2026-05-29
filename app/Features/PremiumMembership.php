@@ -13,13 +13,13 @@ class PremiumMembership implements MembershipFeatureInterface
 
     public function canViewChart(): bool
     {
-        // Add Premium capability on top of base membership
+        
         return true;
     }
 
     public function canExportPdf(): bool
     {
-        // Add Premium capability on top of base membership
+        
         return true;
     }
 }

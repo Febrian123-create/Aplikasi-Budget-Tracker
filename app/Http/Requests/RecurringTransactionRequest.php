@@ -4,12 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * RecurringTransactionRequest — Validasi untuk Fitur 11.
- *
- * Validasi inline agar error ditampilkan segera,
- * bukan setelah submit.
- */
+
 class RecurringTransactionRequest extends FormRequest
 {
     public function authorize(): bool
