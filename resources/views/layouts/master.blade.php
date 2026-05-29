@@ -60,5 +60,6 @@
       });
     </script>
     @stack('scripts')
+    @include('components.reminder-popup')
   </body>
 </html>

@@ -8,6 +8,7 @@ use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Observers\TransactionSubject;
 use App\Repositories\RecurringTransactionRepository;
+use App\Services\ReminderService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\Log;
 class RecurringTransactionService
 {
     public function __construct(
-        private RecurringTransactionRepository $recurringRepo
+        private RecurringTransactionRepository $recurringRepo,
+        private ReminderService $reminderService
     ) {}
 
     
@@ -24,7 +26,13 @@ class RecurringTransactionService
     {
         $data['user_id'] = $userId;
 
-        return TransactionFactory::createRecurringTransaction($data);
+        $recurring = TransactionFactory::createRecurringTransaction($data);
+
+        if (!empty($data['reminder_enabled'])) {
+            $this->reminderService->saveReminderConfig($recurring, $data);
+        }
+
+        return $recurring;
     }
 
     
@@ -79,7 +87,16 @@ class RecurringTransactionService
             $updateData['next_run_date'] = $baseDate->toDateString();
         }
 
-        return $this->recurringRepo->update($recurring, $updateData);
+        $updated = $this->recurringRepo->update($recurring, $updateData);
+
+        // Selalu sync reminder config (simpan ulang jika enabled, hapus jika disabled)
+        if (!empty($data['reminder_enabled'])) {
+            $this->reminderService->saveReminderConfig($updated, $data);
+        } else {
+            $this->reminderService->deleteReminderConfig($updated->recurring_id);
+        }
+
+        return $updated;
     }
 
     
@@ -90,6 +107,8 @@ class RecurringTransactionService
         if (!$recurring) {
             return false;
         }
+
+        $this->reminderService->deleteReminderConfig($recurringId);
 
         return $this->recurringRepo->delete($recurring);
     }

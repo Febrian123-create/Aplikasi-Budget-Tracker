@@ -53,6 +53,11 @@ class RecurringTransaction extends Model
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
 
+    public function reminder()
+    {
+        return $this->hasOne(\App\Models\Reminder::class, 'recurring_id', 'recurring_id');
+    }
+
     
     public function scopeForUser($query, int $userId)
     {

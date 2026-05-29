@@ -447,6 +447,7 @@
                             $isToday = $rec->next_run_date && $rec->next_run_date->isToday();
                             $isTomorrow = $rec->next_run_date && $rec->next_run_date->isTomorrow();
                             $categoryMissing = !$rec->category;
+                            $hasReminder = $rec->reminder && $rec->reminder->reminder_enabled;
                         @endphp
                         <div class="recurring-card-item {{ $isToday ? 'due-today' : ($isTomorrow ? 'due-tomorrow' : '') }}">
                             <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
@@ -509,6 +510,12 @@
 
                                 <!-- Far Right: Actions -->
                                 <div style="display: flex; gap: var(--space-xs); justify-content: flex-end; align-items: center;">
+                                    {{-- Reminder indicator --}}
+                                    @if($hasReminder)
+                                        <span title="Reminder aktif" style="color: var(--primary-color); font-size: 0.9rem;"><i class="bi bi-bell-fill"></i></span>
+                                    @else
+                                        <span title="Reminder nonaktif" style="color: var(--border-color); font-size: 0.9rem;"><i class="bi bi-bell-slash"></i></span>
+                                    @endif
                                     @if($rec->status !== 'selesai')
                                         <!-- Edit button -->
                                         <a href="{{ route('recurring.edit', $rec->recurring_id) }}" class="action-icon-btn" title="Edit Transaksi">
@@ -623,6 +630,9 @@
                     <i class="bi bi-info-circle-fill"></i>
                     <span id="addPreviewText"></span>
                 </div>
+
+                @php $reminder = null; @endphp
+                @include('recurring.partials.reminder-form', ['isPremium' => $isPremium, 'reminder' => $reminder])
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-lg); border-top: 1px solid var(--border-light); padding-top: var(--space-md);">
                     <button type="button" id="btnCancelAddModal" class="btn-bunrek btn-outline" style="min-width: 100px;">
