@@ -13,13 +13,16 @@ class PremiumMembership implements MembershipFeatureInterface
 
     public function canViewChart(): bool
     {
-        
         return true;
     }
 
     public function canExportPdf(): bool
     {
-        
+        return $this->baseMembership->canExportPdf();
+    }
+
+    public function canUseRecurring(): bool
+    {
         return true;
     }
 }
