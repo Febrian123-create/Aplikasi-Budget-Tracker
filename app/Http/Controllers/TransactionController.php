@@ -17,14 +17,14 @@ class TransactionController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        // Transaksi harian — hanya hari ini
+        
         $transactions = Transaction::where('user_id', Auth::id())
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        // Total keseluruhan (semua waktu) untuk summary cards
+        
         $totalIncome = Transaction::where('user_id', Auth::id())
             ->whereIn('transactionType_id', function ($query) {
                 $query->select('transactionType_id')
@@ -57,7 +57,7 @@ class TransactionController extends Controller
             'category' => 'required|exists:category,category_id',
         ]);
 
-        // Ambil ID langsung dari model TransactionType
+        
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
         $transaction = Transaction::create([
@@ -69,7 +69,7 @@ class TransactionController extends Controller
             'description' => $validated['description'],
         ]);
 
-        // Notify observers (Observer Pattern — Fitur 8)
+        
         TransactionSubject::getInstance()->notifyObservers('created', $transaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil ditambahkan!');
@@ -101,7 +101,7 @@ class TransactionController extends Controller
             'description' => $validated['description'],
         ]);
 
-        // Notify observers (Observer Pattern — Fitur 8)
+        
         TransactionSubject::getInstance()->notifyObservers('updated', $transaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil diperbarui!');
@@ -112,7 +112,7 @@ class TransactionController extends Controller
         $deletedTransaction = clone $transaction;
         $transaction->delete();
 
-        // Notify observers (Observer Pattern — Fitur 8)
+        
         TransactionSubject::getInstance()->notifyObservers('deleted', $deletedTransaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
@@ -138,22 +138,11 @@ class TransactionController extends Controller
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        $totalIncome = $transactions->where('transactionType_id', 1)->sum('total_amount');
-        $totalExpense = $transactions->where('transactionType_id', 2)->sum('total_amount');
-        $balance = $totalIncome - $totalExpense;
-
-        $totalFiltered = $transactions->sum('total_amount');
-
         $categories = Category::all();
 
         return view('transactions.history', compact(
             'transactions',
-            'totalIncome',
-            'totalExpense',
-            'balance',
-            'totalFiltered',
             'categories'
         ));
     }
-
 }

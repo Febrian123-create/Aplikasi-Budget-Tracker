@@ -10,12 +10,11 @@ use Carbon\Carbon;
 use App\Strategies\Export\ExportStrategyInterface;
 use App\Strategies\Export\ExcelExportStrategy;
 use App\Strategies\Export\PdfExportStrategy;
+use App\Features\MembershipFeatureInterface;
 
 class ExportController extends Controller
 {
-    /**
-     * Build the filtered query based on request parameters.
-     */
+    
     private function buildFilteredQuery(Request $request)
     {
         $query = Transaction::where('user_id', Auth::id());
@@ -36,9 +35,7 @@ class ExportController extends Controller
             ->orderBy('transaction_date', 'desc');
     }
 
-    /**
-     * Prepare export data from transactions collection.
-     */
+    
     private function prepareExportData($transactions)
     {
         $totalIncome = $transactions->where('transactionType_id', 1)->sum('total_amount');
@@ -55,85 +52,83 @@ class ExportController extends Controller
         ];
     }
 
-    /**
-     * Main export execution using Strategy Pattern.
-     */
+    
     private function export(ExportStrategyInterface $strategy, array $data, string $filename)
     {
         return $strategy->export($data, $filename);
     }
 
-    /**
-     * Export history data to Excel (from /history page).
-     */
+    
     public function historyExportExcel(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $transactions = $this->buildFilteredQuery($request)->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan History Transaksi';
         $data['filters'] = $this->getActiveFilters($request);
         $filename = 'history_' . $data['exportDateFile'] . '.xlsx';
-
         return $this->export(new ExcelExportStrategy(), $data, $filename);
     }
 
-    /**
-     * Export history data to PDF (from /history page).
-     */
+    
     public function historyExportPdf(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $transactions = $this->buildFilteredQuery($request)->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan History Transaksi';
         $data['filters'] = $this->getActiveFilters($request);
         $filename = 'history_' . $data['exportDateFile'] . '.pdf';
-
         return $this->export(new PdfExportStrategy(), $data, $filename);
     }
 
-    /**
-     * Export transactions data to Excel (from /transactions page).
-     */
+    
     public function transactionsExportExcel(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $today = Carbon::today()->toDateString();
         $transactions = Transaction::where('user_id', Auth::id())
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
-
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
         $data['filters'] = ['Tanggal: ' . Carbon::today()->format('d-m-Y')];
         $filename = 'transaksi_harian_' . $data['exportDateFile'] . '.xlsx';
-
         return $this->export(new ExcelExportStrategy(), $data, $filename);
     }
 
-    /**
-     * Export transactions data to PDF (from /transactions page).
-     */
+    
     public function transactionsExportPdf(Request $request)
     {
+        $membershipFeature = app(MembershipFeatureInterface::class);
+        if (!$membershipFeature->canExportPdf()) {
+            return redirect()->back()->with('error', 'Fitur export hanya untuk member Premium.');
+        }
         $today = Carbon::today()->toDateString();
         $transactions = Transaction::where('user_id', Auth::id())
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
-
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
         $data['filters'] = ['Tanggal: ' . Carbon::today()->format('d-m-Y')];
         $filename = 'transaksi_harian_' . $data['exportDateFile'] . '.pdf';
-
         return $this->export(new PdfExportStrategy(), $data, $filename);
     }
 
-    /**
-     * Get active filter descriptions for PDF/Excel display.
-     */
+    
     private function getActiveFilters(Request $request)
     {
         $filters = [];

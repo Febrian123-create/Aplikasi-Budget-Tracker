@@ -18,20 +18,20 @@ class ExcelExportStrategy implements ExportStrategyInterface
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Transaksi');
 
-        // === TITLE ROW ===
+        
         $sheet->mergeCells('A1:E1');
         $sheet->setCellValue('A1', $data['title'] ?? 'Laporan Transaksi');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->setColor(new Color('1B2838'));
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getRowDimension(1)->setRowHeight(30);
 
-        // === EXPORT DATE ROW ===
+        
         $sheet->mergeCells('A2:E2');
         $sheet->setCellValue('A2', 'Tanggal Export: ' . $data['exportDate']);
         $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(10)->setColor(new Color('6C757D'));
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // === FILTER INFO ROW ===
+        
         $currentRow = 3;
         if (!empty($data['filters'])) {
             $sheet->mergeCells("A{$currentRow}:E{$currentRow}");
@@ -41,10 +41,10 @@ class ExcelExportStrategy implements ExportStrategyInterface
             $currentRow++;
         }
 
-        // Empty separator row
+        
         $currentRow++;
 
-        // === HEADER ROW ===
+        
         $headerRow = $currentRow;
         $headers = ['No', 'Tanggal', 'Kategori', 'Jenis', 'Deskripsi', 'Jumlah (Rp)'];
         $columns = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -54,7 +54,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
             $sheet->setCellValue($cell, $header);
         }
 
-        // Header styling
+        
         $headerRange = "A{$headerRow}:F{$headerRow}";
         $sheet->getStyle($headerRange)->applyFromArray([
             'font' => [
@@ -79,7 +79,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
         ]);
         $sheet->getRowDimension($headerRow)->setRowHeight(25);
 
-        // === DATA ROWS ===
+        
         $currentRow = $headerRow + 1;
         $no = 1;
         foreach ($data['transactions'] as $transaction) {
@@ -93,17 +93,17 @@ class ExcelExportStrategy implements ExportStrategyInterface
             $sheet->setCellValue("E{$currentRow}", $transaction->description);
             $sheet->setCellValue("F{$currentRow}", $transaction->total_amount);
 
-            // Number format
+            
             $sheet->getStyle("F{$currentRow}")->getNumberFormat()->setFormatCode('#,##0');
 
-            // Alternating row colors
+            
             if ($no % 2 == 0) {
                 $sheet->getStyle("A{$currentRow}:F{$currentRow}")->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setRGB('F8F9FA');
             }
 
-            // Color-code the Jenis column
+            
             if ($transaction->transactionType_id == 1) {
                 $sheet->getStyle("D{$currentRow}")->getFont()->setColor(new Color('28A745'));
                 $sheet->getStyle("D{$currentRow}")->getFont()->setBold(true);
@@ -112,7 +112,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
                 $sheet->getStyle("D{$currentRow}")->getFont()->setBold(true);
             }
 
-            // Alignments
+            
             $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("B{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("D{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -122,7 +122,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
             $currentRow++;
         }
 
-        // Data area borders
+        
         $lastDataRow = $currentRow - 1;
         if ($lastDataRow >= $headerRow + 1) {
             $dataRange = "A" . ($headerRow + 1) . ":F{$lastDataRow}";
@@ -136,10 +136,10 @@ class ExcelExportStrategy implements ExportStrategyInterface
             ]);
         }
 
-        // === SUMMARY SECTION ===
+        
         $currentRow++; 
 
-        // Total Pemasukan
+        
         $sheet->mergeCells("D{$currentRow}:E{$currentRow}");
         $sheet->setCellValue("D{$currentRow}", 'Total Pemasukan');
         $sheet->setCellValue("F{$currentRow}", $data['totalIncome']);
@@ -149,7 +149,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
         $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $currentRow++;
 
-        // Total Pengeluaran
+        
         $sheet->mergeCells("D{$currentRow}:E{$currentRow}");
         $sheet->setCellValue("D{$currentRow}", 'Total Pengeluaran');
         $sheet->setCellValue("F{$currentRow}", $data['totalExpense']);
@@ -159,7 +159,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
         $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $currentRow++;
 
-        // Saldo
+        
         $sheet->mergeCells("D{$currentRow}:E{$currentRow}");
         $sheet->setCellValue("D{$currentRow}", 'Saldo');
         $sheet->setCellValue("F{$currentRow}", $data['balance']);
@@ -168,7 +168,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
         $sheet->getStyle("F{$currentRow}")->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-        // Summary borders
+        
         $summaryStart = $currentRow - 2;
         $sheet->getStyle("D{$summaryStart}:F{$currentRow}")->applyFromArray([
             'borders' => [
@@ -183,7 +183,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
             ],
         ]);
 
-        // === COLUMN WIDTHS ===
+        
         $sheet->getColumnDimension('A')->setWidth(6);
         $sheet->getColumnDimension('B')->setWidth(15);
         $sheet->getColumnDimension('C')->setWidth(18);
@@ -191,7 +191,7 @@ class ExcelExportStrategy implements ExportStrategyInterface
         $sheet->getColumnDimension('E')->setWidth(35);
         $sheet->getColumnDimension('F')->setWidth(20);
 
-        // === WRITE AND DOWNLOAD ===
+        
         $writer = new Xlsx($spreadsheet);
         $tempFile = tempnam(sys_get_temp_dir(), 'export_');
         $writer->save($tempFile);
