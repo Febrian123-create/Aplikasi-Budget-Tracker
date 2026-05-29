@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\RecurringTransactionController;
@@ -18,8 +19,8 @@ Route::get('/', function () {
 
 
 Route::middleware(['auth', 'role:user'])->group(function () {
-    
-    Route::get('/dashboard', [TransactionController::class, 'index'])
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     
