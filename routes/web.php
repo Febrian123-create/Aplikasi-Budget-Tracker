@@ -5,32 +5,36 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\BudgetController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
 });
 
 
-//User Routes
+
 Route::middleware(['auth', 'role:user'])->group(function () {
-    //Dashboard
+    
     Route::get('/dashboard', [TransactionController::class, 'index'])
         ->name('dashboard');
 
-    //Transactions
+    
     Route::resource('transactions', TransactionController::class)
         ->only(['index', 'store', 'edit', 'update', 'destroy']);
     Route::get('/history', [TransactionController::class, 'history'])
         ->name('transactions.history');
 
-    //Membership
+    
     Route::get('/membership', [\App\Http\Controllers\MembershipController::class, 'index'])
         ->name('membership.index');
     Route::post('/membership/upgrade', [\App\Http\Controllers\MembershipController::class, 'upgrade'])
         ->name('membership.upgrade');
 
-    // Premium Features
+    
     Route::middleware([\App\Http\Middleware\CheckPremiumMembership::class])
         ->group(function () {
             Route::get('/charts', [ChartController::class, 'index'])
@@ -39,7 +43,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
                 ->name('charts.data');
         });
 
-    //Recurring Transactions
+    
     Route::get('/recurring', [RecurringTransactionController::class, 'index'])
         ->name('recurring.index');
     Route::post('/recurring', [RecurringTransactionController::class, 'store'])
@@ -52,8 +56,12 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         ->name('recurring.destroy');
     Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
         ->name('recurring.toggle');
+    Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
+        ->name('recurring.popups.unread');
+    Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
+        ->name('recurring.popups.read');
 
-    //Export
+    
     Route::get('/history/export/excel', [ExportController::class, 'historyExportExcel'])
         ->name('history.export.excel');
     Route::get('/history/export/pdf', [ExportController::class, 'historyExportPdf'])
@@ -63,7 +71,13 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/transactions/export/pdf', [ExportController::class, 'transactionsExportPdf'])
         ->name('transactions.export.pdf');
 
-    //Profile
+    
+    Route::get('/budget', [BudgetController::class, 'index'])->name('budget.index');
+    Route::post('/budget', [BudgetController::class, 'store'])->name('budget.store');
+    Route::delete('/budget/{id}', [BudgetController::class, 'destroy'])->name('budget.destroy');
+    Route::get('/budget/settings', [BudgetController::class, 'settings'])->name('budget.settings');
+    Route::post('/budget/settings', [BudgetController::class, 'saveSettings'])->name('budget.settings.save');
+
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])

@@ -5,28 +5,20 @@ namespace App\Services;
 use App\Helpers\ChartHelper;
 use App\Repositories\TransactionRepository;
 
-/**
- * ChartService — Single Responsibility: ambil & format data untuk grafik.
- * Menerima TransactionRepository via Dependency Injection.
- */
+
 class ChartService
 {
     public function __construct(
         private TransactionRepository $transactionRepository
     ) {}
 
-    /**
-     * Ambil distribusi pengeluaran per kategori (untuk Pie/Donut chart).
-     * Jika kategori > 6, gabung terkecil menjadi "Lainnya".
-     *
-     * @return array{categories: array, total: float, isEmpty: bool, allIncome: bool}
-     */
+    
     public function getCategoryDistribution(int $userId, int $bulan, int $tahun): array
     {
         $data  = $this->transactionRepository->getCategoryExpenses($userId, $bulan, $tahun);
         $total = $data->sum('total');
 
-        // Cek apakah ada pemasukan tapi tidak ada pengeluaran
+        
         $totalIncome = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
 
         if ($data->isEmpty()) {
@@ -41,7 +33,7 @@ class ChartService
         $categories = [];
 
         if ($data->count() <= 6) {
-            // Semua kategori ditampilkan
+            
             foreach ($data as $item) {
                 $categories[] = [
                     'name'       => $item->category_name,
@@ -52,7 +44,7 @@ class ChartService
                 ];
             }
         } else {
-            // Ambil top 5, sisanya gabung jadi "Lainnya"
+            
             $top5  = $data->take(5);
             $rest  = $data->slice(5);
             $lainnyaTotal = $rest->sum('total');
@@ -85,11 +77,7 @@ class ChartService
         ];
     }
 
-    /**
-     * Ambil data tren bulanan pemasukan vs pengeluaran (untuk Bar chart).
-     *
-     * @return array{months: array, averageExpense: float, isEmpty: bool, lessThanTwoMonths: bool}
-     */
+    
     public function getMonthlyChartData(int $userId, string $startDate): array
     {
         $data = $this->transactionRepository->getMonthlyData($userId, $startDate);
@@ -118,7 +106,7 @@ class ChartService
             $selisih     = $pemasukan - $pengeluaran;
             $isSurplus   = $selisih >= 0;
 
-            // Hitung MoM Growth
+            
             $growthIncome  = null;
             $growthExpense = null;
 
@@ -159,23 +147,19 @@ class ChartService
         ];
     }
 
-    /**
-     * Ambil data metrik ringkasan bulan aktif (untuk Kartu Metrik).
-     *
-     * @return array{totalIncome: float, totalExpense: float, saldo: float, ...}
-     */
+    
     public function getMetricCards(int $userId, int $bulan, int $tahun): array
     {
         $totalIncome  = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
         $totalExpense = $this->transactionRepository->getTotalExpense($userId, $bulan, $tahun);
         $saldo        = $totalIncome - $totalExpense;
 
-        // Persentase pengeluaran dari pemasukan
+        
         $expensePercentage = $totalIncome > 0
             ? round(($totalExpense / $totalIncome) * 100, 1)
             : ($totalExpense > 0 ? 100 : 0);
 
-        // Tentukan level warna progress bar
+        
         $progressLevel = 'green';
         if ($expensePercentage > 90) {
             $progressLevel = 'red';
