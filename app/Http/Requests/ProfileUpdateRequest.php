@@ -21,7 +21,15 @@ class ProfileUpdateRequest extends FormRequest
                 'email',
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
+                'regex:/^[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.ac\.id)$/i',
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.regex' => 'Email harus menggunakan domain @gmail.com atau berakhiran .ac.id.',
         ];
     }
 }

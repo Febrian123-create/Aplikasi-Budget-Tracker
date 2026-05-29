@@ -32,16 +32,16 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/membership', [\App\Http\Controllers\MembershipController::class, 'index'])
         ->name('membership.index');
     Route::post('/membership/upgrade', [\App\Http\Controllers\MembershipController::class, 'upgrade'])
+        ->middleware('free')
         ->name('membership.upgrade');
 
     
-    Route::middleware([\App\Http\Middleware\CheckPremiumMembership::class])
-        ->group(function () {
-            Route::get('/charts', [ChartController::class, 'index'])
-                ->name('charts.index');
-            Route::get('/charts/data', [ChartController::class, 'getData'])
-                ->name('charts.data');
-        });
+    Route::middleware('premium')->group(function () {
+        Route::get('/charts', [ChartController::class, 'index'])
+            ->name('charts.index');
+        Route::get('/charts/data', [ChartController::class, 'getData'])
+            ->name('charts.data');
+    });
 
     
     Route::get('/recurring', [RecurringTransactionController::class, 'index'])
