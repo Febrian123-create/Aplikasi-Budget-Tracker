@@ -10,7 +10,6 @@ class MembershipFactory
     {
         $membership = new StandardMembership();
 
-        
         if ($user->membership_id == 2) {
             $membership = new PremiumMembership($membership);
         }

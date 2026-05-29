@@ -7,7 +7,9 @@
   }
   $membershipName = $user && $user->membership ? $user->membership->membership_name : 'Free';
   $isPremium = $user && $user->membership_id == 2;
-  $canViewChart = app(\App\Features\MembershipFeatureInterface::class)->canViewChart();
+  $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
+  $canViewChart = $membershipFeature->canViewChart();
+  $canUseRecurring = $membershipFeature->canUseRecurring();
 @endphp
 
 
@@ -39,21 +41,22 @@
           <span>Riwayat</span>
         </a>
       </li>
-      <li>
-        <a href="{{ $canViewChart ? route('charts.index') : route('dashboard') . '#chart-section' }}" class="sidebar-link {{ request()->routeIs('charts.index') ? 'active' : '' }}">
-          <i class="bi bi-bar-chart"></i>
-          <span>Visualisasi</span>
-          @if(!$canViewChart)
-            <i class="bi bi-lock-fill lock-badge"></i>
-          @endif
-        </a>
-      </li>
-      <li>
-        <a href="{{ route('recurring.index') }}" class="sidebar-link {{ request()->routeIs('recurring.index') ? 'active' : '' }}">
-          <i class="bi bi-arrow-repeat"></i>
-          <span>Transaksi Rutin</span>
-        </a>
-      </li>
+      @if($canViewChart)
+        <li>
+          <a href="{{ route('charts.index') }}" class="sidebar-link {{ request()->routeIs('charts.index') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart"></i>
+            <span>Visualisasi</span>
+          </a>
+        </li>
+      @endif
+      @if($canUseRecurring)
+        <li>
+          <a href="{{ route('recurring.index') }}" class="sidebar-link {{ request()->routeIs('recurring.index') ? 'active' : '' }}">
+            <i class="bi bi-arrow-repeat"></i>
+            <span>Transaksi Rutin</span>
+          </a>
+        </li>
+      @endif
       <li>
         <a href="{{ route('membership.index') }}" class="sidebar-link {{ request()->routeIs('membership.index') ? 'active' : '' }}">
           <i class="bi bi-gem"></i>
