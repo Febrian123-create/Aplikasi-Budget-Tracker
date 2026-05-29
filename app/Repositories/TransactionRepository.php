@@ -7,20 +7,13 @@ use App\Models\TransactionType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * TransactionRepository — Data Access Layer untuk transaksi.
- * Menyediakan query-query yang dibutuhkan ChartService.
- */
+
 class TransactionRepository
 {
-    /**
-     * Ambil distribusi pengeluaran per kategori untuk bulan & tahun tertentu.
-     *
-     * @return Collection<int, object{category_name: string, total: float}>
-     */
+    
     public function getCategoryExpenses(int $userId, int $bulan, int $tahun): Collection
     {
-        // Cari transactionType_id untuk 'expense'
+        
         $expenseTypeId = TransactionType::where('name', 'expense')->value('transactionType_id');
 
         return DB::table('transaction as t')
@@ -35,11 +28,7 @@ class TransactionRepository
             ->get();
     }
 
-    /**
-     * Ambil data bulanan pemasukan vs pengeluaran.
-     *
-     * @return Collection<int, object{bulan: int, tahun: int, total_pemasukan: float, total_pengeluaran: float}>
-     */
+    
     public function getMonthlyData(int $userId, string $startDate): Collection
     {
         $incomeTypeId  = TransactionType::where('name', 'income')->value('transactionType_id');
@@ -60,9 +49,7 @@ class TransactionRepository
             ->get();
     }
 
-    /**
-     * Ambil total pemasukan bulan ini.
-     */
+    
     public function getTotalIncome(int $userId, int $bulan, int $tahun): float
     {
         $incomeTypeId = TransactionType::where('name', 'income')->value('transactionType_id');
@@ -75,9 +62,7 @@ class TransactionRepository
             ->sum('total_amount');
     }
 
-    /**
-     * Ambil total pengeluaran bulan ini.
-     */
+    
     public function getTotalExpense(int $userId, int $bulan, int $tahun): float
     {
         $expenseTypeId = TransactionType::where('name', 'expense')->value('transactionType_id');

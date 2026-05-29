@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-
-            $table->unsignedBigInteger('role_id')
-                  ->default(2);
+            if (!Schema::hasColumn('users', 'role_id')) {
+                $table->unsignedBigInteger('role_id')
+                      ->default(2);
+            }
 
             $table->foreign('role_id')
                   ->references('role_id')
                   ->on('role');
-
         });
     }
 

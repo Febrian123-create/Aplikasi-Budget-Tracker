@@ -2,25 +2,16 @@
 
 namespace App\Helpers;
 
-/**
- * ChartHelper — Fungsi utilitas untuk Fitur 8.
- * Semua fungsi format ada di sini untuk menghindari duplikasi.
- */
+
 class ChartHelper
 {
-    /**
-     * Format angka ke format Rupiah Indonesia.
-     * Contoh: 2500000 → "Rp 2.500.000"
-     */
+    
     public static function formatRupiah(float|int $amount): string
     {
         return 'Rp ' . number_format($amount, 0, ',', '.');
     }
 
-    /**
-     * Format angka ke format ringkas.
-     * Contoh: 500000 → "500rb", 1500000 → "1,5jt", 1000000000 → "1M"
-     */
+    
     public static function formatRupiahRingkas(float|int $amount): string
     {
         if ($amount >= 1_000_000_000) {
@@ -41,10 +32,7 @@ class ChartHelper
         return (string) $amount;
     }
 
-    /**
-     * Format bulan ke singkatan Bahasa Indonesia.
-     * Contoh: 1 → "Jan", 2 → "Feb", ..., 12 → "Des"
-     */
+    
     public static function formatBulan(int $bulan): string
     {
         $namaBulan = [
@@ -65,9 +53,7 @@ class ChartHelper
         return $namaBulan[$bulan] ?? '';
     }
 
-    /**
-     * Format bulan ke nama lengkap Bahasa Indonesia.
-     */
+    
     public static function formatBulanLengkap(int $bulan): string
     {
         $namaBulan = [
@@ -88,10 +74,7 @@ class ChartHelper
         return $namaBulan[$bulan] ?? '';
     }
 
-    /**
-     * Hitung persentase dan format ke string.
-     * Contoh: hitungPersentase(345, 1000) → "34,5%"
-     */
+    
     public static function hitungPersentase(float|int $nilai, float|int $total): string
     {
         if ($total == 0) {
@@ -103,21 +86,18 @@ class ChartHelper
         return str_replace('.', ',', number_format($persen, 1)) . '%';
     }
 
-    /**
-     * Palet warna untuk chart — warna-warna yang harmonis.
-     * Segmen pertama (terbesar) mendapat warna paling tegas.
-     */
+    
     public static function getChartColors(): array
     {
         return [
-            '#6366F1', // Indigo — warna tegas untuk segmen terbesar
-            '#22C55E', // Green
-            '#F59E0B', // Amber
-            '#EF4444', // Red
-            '#06B6D4', // Cyan
-            '#EC4899', // Pink
-            '#8B5CF6', // Violet
-            '#14B8A6', // Teal
+            '#6366F1', 
+            '#22C55E', 
+            '#F59E0B', 
+            '#EF4444', 
+            '#06B6D4', 
+            '#EC4899', 
+            '#8B5CF6', 
+            '#14B8A6', 
         ];
     }
 }
