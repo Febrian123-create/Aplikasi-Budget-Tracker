@@ -20,7 +20,7 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'test@gmail.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
@@ -30,7 +30,7 @@ class RegistrationTest extends TestCase
         // Assert that registration is pending in session
         $pending = session('pending_registration');
         $this->assertNotNull($pending);
-        $this->assertEquals('test@example.com', $pending['email']);
+        $this->assertEquals('test@gmail.com', $pending['email']);
         $otpCode = $pending['otp_code'];
         $this->assertNotNull($otpCode);
 
@@ -43,10 +43,10 @@ class RegistrationTest extends TestCase
         
         // Now the user should be stored in the database and authenticated
         $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com',
+            'email' => 'test@gmail.com',
         ]);
 
-        $user = User::where('email', 'test@example.com')->first();
+        $user = User::where('email', 'test@gmail.com')->first();
         $this->assertAuthenticatedAs($user);
     }
 
@@ -61,5 +61,26 @@ class RegistrationTest extends TestCase
 
         $response->assertSessionHasErrors(['email']);
         $this->assertNull(session('pending_registration'));
+    }
+
+    public function test_registration_fails_with_unallowed_email_domains(): void
+    {
+        // Test invalid gmail domain (.co)
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => '2472022@gmail.co',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+        $response->assertSessionHasErrors(['email']);
+
+        // Test invalid university domain (.ac)
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => '2472022@maranatha.ac',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+        $response->assertSessionHasErrors(['email']);
     }
 }
