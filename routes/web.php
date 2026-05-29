@@ -5,6 +5,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\BudgetController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -55,6 +56,10 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         ->name('recurring.destroy');
     Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
         ->name('recurring.toggle');
+    Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
+        ->name('recurring.popups.unread');
+    Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
+        ->name('recurring.popups.read');
 
     
     Route::get('/history/export/excel', [ExportController::class, 'historyExportExcel'])
@@ -67,6 +72,12 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         ->name('transactions.export.pdf');
 
     
+    Route::get('/budget', [BudgetController::class, 'index'])->name('budget.index');
+    Route::post('/budget', [BudgetController::class, 'store'])->name('budget.store');
+    Route::delete('/budget/{id}', [BudgetController::class, 'destroy'])->name('budget.destroy');
+    Route::get('/budget/settings', [BudgetController::class, 'settings'])->name('budget.settings');
+    Route::post('/budget/settings', [BudgetController::class, 'saveSettings'])->name('budget.settings.save');
+
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
