@@ -60,6 +60,15 @@
                 <i class="bi bi-gem"></i> Upgrade Sekarang
             </a>
         </div>
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (window.location.hash === '#chart-section') {
+                        window.location.href = '{{ route('membership.index') }}';
+                    }
+                });
+            </script>
+        @endpush
     @else
         <div id="chart-section" class="premium-cta"
             style="background: linear-gradient(135deg, var(--primary-50), rgba(99, 102, 241, 0.02)); border-style: solid;">

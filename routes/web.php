@@ -42,25 +42,24 @@ Route::middleware(['auth', 'role:user'])->group(function () {
             ->name('charts.index');
         Route::get('/charts/data', [ChartController::class, 'getData'])
             ->name('charts.data');
-    });
 
-    
-    Route::get('/recurring', [RecurringTransactionController::class, 'index'])
-        ->name('recurring.index');
-    Route::post('/recurring', [RecurringTransactionController::class, 'store'])
-        ->name('recurring.store');
-    Route::get('/recurring/{id}/edit', [RecurringTransactionController::class, 'edit'])
-        ->name('recurring.edit');
-    Route::put('/recurring/{id}', [RecurringTransactionController::class, 'update'])
-        ->name('recurring.update');
-    Route::delete('/recurring/{id}', [RecurringTransactionController::class, 'destroy'])
-        ->name('recurring.destroy');
-    Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
-        ->name('recurring.toggle');
-    Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
-        ->name('recurring.popups.unread');
-    Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
-        ->name('recurring.popups.read');
+        Route::get('/recurring', [RecurringTransactionController::class, 'index'])
+            ->name('recurring.index');
+        Route::post('/recurring', [RecurringTransactionController::class, 'store'])
+            ->name('recurring.store');
+        Route::get('/recurring/{id}/edit', [RecurringTransactionController::class, 'edit'])
+            ->name('recurring.edit');
+        Route::put('/recurring/{id}', [RecurringTransactionController::class, 'update'])
+            ->name('recurring.update');
+        Route::delete('/recurring/{id}', [RecurringTransactionController::class, 'destroy'])
+            ->name('recurring.destroy');
+        Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
+            ->name('recurring.toggle');
+        Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
+            ->name('recurring.popups.unread');
+        Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
+            ->name('recurring.popups.read');
+    });
 
     
     Route::get('/history/export/excel', [ExportController::class, 'historyExportExcel'])

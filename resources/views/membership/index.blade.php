@@ -25,7 +25,7 @@
                 {{ $premiumPackage->membership_name ?? 'Premium' }}
             </h2>
             <div style="font-family: var(--font-heading); font-weight: 800; font-size: var(--fs-3xl); line-height: 1.2;">
-                Rp {{ number_format($premiumPackage->price ?? 99000, 0, ',', '.') }}
+                Rp {{ number_format($premiumPackage->price ?? 9000, 0, ',', '.') }}
                 <span style="font-size: var(--fs-sm); font-weight: 400; opacity: 0.85;">/ bulan</span>
             </div>
         </div>
@@ -42,10 +42,6 @@
                 </li>
                 <li style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-body); font-weight: 500;">Visualisasi Data Grafik (Pie & Bar)</span>
-                    <span style="color: var(--color-income); font-weight: 700;"><i class="bi bi-check-circle-fill"></i> Ya</span>
-                </li>
-                <li style="padding: var(--space-sm) 0; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-body); font-weight: 500;">Export Data ke Excel & PDF</span>
                     <span style="color: var(--color-income); font-weight: 700;"><i class="bi bi-check-circle-fill"></i> Ya</span>
                 </li>
             </ul>

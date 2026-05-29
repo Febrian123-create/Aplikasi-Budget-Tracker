@@ -11,6 +11,11 @@ class StandardMembership implements MembershipFeatureInterface
 
     public function canExportPdf(): bool
     {
-        return false;
+        return true; // base feature
+    }
+
+    public function canUseRecurring(): bool
+    {
+        return false; // only premium
     }
 }
