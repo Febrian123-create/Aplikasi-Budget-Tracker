@@ -29,7 +29,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
-                'email' => 'test@example.com',
+                'email' => 'test@gmail.com',
             ]);
 
         $response
@@ -39,8 +39,24 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('test@gmail.com', $user->email);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_profile_information_update_fails_with_unallowed_email_domains(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => 'Test User',
+                'email' => 'test@gmail.co',
+            ]);
+
+        $response->assertSessionHasErrors(['email']);
+        $this->assertNotSame('test@gmail.co', $user->fresh()->email);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
