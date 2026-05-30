@@ -26,7 +26,10 @@
     background: var(--bg-white);
     border-radius: var(--radius-lg);
     width: 92%;
-    max-width: 540px;
+    max-width: 560px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
     transform: scale(0.95) translateY(15px);
@@ -44,10 +47,27 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .bunrek-modal-body {
     padding: var(--space-lg) var(--space-xl);
+    overflow-y: auto;
+    flex: 1;
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.bunrek-modal-body::-webkit-scrollbar {
+    width: 5px;
+}
+.bunrek-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.bunrek-modal-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 99px;
 }
 
 .bunrek-modal-close {
@@ -378,9 +398,9 @@
         </div>
     @endif
 
-    @if($executedCount > 0)
-        <div class="bunrek-alert bunrek-alert-success" style="margin-bottom: var(--space-lg); background: var(--primary-50); color: var(--primary-dark); border-color: var(--primary-light);">
-            <i class="bi bi-arrow-repeat"></i> {{ $executedCount }} transaksi rutin telah dicatat otomatis untuk periode yang terlewat.
+    @if($pendingCount > 0)
+        <div class="bunrek-alert" style="margin-bottom: var(--space-lg); background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; border-radius: var(--radius-md);">
+            <i class="bi bi-bell-fill"></i> {{ $pendingCount }} transaksi rutin menunggu konfirmasi pembayaran dari kamu.
         </div>
     @endif
 
@@ -398,6 +418,75 @@
 
     <!-- Main Content Area: Spacious Table / List -->
     <div>
+
+        {{-- ===== SECTION: MENUNGGU KONFIRMASI ===== --}}
+        @if($pendingConfirmations->isNotEmpty())
+        <div class="bunrek-card" style="margin-bottom: var(--space-lg); border: 2px solid #f59e0b; background: #fffbeb;">
+            <div class="bunrek-card-header" style="background: #fef3c7; border-bottom: 1px solid #fcd34d;">
+                <h2 class="bunrek-card-title" style="color: #92400e; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-hourglass-split" style="color: #f59e0b;"></i>
+                    Menunggu Konfirmasi Pembayaran
+                    <span style="background: #f59e0b; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 700;">{{ $pendingConfirmations->count() }}</span>
+                </h2>
+                <p style="font-size: var(--fs-xs); color: #92400e; margin: 4px 0 0 0; opacity: 0.8;">Konfirmasi apakah kamu sudah membayar transaksi-transaksi berikut.</p>
+            </div>
+            <div class="bunrek-card-body" style="padding: var(--space-md) var(--space-lg);">
+                @foreach($pendingConfirmations as $pending)
+                @php
+                    $isToday = $pending->next_run_date && $pending->next_run_date->isToday();
+                    $isOverdue = $pending->isOverdue();
+                @endphp
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-md); background: white; border: 1px solid #fcd34d; border-radius: var(--radius-md); margin-bottom: var(--space-sm); flex-wrap: wrap; gap: var(--space-sm);">
+                    <div style="display: flex; align-items: center; gap: var(--space-md);">
+                        <div class="icon-wrapper-circle {{ $pending->amount_type === 'pemasukan' ? 'icon-income' : 'icon-expense' }}">
+                            <i class="bi {{ $pending->amount_type === 'pemasukan' ? 'bi-arrow-down-left' : 'bi-arrow-up-right' }}"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-dark); font-size: var(--fs-base);">{{ $pending->description }}</div>
+                            <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px;">
+                                <strong style="color: {{ $pending->amount_type === 'pemasukan' ? 'var(--color-income)' : 'var(--color-expense)' }}">
+                                    Rp {{ number_format($pending->amount, 0, ',', '.') }}
+                                </strong>
+                                &bull;
+                                @if($isToday)
+                                    <span style="color: #f59e0b; font-weight: 600;">Jatuh tempo hari ini</span>
+                                @elseif($isOverdue)
+                                    <span style="color: var(--color-expense); font-weight: 600;">Terlambat — {{ $pending->next_run_date->format('d M Y') }}</span>
+                                @endif
+                                @if($pending->category)
+                                    &bull; 📁 {{ $pending->category->category_name }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: var(--space-xs); flex-shrink: 0;">
+                        {{-- Tombol Sudah Dibayar --}}
+                        <form action="{{ route('recurring.confirm', $pending->recurring_id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit"
+                                    style="background: var(--color-income); color: white; border: none; border-radius: var(--radius-sm); padding: 7px 14px; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: var(--transition-fast);"
+                                    onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                <i class="bi bi-check-circle-fill"></i> Sudah Dibayar
+                            </button>
+                        </form>
+                        {{-- Tombol Lewati --}}
+                        <form action="{{ route('recurring.skip', $pending->recurring_id) }}" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Yakin ingin melewati periode ini? Tidak ada transaksi yang akan dicatat.')">
+                            @csrf
+                            <button type="submit"
+                                    style="background: transparent; color: var(--text-muted); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px 14px; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: var(--transition-fast);"
+                                    onmouseover="this.style.borderColor='var(--color-expense)';this.style.color='var(--color-expense)'" onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)'">
+                                <i class="bi bi-skip-forward-fill"></i> Lewati
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+        {{-- ===== END SECTION KONFIRMASI ===== --}}
+
         <!-- Metrics Row -->
         <div class="mini-grid">
             <div class="metric-mini-card total">
@@ -486,14 +575,20 @@
                                             <i class="bi bi-exclamation-triangle-fill"></i> Kategori tidak ditemukan. Harap edit & perbarui.
                                         </div>
                                     @endif
-                                    
-                                    @if($isToday && $rec->status === 'aktif')
-                                        <div class="warning-banner" style="background-color: var(--color-income-bg); color: var(--color-income); border-color: rgba(16, 185, 129, 0.2);">
-                                            <i class="bi bi-lightning-fill"></i> Dicatat otomatis hari ini
-                                        </div>
+
+                                    @if($rec->needsConfirmation())
+                                        @if($isToday)
+                                            <div class="warning-banner" style="background-color: #fffbeb; color: #92400e; border-color: #fcd34d;">
+                                                <i class="bi bi-hourglass-split" style="color: #f59e0b;"></i> Jatuh tempo hari ini — menunggu konfirmasimu!
+                                            </div>
+                                        @else
+                                            <div class="warning-banner" style="background-color: var(--color-expense-bg); color: var(--color-expense); border-color: rgba(239,68,68,0.2);">
+                                                <i class="bi bi-exclamation-circle-fill"></i> Terlambat dikonfirmasi sejak {{ $rec->next_run_date->format('d M Y') }}
+                                            </div>
+                                        @endif
                                     @elseif($isTomorrow && $rec->status === 'aktif')
                                         <div class="warning-banner" style="background-color: var(--primary-50); color: var(--primary-color); border-color: var(--primary-200);">
-                                            <i class="bi bi-clock-fill"></i> Dicatat otomatis besok
+                                            <i class="bi bi-bell-fill"></i> Pengingat akan dikirim besok
                                         </div>
                                     @endif
                                 </div>
@@ -509,7 +604,20 @@
                                 </div>
 
                                 <!-- Far Right: Actions -->
-                                <div style="display: flex; gap: var(--space-xs); justify-content: flex-end; align-items: center;">
+                                <div style="display: flex; gap: var(--space-xs); justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                                    {{-- Tombol konfirmasi manual jika overdue --}}
+                                    @if($rec->needsConfirmation() && $rec->status === 'aktif')
+                                        <form action="{{ route('recurring.confirm', $rec->recurring_id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="action-icon-btn"
+                                                    title="Konfirmasi Sudah Dibayar"
+                                                    style="border-color: var(--color-income); color: var(--color-income); background: var(--color-income-bg); width: auto; padding: 0 10px; font-size: 0.7rem; font-weight: 700;">
+                                                <i class="bi bi-check-circle-fill"></i>&nbsp;Konfirmasi
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     {{-- Reminder indicator --}}
                                     @if($hasReminder)
                                         <span title="Reminder aktif" style="color: var(--primary-color); font-size: 0.9rem;"><i class="bi bi-bell-fill"></i></span>
@@ -530,9 +638,9 @@
                                             </button>
                                         </form>
                                     @endif
-                                    
+
                                     <!-- Delete button -->
-                                    <form action="{{ route('recurring.destroy', $rec->recurring_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Transaksi yang sudah tercatat otomatis sebelumnya tidak akan terhapus. Lanjutkan hapus recurring ini?')">
+                                    <form action="{{ route('recurring.destroy', $rec->recurring_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus transaksi rutin ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-icon-btn btn-delete" title="Hapus Permanen">
@@ -627,7 +735,7 @@
                 </div>
 
                 <div class="preview-box" id="addPreview" style="display: none;">
-                    <i class="bi bi-info-circle-fill"></i>
+                    <i class="bi bi-bell-fill"></i>
                     <span id="addPreviewText"></span>
                 </div>
 
@@ -682,7 +790,7 @@ $(document).ready(function() {
             const freqLabels = { harian: 'setiap hari', mingguan: 'setiap minggu', bulanan: 'setiap bulan', tahunan: 'setiap tahun' };
             const d = new Date(startDate);
             const formatted = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            $('#addPreviewText').text('Akan tercatat otomatis ' + (freqLabels[freq] || freq) + ' mulai ' + formatted);
+            $('#addPreviewText').text('🔔 Kamu akan diingatkan ' + (freqLabels[freq] || freq) + ' mulai ' + formatted + '. Transaksi dicatat setelah kamu konfirmasi.');
             $('#addPreview').show();
         } else {
             $('#addPreview').hide();

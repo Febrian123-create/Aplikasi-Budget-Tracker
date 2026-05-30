@@ -27,13 +27,18 @@ class RecurringTransaction extends Model
         'description',
         'amount_type',
         'status',
+        'confirmation_status',
+        'confirmed_at',
+        'last_due_date',
     ];
 
     protected $casts = [
-        'start_date'    => 'date',
-        'end_date'      => 'date',
-        'next_run_date' => 'date',
-        'amount'        => 'decimal:2',
+        'start_date'         => 'date',
+        'end_date'           => 'date',
+        'next_run_date'      => 'date',
+        'last_due_date'      => 'date',
+        'confirmed_at'       => 'datetime',
+        'amount'             => 'decimal:2',
     ];
 
     public function getRouteKeyName(): string
@@ -74,5 +79,47 @@ class RecurringTransaction extends Model
     public function scopeDueToday($query)
     {
         return $query->where('next_run_date', '<=', now()->toDateString());
+    }
+
+    /**
+     * Scope: recurring aktif yang next_run_date-nya sudah tiba dan belum dikonfirmasi.
+     */
+    public function scopePendingConfirmation($query)
+    {
+        return $query
+            ->where('status', 'aktif')
+            ->where('confirmation_status', 'pending')
+            ->where('next_run_date', '<=', now()->toDateString());
+    }
+
+    /**
+     * Apakah hari ini adalah hari jatuh tempo (next_run_date = hari ini).
+     */
+    public function isDue(): bool
+    {
+        return $this->next_run_date && $this->next_run_date->isToday();
+    }
+
+    /**
+     * Apakah jatuh tempo sudah terlewat (next_run_date < hari ini) dan belum dikonfirmasi.
+     */
+    public function isOverdue(): bool
+    {
+        return $this->next_run_date
+            && $this->next_run_date->isPast()
+            && !$this->next_run_date->isToday()
+            && $this->confirmation_status === 'pending'
+            && $this->status === 'aktif';
+    }
+
+    /**
+     * Apakah perlu dikonfirmasi (due atau overdue, belum dikonfirmasi).
+     */
+    public function needsConfirmation(): bool
+    {
+        return $this->status === 'aktif'
+            && $this->confirmation_status === 'pending'
+            && $this->next_run_date
+            && $this->next_run_date->lte(now());
     }
 }

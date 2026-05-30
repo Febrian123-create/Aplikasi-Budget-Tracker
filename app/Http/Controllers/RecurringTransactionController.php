@@ -23,9 +23,11 @@ class RecurringTransactionController extends Controller
     {
         $userId = Auth::id();
 
-        $executedCount = $this->scheduler->executeDueForUser($userId);
+        // Hanya hitung jumlah pending (tidak auto-execute)
+        $pendingCount = $this->scheduler->executeDueForUser($userId);
 
         $recurrings = $this->recurringService->getAll($userId);
+        $pendingConfirmations = $this->recurringService->getPendingConfirmations($userId);
 
         $categories = Category::all();
         $user = Auth::user();
@@ -38,9 +40,10 @@ class RecurringTransactionController extends Controller
 
         return view('recurring.index', compact(
             'recurrings',
+            'pendingConfirmations',
             'categories',
             'frequencies',
-            'executedCount',
+            'pendingCount',
             'activeCount',
             'isPremium',
             'maxFreeRecurring',
@@ -176,6 +179,41 @@ class RecurringTransactionController extends Controller
 
         $statusLabel = $recurring->status === 'aktif' ? 'diaktifkan' : 'dijeda';
         return redirect()->route('recurring.index')->with('success', "Transaksi rutin berhasil {$statusLabel}!");
+    }
+
+    /**
+     * Konfirmasi pembayaran recurring (user menyatakan sudah dibayar).
+     * Membuat 1 transaksi dan advance ke periode berikutnya.
+     */
+    public function confirmPayment(int $id)
+    {
+        $userId = Auth::id();
+        $transaction = $this->recurringService->confirmPayment($id, $userId);
+
+        if (!$transaction) {
+            return redirect()->route('recurring.index')
+                ->with('error', 'Gagal mengkonfirmasi pembayaran. Pastikan transaksi rutin masih aktif dan menunggu konfirmasi.');
+        }
+
+        return redirect()->route('recurring.index')
+            ->with('success', '✅ Pembayaran dikonfirmasi! Transaksi telah dicatat ke riwayat.');
+    }
+
+    /**
+     * Lewati (skip) periode ini tanpa membuat transaksi.
+     */
+    public function skipPayment(int $id)
+    {
+        $userId = Auth::id();
+        $recurring = $this->recurringService->skipPayment($id, $userId);
+
+        if (!$recurring) {
+            return redirect()->route('recurring.index')
+                ->with('error', 'Gagal melewati periode ini. Pastikan transaksi rutin masih aktif.');
+        }
+
+        return redirect()->route('recurring.index')
+            ->with('success', '⏭ Periode ini dilewati. Pengingat berikutnya akan dikirim pada periode selanjutnya.');
     }
 
     public function unreadPopups()

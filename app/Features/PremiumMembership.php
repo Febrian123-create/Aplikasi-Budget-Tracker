@@ -18,7 +18,7 @@ class PremiumMembership implements MembershipFeatureInterface
 
     public function canExportPdf(): bool
     {
-        return $this->baseMembership->canExportPdf();
+        return true; // Unlocked untuk Premium
     }
 
     public function canUseRecurring(): bool
