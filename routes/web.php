@@ -55,6 +55,10 @@ Route::middleware(['auth', 'role:user'])->group(function () {
             ->name('recurring.destroy');
         Route::patch('/recurring/{id}/toggle', [RecurringTransactionController::class, 'toggleStatus'])
             ->name('recurring.toggle');
+        Route::post('/recurring/{id}/confirm', [RecurringTransactionController::class, 'confirmPayment'])
+            ->name('recurring.confirm');
+        Route::post('/recurring/{id}/skip', [RecurringTransactionController::class, 'skipPayment'])
+            ->name('recurring.skip');
         Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
             ->name('recurring.popups.unread');
         Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
