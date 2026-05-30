@@ -18,6 +18,9 @@ class MembershipController extends Controller
         if ($user->membership_id != 2) {
             $user->membership_id = 2;
             $user->save();
+            
+            // Refresh session dengan user data terbaru
+            auth()->setUser($user);
         }
 
         return redirect()->route('membership.index')->with('success', 'Berhasil upgrade ke Premium!');
