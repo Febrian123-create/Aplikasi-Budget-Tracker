@@ -23,6 +23,7 @@ class User extends Authenticatable
         'reset_otp_expires_at',
         'email_verified_at',
         'role_id',
+        'membership_id',
     ];
 
     
