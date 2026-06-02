@@ -6,6 +6,18 @@
     <div class="stats-row">
         <div class="stat-card">
             <div class="stat-card-header">
+                <span class="stat-card-label">Overview Saldo</span>
+                <div class="stat-card-icon balance">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <div class="stat-card-value text-balance">
+                Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
                 <span class="stat-card-label">Total Pemasukan</span>
                 <div class="stat-card-icon income">
                     <i class="bi bi-arrow-down-left-circle"></i>
@@ -57,25 +69,19 @@
                         <label class="bunrek-label">Tipe Transaksi</label>
                         <div class="bunrek-radio-group">
                             <label class="bunrek-radio-label" for="income">
-                                <input type="radio" name="type" value="income" id="income" checked
-                                    onchange="toggleKategori()">
+                                <input type="radio" name="type" value="income" id="income" checked>
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
-                                <input type="radio" name="type" value="expense" id="expense"
-                                    onchange="toggleKategori()">
+                                <input type="radio" name="type" value="expense" id="expense">
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
                     </div>
 
-                    <!-- Hidden input untuk kategori Income (ID: 10) -->
-                    <input type="hidden" id="hiddenCategory" name="category" value="">
-
-                    <!-- Kategori dropdown hanya untuk Pengeluaran -->
-                    <div class="bunrek-form-group" id="kategoriGroup" style="display: none;">
+                    <div class="bunrek-form-group">
                         <label class="bunrek-label">Kategori</label>
-                        <select id="kategoriSelect" name="category" class="bunrek-select">
+                        <select name="category" class="bunrek-select" required>
                             <option value="">Pilih Kategori</option>
                             @foreach ($categories ?? [] as $cat)
                                 <option value="{{ $cat->category_id }}">{{ $cat->category_name }}</option>

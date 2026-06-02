@@ -24,9 +24,7 @@ class TransactionController extends Controller
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        // Total hanya untuk hari ini (tampil di halaman transaksi)
         $totalIncome = Transaction::where('user_id', Auth::id())
-            ->whereDate('transaction_date', $today)
             ->whereIn('transactionType_id', function ($query) {
                 $query->select('transactionType_id')
                     ->from('transactiontype')
@@ -35,7 +33,6 @@ class TransactionController extends Controller
             ->sum('total_amount');
 
         $totalExpense = Transaction::where('user_id', Auth::id())
-            ->whereDate('transaction_date', $today)
             ->whereIn('transactionType_id', function ($query) {
                 $query->select('transactionType_id')
                     ->from('transactiontype')

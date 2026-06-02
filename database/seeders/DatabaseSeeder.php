@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         if (\DB::table('membership')->count() === 0) {
             \DB::table('membership')->insert([
                 ['membership_id' => 1, 'membership_name' => 'Free', 'price' => 0],
-                ['membership_id' => 2, 'membership_name' => 'Premium', 'price' => 99000],
+                ['membership_id' => 2, 'membership_name' => 'Premium', 'price' => 9000],
             ]);
         }
 

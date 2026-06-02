@@ -1058,7 +1058,7 @@
                             <span class="badge bg-indigo-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2" style="background: rgba(99,102,241,0.08);">Premium Plan</span>
                             <h3 class="mt-2">Sultan Hemat</h3>
                             <p class="text-muted small">Akses fitur analitik terlengkap & laporan siap ekspor.</p>
-                            <div class="pricing-price">Rp 99.000<small> / bulan</small></div>
+                            <div class="pricing-price">Rp {{ number_format($premiumPrice, 0, ',', '.') }}<small> / bulan</small></div>
                             
                             <hr class="my-4 opacity-10">
                             

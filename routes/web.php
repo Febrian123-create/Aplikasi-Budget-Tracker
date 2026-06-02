@@ -13,7 +13,8 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return view('welcome');
+    $premiumPrice = \App\Models\Membership::where('membership_name', 'Premium')->value('price') ?? 0;
+    return view('welcome', compact('premiumPrice'));
 });
 
 
