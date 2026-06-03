@@ -137,6 +137,8 @@
                     <span id="editPreviewText"></span>
                 </div>
 
+                @include('recurring.partials.reminder-form', ['isPremium' => $isPremium, 'reminder' => $reminder])
+
                 <!-- Footer Buttons -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-xl); border-top: 1px solid var(--border-light); padding-top: var(--space-lg);">
                     <a href="{{ route('recurring.index') }}" class="btn-bunrek btn-outline" style="min-width: 100px;">

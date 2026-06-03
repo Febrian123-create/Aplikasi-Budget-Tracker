@@ -32,33 +32,45 @@ class TransactionFactory
         $startDate = Carbon::parse($data['start_date']);
 
         return RecurringTransaction::create([
-            'user_id'       => $data['user_id'],
-            'category_id'   => $data['category_id'],
-            'amount'        => $data['amount'],
-            'frequency'     => $data['frequency'],
-            'start_date'    => $startDate->toDateString(),
-            'end_date'      => isset($data['end_date']) ? Carbon::parse($data['end_date'])->toDateString() : null,
-            'next_run_date' => $startDate->toDateString(), 
-            'description'   => $data['description'],
-            'amount_type'   => $data['amount_type'],
-            'status'        => 'aktif',
-            'reminder_id'   => null, 
+            'user_id'              => $data['user_id'],
+            'category_id'         => $data['category_id'],
+            'amount'               => $data['amount'],
+            'frequency'            => $data['frequency'],
+            'start_date'           => $startDate->toDateString(),
+            'end_date'             => isset($data['end_date']) ? Carbon::parse($data['end_date'])->toDateString() : null,
+            'next_run_date'        => $startDate->toDateString(), 
+            'last_due_date'        => $startDate->toDateString(),
+            'description'          => $data['description'],
+            'amount_type'          => $data['amount_type'],
+            'status'               => 'aktif',
+            'confirmation_status'  => 'pending',
+            'reminder_id'          => null, 
         ]);
     }
 
-    
-    public static function createTransactionFromRecurring(RecurringTransaction $recurring): Transaction
+    /**
+     * Buat transaksi dari recurring.
+     *
+     * @param RecurringTransaction $recurring
+     * @param \Carbon\Carbon|\DateTime|string|null $dueDate Tanggal jatuh tempo asli (untuk konfirmasi manual). Jika null, pakai next_run_date.
+     */
+    public static function createTransactionFromRecurring(RecurringTransaction $recurring, $dueDate = null): Transaction
     {
         
         $typeName = $recurring->amount_type === 'pemasukan' ? 'income' : 'expense';
         $transactionTypeId = TransactionType::where('name', $typeName)->value('transactionType_id');
+
+        // Gunakan dueDate jika disediakan, jika tidak pakai next_run_date
+        $transactionDate = $dueDate
+            ? Carbon::parse($dueDate)->toDateString()
+            : $recurring->next_run_date->toDateString();
 
         return Transaction::create([
             'user_id'            => $recurring->user_id,
             'category_id'        => $recurring->category_id,
             'transactionType_id' => $transactionTypeId,
             'total_amount'       => $recurring->amount,
-            'transaction_date'   => $recurring->next_run_date->toDateString(),
+            'transaction_date'   => $transactionDate,
             'description'        => $recurring->description . ' (Recurring)',
         ]);
     }

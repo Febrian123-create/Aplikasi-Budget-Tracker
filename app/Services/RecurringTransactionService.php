@@ -8,6 +8,7 @@ use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Observers\TransactionSubject;
 use App\Repositories\RecurringTransactionRepository;
+use App\Services\ReminderService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -16,15 +17,24 @@ use Illuminate\Support\Facades\Log;
 class RecurringTransactionService
 {
     public function __construct(
-        private RecurringTransactionRepository $recurringRepo
+        private RecurringTransactionRepository $recurringRepo,
+        private ReminderService $reminderService
     ) {}
 
     
     public function create(int $userId, array $data): RecurringTransaction
     {
         $data['user_id'] = $userId;
+        // Pastikan confirmation_status dimulai sebagai pending
+        $data['confirmation_status'] = 'pending';
 
-        return TransactionFactory::createRecurringTransaction($data);
+        $recurring = TransactionFactory::createRecurringTransaction($data);
+
+        if (!empty($data['reminder_enabled'])) {
+            $this->reminderService->saveReminderConfig($recurring, $data);
+        }
+
+        return $recurring;
     }
 
     
@@ -79,7 +89,16 @@ class RecurringTransactionService
             $updateData['next_run_date'] = $baseDate->toDateString();
         }
 
-        return $this->recurringRepo->update($recurring, $updateData);
+        $updated = $this->recurringRepo->update($recurring, $updateData);
+
+        // Selalu sync reminder config (simpan ulang jika enabled, hapus jika disabled)
+        if (!empty($data['reminder_enabled'])) {
+            $this->reminderService->saveReminderConfig($updated, $data);
+        } else {
+            $this->reminderService->deleteReminderConfig($updated->recurring_id);
+        }
+
+        return $updated;
     }
 
     
@@ -90,6 +109,8 @@ class RecurringTransactionService
         if (!$recurring) {
             return false;
         }
+
+        $this->reminderService->deleteReminderConfig($recurringId);
 
         return $this->recurringRepo->delete($recurring);
     }
@@ -121,7 +142,124 @@ class RecurringTransactionService
         return $recurring;
     }
 
+    /**
+     * Konfirmasi pembayaran oleh user.
+     * Membuat 1 transaksi dengan tanggal = last_due_date (tanggal jatuh tempo asli),
+     * lalu advance next_run_date ke periode berikutnya.
+     */
+    public function confirmPayment(int $recurringId, int $userId): ?Transaction
+    {
+        $recurring = $this->recurringRepo->findByIdAndUser($recurringId, $userId);
+
+        if (!$recurring || $recurring->status !== 'aktif') {
+            return null;
+        }
+
+        if ($recurring->confirmation_status !== 'pending') {
+            return null;
+        }
+
+        try {
+            // Tanggal transaksi = tanggal jatuh tempo asli (last_due_date atau next_run_date)
+            $dueDate = $recurring->last_due_date ?? $recurring->next_run_date;
+
+            // Buat transaksi
+            $transaction = TransactionFactory::createTransactionFromRecurring($recurring, $dueDate);
+
+            // Notifikasi observer (untuk budget alert dll)
+            TransactionSubject::getInstance()->notifyObservers('created', $transaction);
+
+            // Advance next_run_date ke periode berikutnya
+            $newNextRun = RecurringHelper::calculateNextRunDate(
+                $recurring->next_run_date,
+                $recurring->frequency
+            );
+
+            $updateData = [
+                'confirmation_status' => 'pending',
+                'confirmed_at'        => now(),
+                'last_due_date'       => $newNextRun->toDateString(),
+                'next_run_date'       => $newNextRun->toDateString(),
+            ];
+
+            // Cek apakah periode berikutnya sudah expired
+            if (RecurringHelper::isExpired($newNextRun, $recurring->end_date)) {
+                $updateData['status'] = 'selesai';
+            }
+
+            $this->recurringRepo->update($recurring, $updateData);
+
+            return $transaction;
+        } catch (\Exception $e) {
+            Log::error('Gagal konfirmasi recurring #' . $recurringId . ': ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Lewati (skip) periode ini tanpa membuat transaksi.
+     * Advance next_run_date ke periode berikutnya.
+     */
+    public function skipPayment(int $recurringId, int $userId): ?RecurringTransaction
+    {
+        $recurring = $this->recurringRepo->findByIdAndUser($recurringId, $userId);
+
+        if (!$recurring || $recurring->status !== 'aktif') {
+            return null;
+        }
+
+        if ($recurring->confirmation_status !== 'pending') {
+            return null;
+        }
+
+        // Advance next_run_date ke periode berikutnya
+        $newNextRun = RecurringHelper::calculateNextRunDate(
+            $recurring->next_run_date,
+            $recurring->frequency
+        );
+
+        $updateData = [
+            'confirmation_status' => 'pending',
+            'last_due_date'       => $newNextRun->toDateString(),
+            'next_run_date'       => $newNextRun->toDateString(),
+        ];
+
+        if (RecurringHelper::isExpired($newNextRun, $recurring->end_date)) {
+            $updateData['status'] = 'selesai';
+        }
+
+        return $this->recurringRepo->update($recurring, $updateData);
+    }
+
+    /**
+     * Ambil semua recurring milik user yang menunggu konfirmasi (jatuh tempo dan belum dikonfirmasi).
+     */
+    public function getPendingConfirmations(int $userId): Collection
+    {
+        return RecurringTransaction::forUser($userId)
+            ->pendingConfirmation()
+            ->with('category')
+            ->get();
+    }
+
     
+    public function countActive(int $userId): int
+    {
+        return $this->recurringRepo->countActive($userId);
+    }
+
+    
+    public function getDueToday(int $userId): Collection
+    {
+        return $this->recurringRepo->findDueToday($userId);
+    }
+
+    /**
+     * Internal: eksekusi langsung recurring (dipakai oleh confirmPayment).
+     * Tidak lagi dipanggil secara otomatis oleh scheduler.
+     *
+     * @deprecated Gunakan confirmPayment() untuk konfirmasi manual oleh user.
+     */
     public function executeRecurring(int $recurringId): ?Transaction
     {
         $recurring = $this->recurringRepo->findById($recurringId);
@@ -161,17 +299,5 @@ class RecurringTransactionService
             Log::error('Gagal eksekusi recurring #' . $recurringId . ': ' . $e->getMessage());
             return null;
         }
-    }
-
-    
-    public function countActive(int $userId): int
-    {
-        return $this->recurringRepo->countActive($userId);
-    }
-
-    
-    public function getDueToday(int $userId): Collection
-    {
-        return $this->recurringRepo->findDueToday($userId);
     }
 }

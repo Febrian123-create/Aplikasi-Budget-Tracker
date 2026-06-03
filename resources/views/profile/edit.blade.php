@@ -114,7 +114,7 @@
 
                         <div class="mb-4">
                             <label for="email" class="form-label">Alamat Email</label>
-                            <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required autocomplete="username">
+                            <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.ac\.id)" title="Email harus menggunakan domain @gmail.com atau berakhiran .ac.id." required autocomplete="username">
                             @if($errors->has('email'))
                                 <div class="text-danger mt-1" style="font-size: 12px;">{{ $errors->first('email') }}</div>
                             @endif

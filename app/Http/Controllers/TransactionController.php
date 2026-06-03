@@ -24,7 +24,6 @@ class TransactionController extends Controller
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        
         $totalIncome = Transaction::where('user_id', Auth::id())
             ->whereIn('transactionType_id', function ($query) {
                 $query->select('transactionType_id')
@@ -104,7 +103,7 @@ class TransactionController extends Controller
         
         TransactionSubject::getInstance()->notifyObservers('updated', $transaction);
 
-        return redirect()->back()->with('success', 'Transaksi berhasil diperbarui!');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil diperbarui!');
     }
 
     public function destroy(Transaction $transaction)
@@ -139,10 +138,80 @@ class TransactionController extends Controller
             ->get();
 
         $categories = Category::all();
+        
+        // Hitung total jika kategori dipilih
+        $totalByCategory = 0;
+        $isCategoryFiltered = $request->filled('category_id');
+        if ($isCategoryFiltered) {
+            $totalQuery = Transaction::where('user_id', Auth::id())
+                ->where('category_id', $request->category_id);
+            
+            if ($request->filled('transactionType_id')) {
+                $totalQuery->where('transactionType_id', $request->transactionType_id);
+            }
+            
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $totalQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
+            }
+            
+            $totalByCategory = $totalQuery->sum('total_amount');
+        }
+
+        // Hitung balance berdasarkan filter jenis
+        $totalIncome = 0;
+        $totalExpense = 0;
+        $isTypeFiltered = $request->filled('transactionType_id');
+        
+        if ($isTypeFiltered) {
+            // Jika jenis dipilih, hitung total untuk jenis tersebut
+            $balanceQuery = Transaction::where('user_id', Auth::id())
+                ->where('transactionType_id', $request->transactionType_id);
+            
+            if ($request->filled('category_id')) {
+                $balanceQuery->where('category_id', $request->category_id);
+            }
+            
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $balanceQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
+            }
+            
+            $balance = $balanceQuery->sum('total_amount');
+            
+            if ($request->transactionType_id == 1) {
+                $totalIncome = $balance;
+            } else {
+                $totalExpense = $balance;
+            }
+        } else {
+            // Jika hanya tanggal atau tidak ada filter, hitung income dan expense terpisah
+            $incomeQuery = Transaction::where('user_id', Auth::id())
+                ->where('transactionType_id', 1);
+            
+            $expenseQuery = Transaction::where('user_id', Auth::id())
+                ->where('transactionType_id', 2);
+            
+            if ($request->filled('category_id')) {
+                $incomeQuery->where('category_id', $request->category_id);
+                $expenseQuery->where('category_id', $request->category_id);
+            }
+            
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $incomeQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
+                $expenseQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
+            }
+            
+            $totalIncome = $incomeQuery->sum('total_amount');
+            $totalExpense = $expenseQuery->sum('total_amount');
+        }
 
         return view('transactions.history', compact(
             'transactions',
-            'categories'
+            'categories',
+            'totalByCategory',
+            'isCategoryFiltered',
+            'totalIncome',
+            'totalExpense',
+            'isTypeFiltered'
         ));
     }
 }
