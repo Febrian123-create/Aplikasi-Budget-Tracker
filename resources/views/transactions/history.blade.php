@@ -21,6 +21,9 @@
                             </option>
                         @endforeach
                     </select>
+                    <small id="categoryHelpText" style="color: var(--text-muted); display: none; margin-top: 4px;">
+                        <i class="bi bi-info-circle"></i> Kategori hanya tersedia untuk Pengeluaran
+                    </small>
                 </div>
 
                 <div class="bunrek-form-group" style="margin-bottom: 0;">
@@ -73,6 +76,63 @@
             </span>
         @endif
     </div>
+
+    @if ($isCategoryFiltered && $totalByCategory > 0)
+        <div style="background: var(--bg-light); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran Kategori:</span>
+                <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                    Rp {{ number_format($totalByCategory, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
+    @endif
+
+    @if ($isTypeFiltered)
+        <!-- Tampilkan balance untuk jenis yang dipilih -->
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            @if ($totalIncome > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pemasukan:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-income);">
+                        Rp {{ number_format($totalIncome, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+            @if ($totalExpense > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                        Rp {{ number_format($totalExpense, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+        </div>
+    @elseif (($totalIncome > 0 || $totalExpense > 0) && !$isTypeFiltered)
+        <!-- Tampilkan balance pemasukan dan pengeluaran ketika hanya tanggal yang dipilih -->
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+                <div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Pemasukan</div>
+                    <div style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-income);">
+                        Rp {{ number_format($totalIncome, 0, ',', '.') }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Pengeluaran</div>
+                    <div style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                        Rp {{ number_format($totalExpense, 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: var(--text-body);">Saldo:</span>
+                <span style="font-size: var(--fs-lg); font-weight: 700; color: {{ $totalIncome >= $totalExpense ? 'var(--color-income)' : 'var(--color-expense)' }};">
+                    Rp {{ number_format($totalIncome - $totalExpense, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
+    @endif
 
     <div class="bunrek-card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
@@ -159,12 +219,37 @@
         document.getElementById('btnExportPdf').href = buildExportUrl('{{ route("history.export.pdf") }}');
     }
 
+    function updateCategoryState() {
+        var transactionTypeId = document.getElementById('transactionType_id').value;
+        var categorySelect = document.getElementById('category_id');
+        var categoryHelpText = document.getElementById('categoryHelpText');
+        
+        if (transactionTypeId == '1') {
+            // Pemasukan (Income) - disable kategori
+            categorySelect.disabled = true;
+            categorySelect.value = '';
+            categoryHelpText.style.display = 'block';
+            categorySelect.style.opacity = '0.6';
+            categorySelect.style.cursor = 'not-allowed';
+        } else {
+            // Pengeluaran (Expense) atau Semua - enable kategori
+            categorySelect.disabled = false;
+            categoryHelpText.style.display = 'none';
+            categorySelect.style.opacity = '1';
+            categorySelect.style.cursor = 'auto';
+        }
+    }
+
     // Update on page load
     updateExportLinks();
+    updateCategoryState();
 
     // Update when filters change
     document.getElementById('category_id').addEventListener('change', updateExportLinks);
-    document.getElementById('transactionType_id').addEventListener('change', updateExportLinks);
+    document.getElementById('transactionType_id').addEventListener('change', function() {
+        updateExportLinks();
+        updateCategoryState();
+    });
     document.getElementById('start_date').addEventListener('change', updateExportLinks);
     document.getElementById('end_date').addEventListener('change', updateExportLinks);
 </script>

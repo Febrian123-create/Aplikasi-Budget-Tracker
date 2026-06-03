@@ -3,9 +3,18 @@
 namespace App\Services;
 
 use App\Repositories\RecurringTransactionRepository;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-
+/**
+ * RecurringScheduler — Hanya mendeteksi recurring yang perlu konfirmasi.
+ *
+ * CATATAN PENTING:
+ * Sistem ini TIDAK lagi mengeksekusi (membuat transaksi) secara otomatis.
+ * Recurring hanya berfungsi sebagai PENGINGAT (reminder).
+ * Transaksi dibuat HANYA setelah user mengkonfirmasi pembayaran
+ * melalui RecurringTransactionController::confirmPayment().
+ */
 class RecurringScheduler
 {
     public function __construct(
@@ -13,52 +22,32 @@ class RecurringScheduler
         private RecurringTransactionRepository $recurringRepo
     ) {}
 
-    
+    /**
+     * Hitung jumlah recurring milik user yang menunggu konfirmasi hari ini.
+     * TIDAK membuat transaksi otomatis.
+     *
+     * @return int Jumlah recurring yang perlu dikonfirmasi
+     */
     public function executeDueForUser(int $userId): int
     {
-        $dueRecurrings = $this->recurringRepo->findDueToday($userId);
-        $executed = 0;
-
-        foreach ($dueRecurrings as $recurring) {
-            try {
-                $transaction = $this->recurringService->executeRecurring($recurring->recurring_id);
-
-                if ($transaction) {
-                    $executed++;
-                    Log::info("Recurring #{$recurring->recurring_id} berhasil dieksekusi untuk user #{$userId}");
-                }
-            } catch (\Exception $e) {
-                
-                Log::error("Scheduler gagal eksekusi recurring #{$recurring->recurring_id}: " . $e->getMessage());
-            }
-        }
-
-        return $executed;
+        // Kembalikan jumlah pending confirmations (bukan jumlah transaksi yang dibuat)
+        $pending = $this->recurringService->getPendingConfirmations($userId);
+        return $pending->count();
     }
 
-    
+    /**
+     * Cron command: hanya log recurring yang perlu dikonfirmasi hari ini.
+     * TIDAK membuat transaksi otomatis.
+     */
     public function executeAllDue(): int
     {
         $dueRecurrings = $this->recurringRepo->findAllDueToday();
-        $executed = 0;
+        $count = $dueRecurrings->count();
 
-        foreach ($dueRecurrings as $recurring) {
-            try {
-                $transaction = $this->recurringService->executeRecurring($recurring->recurring_id);
-
-                if ($transaction) {
-                    $executed++;
-                    Log::info("Cron: Recurring #{$recurring->recurring_id} berhasil dieksekusi");
-                }
-            } catch (\Exception $e) {
-                Log::error("Cron: Gagal eksekusi recurring #{$recurring->recurring_id}: " . $e->getMessage());
-            }
+        if ($count > 0) {
+            Log::info("Cron: {$count} recurring menunggu konfirmasi dari user.");
         }
 
-        if ($executed > 0) {
-            Log::info("Cron: Total {$executed} recurring berhasil dieksekusi");
-        }
-
-        return $executed;
+        return $count;
     }
 }

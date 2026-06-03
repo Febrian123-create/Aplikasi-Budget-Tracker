@@ -62,7 +62,6 @@ class TransactionRepository
             ->sum('total_amount');
     }
 
-    
     public function getTotalExpense(int $userId, int $bulan, int $tahun): float
     {
         $expenseTypeId = TransactionType::where('name', 'expense')->value('transactionType_id');
@@ -73,5 +72,27 @@ class TransactionRepository
             ->whereMonth('transaction_date', $bulan)
             ->whereYear('transaction_date', $tahun)
             ->sum('total_amount');
+    }
+
+    public function getDailySpending(int $userId, int $bulan, int $tahun): array
+    {
+        $expenseTypeId = TransactionType::where('name', 'expense')->value('transactionType_id');
+        if (!$expenseTypeId) return [];
+
+        $results = DB::table('transaction')
+            ->where('user_id', $userId)
+            ->where('transactionType_id', $expenseTypeId)
+            ->whereMonth('transaction_date', $bulan)
+            ->whereYear('transaction_date', $tahun)
+            ->selectRaw('DAY(transaction_date) as day, SUM(total_amount) as total')
+            ->groupBy(DB::raw('DAY(transaction_date)'))
+            ->orderBy(DB::raw('DAY(transaction_date)'))
+            ->get();
+
+        $map = [];
+        foreach ($results as $row) {
+            $map[(int) $row->day] = (float) $row->total;
+        }
+        return $map;
     }
 }

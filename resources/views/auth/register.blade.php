@@ -59,11 +59,12 @@
                         <label for="email" class="bunrek-label">Email</label>
                         <input type="email" id="email" name="email" class="bunrek-input"
                                value="{{ old('email') }}"
-                               placeholder="nama@email.com"
-                               pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                               placeholder="nama@gmail.com / nama@univ.ac.id"
+                               pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.ac\.id)"
+                               title="Email harus menggunakan domain @gmail.com atau berakhiran .ac.id."
                                required autocomplete="username">
                         <p id="email-error" class="bunrek-alert bunrek-alert-error" style="display: none; margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
-                            <i class="bi bi-exclamation-triangle-fill"></i> <span id="email-error-text">Format email tidak valid. Harus mengandung domain lengkap, contoh: nama@email.com</span>
+                            <i class="bi bi-exclamation-triangle-fill"></i> <span id="email-error-text">Email harus menggunakan domain @gmail.com atau berakhiran .ac.id.</span>
                         </p>
                         @error('email')
                             <p class="bunrek-alert bunrek-alert-error server-error" style="margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
@@ -119,8 +120,8 @@
             const serverError = document.querySelector('.server-error');
             const form = emailInput.closest('form');
 
-            // Regex untuk validasi email dengan dot dan TLD minimal 2 karakter
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            // Regex untuk validasi email harus @gmail.com atau berakhiran .ac.id
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.ac\.id)$/i;
 
             function validateEmail() {
                 const emailValue = emailInput.value.trim();
@@ -136,7 +137,7 @@
                 }
 
                 if (!emailRegex.test(emailValue)) {
-                    showError('Format email tidak valid. Harus mengandung domain lengkap, contoh: nama@email.com');
+                    showError('Email harus menggunakan domain @gmail.com atau berakhiran .ac.id.');
                     return false;
                 } else {
                     hideError();

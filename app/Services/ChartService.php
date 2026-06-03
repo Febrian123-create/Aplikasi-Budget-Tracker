@@ -147,7 +147,124 @@ class ChartService
         ];
     }
 
-    
+    public function getDailySpending(int $userId, int $bulan, int $tahun): array
+    {
+        return $this->transactionRepository->getDailySpending($userId, $bulan, $tahun);
+    }
+
+    public function getMonthComparison(int $userId, int $bulan, int $tahun): array
+    {
+        $current = $this->transactionRepository->getCategoryExpenses($userId, $bulan, $tahun);
+
+        $prevBulan = $bulan === 1 ? 12 : $bulan - 1;
+        $prevTahun = $bulan === 1 ? $tahun - 1 : $tahun;
+        $previous  = $this->transactionRepository->getCategoryExpenses($userId, $prevBulan, $prevTahun);
+
+        $currentMap = [];
+        foreach ($current as $item) { $currentMap[$item->category_name] = (float) $item->total; }
+        $previousMap = [];
+        foreach ($previous as $item) { $previousMap[$item->category_name] = (float) $item->total; }
+
+        $allCategories = array_unique(array_merge(array_keys($currentMap), array_keys($previousMap)));
+
+        if (empty($allCategories)) {
+            return [
+                'comparison'   => [],
+                'currentLabel' => ChartHelper::formatBulanLengkap($bulan) . ' ' . $tahun,
+                'prevLabel'    => ChartHelper::formatBulanLengkap($prevBulan) . ' ' . $prevTahun,
+                'isEmpty'      => true,
+            ];
+        }
+
+        $comparison = [];
+        foreach ($allCategories as $cat) {
+            $cur    = $currentMap[$cat] ?? 0;
+            $prev   = $previousMap[$cat] ?? 0;
+            $change = $prev > 0 ? round((($cur - $prev) / $prev) * 100, 1) : null;
+            $comparison[] = [
+                'name'             => $cat,
+                'current'          => $cur,
+                'previous'         => $prev,
+                'currentFormatted' => ChartHelper::formatRupiah($cur),
+                'prevFormatted'    => ChartHelper::formatRupiah($prev),
+                'change'           => $change,
+                'isIncrease'       => $change !== null ? $change > 0 : null,
+            ];
+        }
+        usort($comparison, fn($a, $b) => $b['current'] <=> $a['current']);
+
+        return [
+            'comparison'   => $comparison,
+            'currentLabel' => ChartHelper::formatBulanLengkap($bulan) . ' ' . $tahun,
+            'prevLabel'    => ChartHelper::formatBulanLengkap($prevBulan) . ' ' . $prevTahun,
+            'isEmpty'      => false,
+        ];
+    }
+
+    public function getHealthScore(int $userId, int $bulan, int $tahun): array
+    {
+        $totalIncome  = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
+        $totalExpense = $this->transactionRepository->getTotalExpense($userId, $bulan, $tahun);
+
+        if ($totalIncome === 0.0 && $totalExpense === 0.0) {
+            return [
+                'score' => 0, 'label' => 'Belum Ada Data', 'color' => '#9e9e9e',
+                'components' => [],
+                'tips'    => 'Mulai catat transaksi untuk melihat skor kesehatan finansialmu.',
+                'isEmpty' => true,
+            ];
+        }
+
+        $savingsScore = 0.0;
+        if ($totalIncome > 0) {
+            $savingsRate  = (($totalIncome - $totalExpense) / $totalIncome) * 100;
+            $savingsScore = max(0.0, min(100.0, ($savingsRate / 30) * 100));
+        }
+
+        $diversityScore = 70.0;
+        $categories = $this->transactionRepository->getCategoryExpenses($userId, $bulan, $tahun);
+        if (!$categories->isEmpty() && $totalExpense > 0) {
+            $maxCatPct      = ($categories->max('total') / $totalExpense) * 100;
+            $diversityScore = max(0.0, min(100.0, ((80 - $maxCatPct) / 40) * 100));
+        }
+
+        $budgetScore = 70.0;
+        $budgets = \App\Models\Budget::where('user_id', $userId)->get();
+        if ($budgets->isNotEmpty()) {
+            $onTrack     = $budgets->filter(fn($b) => !$b->isExceeded())->count();
+            $budgetScore = ($onTrack / $budgets->count()) * 100;
+        }
+
+        $totalScore = (int) round(($savingsScore * 0.4) + ($diversityScore * 0.3) + ($budgetScore * 0.3));
+
+        if ($totalScore >= 70)      { $label = 'Sehat';            $color = '#22C55E'; }
+        elseif ($totalScore >= 40)  { $label = 'Cukup';            $color = '#F59E0B'; }
+        else                        { $label = 'Perlu Perhatian';   $color = '#EF4444'; }
+
+        $scores    = ['savings' => $savingsScore, 'diversity' => $diversityScore, 'budget' => $budgetScore];
+        $lowestKey = (string) array_search(min($scores), $scores);
+        $tips = match ($lowestKey) {
+            'savings'   => 'Savings rate masih rendah. Coba kurangi pengeluaran atau cari sumber pemasukan tambahan.',
+            'diversity' => 'Pengeluaran terlalu terpusat di satu kategori. Coba distribusikan lebih merata.',
+            'budget'    => 'Ada budget yang sudah terlampaui. Cek halaman Budget untuk menyesuaikan.',
+            default     => 'Pertahankan kebiasaan finansial yang baik!',
+        };
+
+        return [
+            'score'      => $totalScore,
+            'label'      => $label,
+            'color'      => $color,
+            'components' => [
+                ['name' => 'Savings Rate',    'score' => (int) round($savingsScore),   'weight' => '40%'],
+                ['name' => 'Diversifikasi',    'score' => (int) round($diversityScore), 'weight' => '30%'],
+                ['name' => 'Kepatuhan Budget', 'score' => (int) round($budgetScore),    'weight' => '30%'],
+            ],
+            'tips'    => $tips,
+            'isEmpty' => false,
+        ];
+    }
+
+
     public function getMetricCards(int $userId, int $bulan, int $tahun): array
     {
         $totalIncome  = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);

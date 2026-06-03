@@ -13,13 +13,16 @@ class PremiumMembership implements MembershipFeatureInterface
 
     public function canViewChart(): bool
     {
-        
         return true;
     }
 
     public function canExportPdf(): bool
     {
-        
+        return true; // Unlocked untuk Premium
+    }
+
+    public function canUseRecurring(): bool
+    {
         return true;
     }
 }
