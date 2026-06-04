@@ -69,10 +69,10 @@
         .legend-amount { font-weight:600; color:#555; }
         .legend-pct { font-size:12px; color:#999; min-width:45px; text-align:right; }
         /* Monefy */
-        #monefyOuter { position:relative; width:100%; max-width:320px; aspect-ratio:1/1; margin:0 auto; display:flex; align-items:center; justify-content:center; }
-        #donutChart  { width:65% !important; height:65% !important; z-index:1; }
+        #monefyOuter { position:relative; width:100%; max-width:420px; aspect-ratio:1/1; margin:0 auto; display:flex; align-items:center; justify-content:center; min-height:360px; }
+        #donutChart  { width:100% !important; height:100% !important; z-index:1; }
         #iconSvg     { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-        #monefyCenter { position:absolute; text-align:center; pointer-events:none; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        #monefyCenter { position:absolute; inset:0; text-align:center; pointer-events:none; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 0 16px; }
         .monefy-icon  { position:absolute; pointer-events:none; z-index:3; transition: all 0.3s ease; }
         
         /* CSS Grid Layouts */
@@ -219,11 +219,8 @@
               <canvas id="donutChart" width="240" height="240"></canvas>
               <svg id="iconSvg"></svg>
               <div id="monefyCenter">
-                <div style="font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px;">PEMASUKAN</div>
-                <div style="font-size:13px;font-weight:700;color:#22C55E;line-height:1.2;">{{ $metricCards['totalIncomeFormatted'] }}</div>
-                <div style="border-top:1px solid #eee;margin:5px auto;width:70px;"></div>
-                <div style="font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px;">PENGELUARAN</div>
-                <div style="font-size:13px;font-weight:700;color:#EF4444;line-height:1.2;">{{ $metricCards['totalExpenseFormatted'] }}</div>
+                <div style="font-size:12px;color:#6b7280;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Total Pengeluaran</div>
+                <div style="font-size:22px;font-weight:800;color:#dc2626;line-height:1.1;">{{ $categoryDistribution['totalFormatted'] }}</div>
               </div>
             </div>
             <div class="mt-3" id="pieLegend">
@@ -491,8 +488,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: {
                     legend: { display:false },
                     tooltip: {
+                        enabled: true,
+                        position: 'nearest',
+                        displayColors: false,
                         backgroundColor:'#1a1a2e', padding:12, cornerRadius:10,
-                        callbacks: { label: ctx => { const c=catData.categories[ctx.dataIndex]; return [c.formatted, c.percentage]; } }
+                        callbacks: {
+                            title: items => catData.categories[items[0].dataIndex].name,
+                            label: ctx => {
+                                const c = catData.categories[ctx.dataIndex];
+                                return [c.formatted, c.percentage];
+                            }
+                        }
                     }
                 }
             }

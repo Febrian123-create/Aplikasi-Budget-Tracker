@@ -77,7 +77,7 @@ class TransactionLogicTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals(11, $transaction->category_id);
         $this->assertEquals(150000, $transaction->total_amount);
-        $this->assertEquals('Alokasi Wishlist: Beli Sepatu Baru', $transaction->description);
+        $this->assertEquals('Saving Wishlist: Beli Sepatu Baru', $transaction->description);
     }
 
     public function test_transactions_with_other_dates_do_not_appear_on_today_transactions()

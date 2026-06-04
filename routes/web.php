@@ -97,6 +97,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::post('/wishlist', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::put('/wishlist/{wishlist}', [WishlistController::class, 'update'])->name('wishlist.update');
     Route::post('/wishlist/{wishlist}/alokasi', [WishlistController::class, 'alokasi'])->name('wishlist.alokasi');
+    Route::post('/wishlist/{wishlist}/konfirmasi', [WishlistController::class, 'konfirmasiPembelian'])->name('wishlist.konfirmasi');
     Route::delete('/wishlist/{wishlist}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
