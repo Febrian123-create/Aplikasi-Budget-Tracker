@@ -3,48 +3,45 @@
 @section('page_title', 'Transactions')
 
 @section('content')
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Overview Saldo</span>
-                <div class="stat-card-icon balance">
-                    <i class="bi bi-wallet2"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-balance">
-                Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Total Pemasukan</span>
-                <div class="stat-card-icon income">
-                    <i class="bi bi-arrow-down-left-circle"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-income">
-                Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Total Pengeluaran</span>
-                <div class="stat-card-icon expense">
-                    <i class="bi bi-arrow-up-right-circle"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-expense">
-                Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-    </div>
-
     @php
         $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
     @endphp
+    <!-- Summary Cards for Today's Income and Expenses -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-bottom: var(--space-lg);">
+        <!-- Income Card -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-income); box-shadow: var(--shadow-sm);">
+            <div style="flex: 1;">
+                <p
+                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
+                    Pemasukan Hari Ini
+                </p>
+                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-income);">
+                    Rp {{ number_format($totalIncomeToday, 0, ',', '.') }}
+                </p>
+            </div>
+            <div style="font-size: 3rem; color: rgba(16, 185, 129, 0.2); line-height: 1; margin-left: var(--space-lg);">
+                <i class="bi bi-arrow-down-left-circle"></i>
+            </div>
+        </div>
 
+        <!-- Expense Card -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-expense); box-shadow: var(--shadow-sm);">
+            <div style="flex: 1;">
+                <p
+                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
+                    Pengeluaran Hari Ini
+                </p>
+                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-expense);">
+                    Rp {{ number_format($totalExpenseToday, 0, ',', '.') }}
+                </p>
+            </div>
+            <div style="font-size: 3rem; color: rgba(239, 68, 68, 0.2); line-height: 1; margin-left: var(--space-lg);">
+                <i class="bi bi-arrow-up-right-circle"></i>
+            </div>
+        </div>
+    </div>
     <div class="content-grid">
 
         <div class="bunrek-card">
@@ -62,31 +59,39 @@
                     @csrf
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal</label>
-                        <input type="date" name="date" class="bunrek-input" required value="{{ date('Y-m-d') }}">
+                        <input type="date" name="date" class="bunrek-input" required value="{{ date('Y-m-d') }}"
+                            max="{{ now()->toDateString() }}">
                     </div>
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tipe Transaksi</label>
                         <div class="bunrek-radio-group">
                             <label class="bunrek-radio-label" for="income">
-                                <input type="radio" name="type" value="income" id="income" checked>
+                                <input type="radio" name="type" value="income" id="income" checked
+                                    onchange="toggleKategori()">
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
-                                <input type="radio" name="type" value="expense" id="expense">
+                                <input type="radio" name="type" value="expense" id="expense"
+                                    onchange="toggleKategori()">
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="bunrek-form-group">
-                        <label class="bunrek-label">Kategori</label>
-                        <select name="category" class="bunrek-select" required>
+                    <div class="bunrek-form-group" id="kategoriGroup">
+                        <label class="bunrek-label" id="kategoriLabel">Kategori</label>
+                        <select name="category" id="kategoriSelect" class="bunrek-select">
                             <option value="">Pilih Kategori</option>
                             @foreach ($categories ?? [] as $cat)
                                 <option value="{{ $cat->category_id }}">{{ $cat->category_name }}</option>
                             @endforeach
                         </select>
+                        <input type="hidden" id="hiddenCategory" name="" value="10">
+                        <p id="kategoriInfo"
+                            style="display:none; margin: 6px 0 0 0; font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;">
+                            <i class="bi bi-info-circle"></i> Pemasukan tidak memerlukan kategori.
+                        </p>
                     </div>
 
                     <div class="bunrek-form-group">
@@ -113,25 +118,18 @@
                     Transaksi Hari Ini &mdash; <span
                         style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y') }}</span>
                 </h2>
-                @if ($membershipFeature->canExportPdf())
-                    <div style="display: flex; gap: var(--space-xs);">
-                        <a href="{{ route('transactions.export.excel') }}"
-                            class="btn-bunrek btn-sm btn-outline text-success" id="btnExportExcelTx"
-                            style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
-                            <i class="bi bi-file-earmark-excel"></i> Excel
-                        </a>
-                        <a href="{{ route('transactions.export.pdf') }}"
-                            class="btn-bunrek btn-sm btn-outline text-danger" id="btnExportPdfTx"
-                            style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
-                            <i class="bi bi-file-earmark-pdf"></i> PDF
-                        </a>
-                    </div>
-                @else
-                    <span
-                        style="font-size: var(--fs-xs); color: var(--text-muted); background: var(--bg-light); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
-                        <i class="bi bi-gem text-warning"></i> Export Premium
-                    </span>
-                @endif
+                <div style="display: flex; gap: var(--space-xs);">
+                    <a href="{{ route('transactions.export.excel') }}" class="btn-bunrek btn-sm btn-outline text-success"
+                        id="btnExportExcelTx"
+                        style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                        <i class="bi bi-file-earmark-excel"></i> Excel
+                    </a>
+                    <a href="{{ route('transactions.export.pdf') }}" class="btn-bunrek btn-sm btn-outline text-danger"
+                        id="btnExportPdfTx"
+                        style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                </div>
             </div>
             <div class="bunrek-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
@@ -200,6 +198,7 @@
                         </tbody>
                     </table>
                 </div>
+                {{ $transactions->links('components.pagination') }}
             </div>
         </div>
 
@@ -403,24 +402,30 @@
             <script>
                 function toggleKategori() {
                     const expenseRadio = document.getElementById('expense');
-                    const kategoriGroup = document.getElementById('kategoriGroup');
                     const kategoriSelect = document.getElementById('kategoriSelect');
                     const hiddenCategory = document.getElementById('hiddenCategory');
+                    const kategoriInfo = document.getElementById('kategoriInfo');
 
                     if (expenseRadio.checked) {
-                        // Pengeluaran: tampilkan dropdown
-                        kategoriGroup.style.display = 'block';
+                        // Pengeluaran: aktifkan dan tampilkan dropdown kategori
+                        kategoriSelect.disabled = false;
                         kategoriSelect.setAttribute('required', 'required');
-                        hiddenCategory.name = ''; // Disable hidden input
-                        kategoriSelect.name = 'category'; // Enable dropdown
+                        kategoriSelect.name = 'category';
+                        kategoriSelect.style.opacity = '1';
+                        kategoriSelect.style.cursor = 'pointer';
+                        hiddenCategory.name = '';
+                        kategoriInfo.style.display = 'none';
                     } else {
-                        // Pemasukan: gunakan category ID 10 (income)
-                        kategoriGroup.style.display = 'none';
+                        // Pemasukan: nonaktifkan dropdown kategori, gunakan hidden input
+                        kategoriSelect.disabled = true;
                         kategoriSelect.removeAttribute('required');
+                        kategoriSelect.name = '';
                         kategoriSelect.value = '';
-                        hiddenCategory.value = '10'; // Set category ID to 10
-                        hiddenCategory.name = 'category'; // Enable hidden input
-                        kategoriSelect.name = ''; // Disable dropdown
+                        kategoriSelect.style.opacity = '0.4';
+                        kategoriSelect.style.cursor = 'not-allowed';
+                        hiddenCategory.value = '';
+                        hiddenCategory.name = 'category';
+                        kategoriInfo.style.display = 'block';
                     }
                 }
                 let pendingDeleteForm = null;

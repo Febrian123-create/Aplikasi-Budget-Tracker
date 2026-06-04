@@ -61,30 +61,37 @@
         @php
             $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
         @endphp
-        @if ($membershipFeature->canExportPdf())
-            <div style="display: flex; gap: var(--space-xs);">
-                <a href="#" id="btnExportExcel" class="btn-bunrek btn-sm btn-outline text-success" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </a>
-                <a href="#" id="btnExportPdf" class="btn-bunrek btn-sm btn-outline text-danger" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
-                </a>
-            </div>
-        @else
-            <span style="font-size: var(--fs-xs); color: var(--text-muted); background: var(--bg-light); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
-                <i class="bi bi-gem text-warning"></i> Export Premium
-            </span>
-        @endif
+        <div style="display: flex; gap: var(--space-xs);">
+            <a href="#" id="btnExportExcel" class="btn-bunrek btn-sm btn-outline text-success" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="#" id="btnExportPdf" class="btn-bunrek btn-sm btn-outline text-danger" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
+        </div>
     </div>
 
-    @if ($isCategoryFiltered && $totalByCategory > 0)
+    @if ($isCategoryFiltered)
         <div style="background: var(--bg-light); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran Kategori:</span>
-                <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
-                    Rp {{ number_format($totalByCategory, 0, ',', '.') }}
-                </span>
-            </div>
+            @if ($totalIncome > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: {{ $totalExpense > 0 ? 'var(--space-sm)' : '0' }};">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pemasukan Kategori:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-income);">
+                        Rp {{ number_format($totalIncome, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+            @if ($totalExpense > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran Kategori:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                        Rp {{ number_format($totalExpense, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+            @if ($totalIncome == 0 && $totalExpense == 0)
+                <div style="text-align: center; color: var(--text-muted); font-size: var(--fs-sm);">Tidak ada data untuk kategori ini.</div>
+            @endif
         </div>
     @endif
 
@@ -196,7 +203,6 @@
 @endsection
 
 @push('scripts')
-@if ($membershipFeature->canExportPdf())
 <script>
     function buildExportUrl(baseUrl) {
         var params = new URLSearchParams();
@@ -223,35 +229,34 @@
         var transactionTypeId = document.getElementById('transactionType_id').value;
         var categorySelect = document.getElementById('category_id');
         var categoryHelpText = document.getElementById('categoryHelpText');
-        
+
         if (transactionTypeId == '1') {
             // Pemasukan (Income) - disable kategori
             categorySelect.disabled = true;
             categorySelect.value = '';
-            categoryHelpText.style.display = 'block';
-            categorySelect.style.opacity = '0.6';
+            categorySelect.style.opacity = '0.4';
             categorySelect.style.cursor = 'not-allowed';
+            categoryHelpText.style.display = 'block';
         } else {
             // Pengeluaran (Expense) atau Semua - enable kategori
             categorySelect.disabled = false;
-            categoryHelpText.style.display = 'none';
             categorySelect.style.opacity = '1';
             categorySelect.style.cursor = 'auto';
+            categoryHelpText.style.display = 'none';
         }
     }
 
-    // Update on page load
-    updateExportLinks();
-    updateCategoryState();
+    document.addEventListener('DOMContentLoaded', function () {
+        updateExportLinks();
+        updateCategoryState();
+    });
 
-    // Update when filters change
     document.getElementById('category_id').addEventListener('change', updateExportLinks);
-    document.getElementById('transactionType_id').addEventListener('change', function() {
+    document.getElementById('transactionType_id').addEventListener('change', function () {
         updateExportLinks();
         updateCategoryState();
     });
     document.getElementById('start_date').addEventListener('change', updateExportLinks);
     document.getElementById('end_date').addEventListener('change', updateExportLinks);
 </script>
-@endif
 @endpush
