@@ -124,52 +124,6 @@
         </div>
     </div>
 
-    @php
-        $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
-    @endphp
-
-    @if (!$membershipFeature->canViewChart())
-        <div id="chart-section" class="premium-cta">
-            <div class="premium-cta-icon">
-                <i class="bi bi-lock-fill text-warning"></i>
-            </div>
-            <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 8px;">
-                Visualisasi Grafik Khusus Premium
-            </h4>
-            <p class="premium-cta-text">
-                Dapatkan visualisasi grafik pengeluaran dan pemasukan interaktif yang detail dengan upgrade ke Premium.
-            </p>
-            <a href="{{ route('membership.index') }}" class="btn-bunrek btn-primary">
-                <i class="bi bi-gem"></i> Upgrade Sekarang
-            </a>
-        </div>
-        @push('scripts')
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    if (window.location.hash === '#chart-section') {
-                        window.location.href = '{{ route('membership.index') }}';
-                    }
-                });
-            </script>
-        @endpush
-    @else
-        <div id="chart-section" class="premium-cta"
-            style="background: linear-gradient(135deg, var(--primary-50), rgba(99, 102, 241, 0.02)); border-style: solid;">
-            <div class="premium-cta-icon">
-                <i class="bi bi-bar-chart-line-fill text-primary"></i>
-            </div>
-            <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 8px;">
-                Visualisasi Grafik Siap Digunakan
-            </h4>
-            <p class="premium-cta-text">
-                Analisis keuangan Anda secara visual dengan diagram interaktif kami.
-            </p>
-            <a href="{{ route('charts.index') }}" class="btn-bunrek btn-primary">
-                <i class="bi bi-arrow-right-short"></i> Lihat Grafik Visualisasi
-            </a>
-        </div>
-    @endif
-
     <div class="bunrek-card" style="margin-top: 24px;">
         <div class="bunrek-card-header">
             <h2 class="bunrek-card-title">
