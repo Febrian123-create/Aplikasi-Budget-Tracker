@@ -17,7 +17,7 @@ class GoogleCalendarReminderStrategy implements ReminderChannelInterface
         }
 
         try {
-            $client = $this->buildClient($user->google_calendar_token);
+            $client = $this->buildClient($user);
             $service = new \Google\Service\Calendar($client);
 
             $label = $daysBefore === 0 ? 'Hari Ini' : "H-{$daysBefore}";
@@ -45,7 +45,7 @@ class GoogleCalendarReminderStrategy implements ReminderChannelInterface
         }
 
         try {
-            $client = $this->buildClient($user->google_calendar_token);
+            $client = $this->buildClient($user);
             $service = new \Google\Service\Calendar($client);
 
             $event = new \Google\Service\Calendar\Event([
@@ -66,10 +66,25 @@ class GoogleCalendarReminderStrategy implements ReminderChannelInterface
         return !empty($user->google_calendar_token);
     }
 
-    private function buildClient(string $token): \Google\Client
+    private function buildClient(User $user): \Google\Client
     {
         $client = new \Google\Client();
-        $client->setAccessToken(json_decode($token, true));
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setAccessToken(json_decode($user->google_calendar_token, true));
+
+        if ($client->isAccessTokenExpired()) {
+            $refreshToken = $client->getRefreshToken();
+            if ($refreshToken) {
+                $newToken = $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                if (empty($newToken['refresh_token'])) {
+                    $newToken['refresh_token'] = $refreshToken;
+                }
+                $user->google_calendar_token = json_encode($newToken);
+                $user->save();
+            }
+        }
+
         return $client;
     }
 

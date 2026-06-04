@@ -6,7 +6,42 @@
     @php
         $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
     @endphp
+    <!-- Summary Cards for Today's Income and Expenses -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-bottom: var(--space-lg);">
+        <!-- Income Card -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-income); box-shadow: var(--shadow-sm);">
+            <div style="flex: 1;">
+                <p
+                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
+                    Pemasukan Hari Ini
+                </p>
+                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-income);">
+                    Rp {{ number_format($totalIncomeToday, 0, ',', '.') }}
+                </p>
+            </div>
+            <div style="font-size: 3rem; color: rgba(16, 185, 129, 0.2); line-height: 1; margin-left: var(--space-lg);">
+                <i class="bi bi-arrow-down-left-circle"></i>
+            </div>
+        </div>
 
+        <!-- Expense Card -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-expense); box-shadow: var(--shadow-sm);">
+            <div style="flex: 1;">
+                <p
+                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
+                    Pengeluaran Hari Ini
+                </p>
+                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-expense);">
+                    Rp {{ number_format($totalExpenseToday, 0, ',', '.') }}
+                </p>
+            </div>
+            <div style="font-size: 3rem; color: rgba(239, 68, 68, 0.2); line-height: 1; margin-left: var(--space-lg);">
+                <i class="bi bi-arrow-up-right-circle"></i>
+            </div>
+        </div>
+    </div>
     <div class="content-grid">
 
         <div class="bunrek-card">
@@ -24,18 +59,21 @@
                     @csrf
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal</label>
-                        <input type="date" name="date" class="bunrek-input" required value="{{ date('Y-m-d') }}">
+                        <input type="date" name="date" class="bunrek-input" required value="{{ date('Y-m-d') }}"
+                            max="{{ now()->toDateString() }}">
                     </div>
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tipe Transaksi</label>
                         <div class="bunrek-radio-group">
                             <label class="bunrek-radio-label" for="income">
-                                <input type="radio" name="type" value="income" id="income" checked onchange="toggleKategori()">
+                                <input type="radio" name="type" value="income" id="income" checked
+                                    onchange="toggleKategori()">
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
-                                <input type="radio" name="type" value="expense" id="expense" onchange="toggleKategori()">
+                                <input type="radio" name="type" value="expense" id="expense"
+                                    onchange="toggleKategori()">
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
@@ -50,7 +88,8 @@
                             @endforeach
                         </select>
                         <input type="hidden" id="hiddenCategory" name="" value="10">
-                        <p id="kategoriInfo" style="display:none; margin: 6px 0 0 0; font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;">
+                        <p id="kategoriInfo"
+                            style="display:none; margin: 6px 0 0 0; font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;">
                             <i class="bi bi-info-circle"></i> Pemasukan tidak memerlukan kategori.
                         </p>
                     </div>
@@ -80,13 +119,13 @@
                         style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y') }}</span>
                 </h2>
                 <div style="display: flex; gap: var(--space-xs);">
-                    <a href="{{ route('transactions.export.excel') }}"
-                        class="btn-bunrek btn-sm btn-outline text-success" id="btnExportExcelTx"
+                    <a href="{{ route('transactions.export.excel') }}" class="btn-bunrek btn-sm btn-outline text-success"
+                        id="btnExportExcelTx"
                         style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
                         <i class="bi bi-file-earmark-excel"></i> Excel
                     </a>
-                    <a href="{{ route('transactions.export.pdf') }}"
-                        class="btn-bunrek btn-sm btn-outline text-danger" id="btnExportPdfTx"
+                    <a href="{{ route('transactions.export.pdf') }}" class="btn-bunrek btn-sm btn-outline text-danger"
+                        id="btnExportPdfTx"
                         style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
                         <i class="bi bi-file-earmark-pdf"></i> PDF
                     </a>
@@ -159,6 +198,7 @@
                         </tbody>
                     </table>
                 </div>
+                {{ $transactions->links('components.pagination') }}
             </div>
         </div>
 
