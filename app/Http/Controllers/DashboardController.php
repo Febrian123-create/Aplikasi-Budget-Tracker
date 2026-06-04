@@ -32,6 +32,27 @@ class DashboardController extends Controller
         $startDate = $subject->getStartDate();
         $endDate = $subject->getEndDate();
 
+        // Greeting logic berdasarkan waktu
+        $currentHour = Carbon::now()->hour;
+        if ($currentHour >= 5 && $currentHour < 12) {
+            $greeting = 'pagi';
+        } elseif ($currentHour >= 12 && $currentHour < 15) {
+            $greeting = 'siang';
+        } elseif ($currentHour >= 15 && $currentHour < 18) {
+            $greeting = 'sore';
+        } else {
+            $greeting = 'malam';
+        }
+
+        // Data greeting
+        $userName = Auth::user()->name;
+        $currentDate = Carbon::now()->locale('id')->isoFormat('dddd, DD MMMM YYYY');
+
+        // Hitung transaksi hari ini
+        $todayTransactionCount = Transaction::where('user_id', Auth::id())
+            ->whereDate('transaction_date', Carbon::today()->toDateString())
+            ->count();
+
         return view('dashboard', compact(
             'totalIncome',
             'totalExpense',
@@ -41,8 +62,11 @@ class DashboardController extends Controller
             'filterType',
             'year',
             'month',
-            'week'
+            'week',
+            'greeting',
+            'userName',
+            'currentDate',
+            'todayTransactionCount'
         ));
     }
 }
-

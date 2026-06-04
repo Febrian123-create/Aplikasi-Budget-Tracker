@@ -16,31 +16,49 @@
             9 => 'September',
             10 => 'Oktober',
             11 => 'November',
-            12 => 'Desember'
+            12 => 'Desember',
         ];
         $weeks = [
             1 => 'Minggu 1 (Tanggal 1 - 7)',
             2 => 'Minggu 2 (Tanggal 8 - 14)',
             3 => 'Minggu 3 (Tanggal 15 - 21)',
             4 => 'Minggu 4 (Tanggal 22 - 28)',
-            5 => 'Minggu 5 (Tanggal 29 - Akhir Bulan)'
+            5 => 'Minggu 5 (Tanggal 29 - Akhir Bulan)',
         ];
         $labelMap = [
             'mingguan' => 'Mingguan',
             'bulanan' => 'Bulanan',
             'tahunan' => 'Tahunan',
-            'keseluruhan' => 'Keseluruhan'
+            'keseluruhan' => 'Keseluruhan',
         ];
         $labelText = $labelMap[$filterType] ?? 'Bulanan';
     @endphp
 
+    <!-- Greeting Section -->
+    <div style="margin-bottom: 32px;">
+        <h1 style="margin: 0 0 8px 0; font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px;">
+            Selamat Datang, {{ $userName }}!
+        </h1>
+        <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: var(--fs-base);">
+            {{ $currentDate }}
+        </p>
+        <p
+            style="margin: 0; color: var(--text-muted); font-size: var(--fs-sm); display: flex; align-items: center; gap: 6px;">
+            <i class="bi bi-check-circle" style="color: var(--primary-color);"></i>
+            Kamu memiliki <strong style="color: var(--text-dark);">{{ $todayTransactionCount }}</strong> transaksi hari ini
+        </p>
+        <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border-light);">
+    </div>
+
     <!-- Form Filter Ringkasan -->
     <form action="{{ route('dashboard') }}" method="GET" style="margin-bottom: 24px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: var(--space-md) var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
-            
+        <div
+            style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: var(--space-md) var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+
             <div style="flex: 1; min-width: 150px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Rentang Waktu</label>
-                <select name="filter_type" id="filter_type" class="bunrek-select" onchange="toggleFilterFields()" style="cursor: pointer;">
+                <select name="filter_type" id="filter_type" class="bunrek-select" onchange="toggleFilterFields()"
+                    style="cursor: pointer;">
                     <option value="mingguan" {{ $filterType === 'mingguan' ? 'selected' : '' }}>Mingguan</option>
                     <option value="bulanan" {{ $filterType === 'bulanan' ? 'selected' : '' }}>Bulanan</option>
                     <option value="tahunan" {{ $filterType === 'tahunan' ? 'selected' : '' }}>Tahunan</option>
@@ -51,8 +69,9 @@
             <div id="month_wrapper" style="flex: 1; min-width: 150px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Bulan</label>
                 <select name="month" id="filter_month" class="bunrek-select" style="cursor: pointer;">
-                    @foreach($months as $num => $name)
-                        <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}</option>
+                    @foreach ($months as $num => $name)
+                        <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -60,8 +79,9 @@
             <div id="week_wrapper" style="flex: 1; min-width: 180px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Minggu</label>
                 <select name="week" id="filter_week" class="bunrek-select" style="cursor: pointer;">
-                    @foreach($weeks as $num => $desc)
-                        <option value="{{ $num }}" {{ $week === $num ? 'selected' : '' }}>{{ $desc }}</option>
+                    @foreach ($weeks as $num => $desc)
+                        <option value="{{ $num }}" {{ $week === $num ? 'selected' : '' }}>{{ $desc }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -69,8 +89,9 @@
             <div id="year_wrapper" style="flex: 1; min-width: 120px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Tahun</label>
                 <select name="year" id="filter_year" class="bunrek-select" style="cursor: pointer;">
-                    @foreach(range(\Carbon\Carbon::today()->year - 5, \Carbon\Carbon::today()->year + 2) as $y)
-                        <option value="{{ $y }}" {{ $year === $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @foreach (range(\Carbon\Carbon::today()->year - 5, \Carbon\Carbon::today()->year + 2) as $y)
+                        <option value="{{ $y }}" {{ $year === $y ? 'selected' : '' }}>{{ $y }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -79,7 +100,8 @@
                 <button type="submit" class="btn-bunrek btn-primary" style="height: 42px; padding: 0 20px;">
                     <i class="bi bi-funnel-fill"></i> Filter
                 </button>
-                <a href="{{ route('dashboard') }}" class="btn-bunrek btn-outline" style="height: 42px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center;">
+                <a href="{{ route('dashboard') }}" class="btn-bunrek btn-outline"
+                    style="height: 42px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center;">
                     Reset
                 </a>
             </div>
@@ -128,17 +150,21 @@
         <div class="bunrek-card-header">
             <h2 class="bunrek-card-title">
                 Ringkasan &mdash; <span
-                    style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }} - {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</span>
+                    style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }}
+                    - {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</span>
             </h2>
         </div>
         <div class="bunrek-card-body">
             <p style="color: var(--text-muted); margin-bottom: 16px; font-size: var(--fs-sm);">
-                Periode: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }} hingga {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}
+                Periode: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }} hingga
+                {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}
             </p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
                 <!-- Pemasukan -->
-                <div style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-income);">
+                <div
+                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-income);">
                     <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Pemasukan</p>
                     <h3 style="color: var(--color-income); font-size: 24px; font-weight: 700;">
                         Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}
@@ -146,7 +172,8 @@
                 </div>
 
                 <!-- Pengeluaran -->
-                <div style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-expense);">
+                <div
+                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-expense);">
                     <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Pengeluaran</p>
                     <h3 style="color: var(--color-expense); font-size: 24px; font-weight: 700;">
                         Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}
@@ -154,7 +181,8 @@
                 </div>
 
                 <!-- Balance -->
-                <div style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--primary-color);">
+                <div
+                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--primary-color);">
                     <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Balance</p>
                     <h3 style="color: var(--primary-color); font-size: 24px; font-weight: 700;">
                         Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
@@ -201,7 +229,7 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             toggleFilterFields();
         });
     </script>

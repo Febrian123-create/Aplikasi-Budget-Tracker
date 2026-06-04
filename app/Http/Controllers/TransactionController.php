@@ -18,30 +18,51 @@ class TransactionController extends Controller
         $today = Carbon::today()->toDateString();
 
         $transactions = Transaction::where('user_id', Auth::id())
+            ->whereDate('transaction_date', Carbon::today())
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
-            ->get();
+            ->paginate(10);
 
-        $categories = Category::all();
+        // Calculate today's income and expenses
+        $totalIncomeToday = Transaction::where('user_id', Auth::id())
+            ->whereDate('transaction_date', Carbon::today())
+            ->where('transactionType_id', 1)
+            ->sum('total_amount');
 
-        return view('transactions.index', compact('transactions', 'categories', 'today'));
+        $totalExpenseToday = Transaction::where('user_id', Auth::id())
+            ->whereDate('transaction_date', Carbon::today())
+            ->where('transactionType_id', 2)
+            ->sum('total_amount');
+
+        $categories = Category::whereNotIn('category_id', [10, 11])->get();
+
+        return view('transactions.index', compact('transactions', 'categories', 'today', 'totalIncomeToday', 'totalExpenseToday'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'date' => 'required|date',
+            'date' => 'required|date|before_or_equal:today',
             'type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'category' => $request->input('type') === 'expense' ? 'required|exists:category,category_id' : 'nullable|exists:category,category_id',
+        ], [
+            'date.before_or_equal' => 'Tanggal transaksi tidak boleh melebihi hari ini.',
         ]);
 
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
+        $categoryId = null;
+        if ($validated['type'] === 'expense') {
+            $categoryId = $validated['category'];
+        } else {
+            $categoryId = $validated['category'] ?: 10;
+        }
+
         $transaction = Transaction::create([
             'user_id' => Auth::id(),
-            'category_id' => $validated['type'] === 'expense' ? $validated['category'] : null,
+            'category_id' => $categoryId,
             'transactionType_id' => $transactionTypeId,
             'total_amount' => $validated['amount'],
             'transaction_date' => $validated['date'],
@@ -55,31 +76,40 @@ class TransactionController extends Controller
 
     public function edit(Transaction $transaction)
     {
-        $categories = Category::all();
+        $categories = Category::whereNotIn('category_id', [10, 11])->get();
         return view('transactions.edit', compact('transaction', 'categories'));
     }
 
     public function update(Request $request, Transaction $transaction)
     {
         $validated = $request->validate([
-            'date' => 'required|date',
+            'date' => 'required|date|before_or_equal:today',
             'type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'category' => $request->input('type') === 'expense' ? 'required|exists:category,category_id' : 'nullable|exists:category,category_id',
+        ], [
+            'date.before_or_equal' => 'Tanggal transaksi tidak boleh melebihi hari ini.',
         ]);
 
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
+        $categoryId = null;
+        if ($validated['type'] === 'expense') {
+            $categoryId = $validated['category'];
+        } else {
+            $categoryId = $validated['category'] ?: 10;
+        }
+
         $transaction->update([
-            'category_id' => $validated['type'] === 'expense' ? $validated['category'] : null,
+            'category_id' => $categoryId,
             'transactionType_id' => $transactionTypeId,
             'total_amount' => $validated['amount'],
             'transaction_date' => $validated['date'],
             'description' => $validated['description'],
         ]);
 
-        
+
         TransactionSubject::getInstance()->notifyObservers('updated', $transaction);
 
         return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil diperbarui!');
@@ -90,7 +120,7 @@ class TransactionController extends Controller
         $deletedTransaction = clone $transaction;
         $transaction->delete();
 
-        
+
         TransactionSubject::getInstance()->notifyObservers('deleted', $deletedTransaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
@@ -117,22 +147,22 @@ class TransactionController extends Controller
             ->get();
 
         $categories = Category::all();
-        
+
         // Hitung total jika kategori dipilih
         $totalByCategory = 0;
         $isCategoryFiltered = $request->filled('category_id');
         if ($isCategoryFiltered) {
             $totalQuery = Transaction::where('user_id', Auth::id())
                 ->where('category_id', $request->category_id);
-            
+
             if ($request->filled('transactionType_id')) {
                 $totalQuery->where('transactionType_id', $request->transactionType_id);
             }
-            
+
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 $totalQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
             }
-            
+
             $totalByCategory = $totalQuery->sum('total_amount');
         }
 
@@ -140,22 +170,22 @@ class TransactionController extends Controller
         $totalIncome = 0;
         $totalExpense = 0;
         $isTypeFiltered = $request->filled('transactionType_id');
-        
+
         if ($isTypeFiltered) {
             // Jika jenis dipilih, hitung total untuk jenis tersebut
             $balanceQuery = Transaction::where('user_id', Auth::id())
                 ->where('transactionType_id', $request->transactionType_id);
-            
+
             if ($request->filled('category_id')) {
                 $balanceQuery->where('category_id', $request->category_id);
             }
-            
+
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 $balanceQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
             }
-            
+
             $balance = $balanceQuery->sum('total_amount');
-            
+
             if ($request->transactionType_id == 1) {
                 $totalIncome = $balance;
             } else {
@@ -165,20 +195,20 @@ class TransactionController extends Controller
             // Jika hanya tanggal atau tidak ada filter, hitung income dan expense terpisah
             $incomeQuery = Transaction::where('user_id', Auth::id())
                 ->where('transactionType_id', 1);
-            
+
             $expenseQuery = Transaction::where('user_id', Auth::id())
                 ->where('transactionType_id', 2);
-            
+
             if ($request->filled('category_id')) {
                 $incomeQuery->where('category_id', $request->category_id);
                 $expenseQuery->where('category_id', $request->category_id);
             }
-            
+
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 $incomeQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
                 $expenseQuery->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
             }
-            
+
             $totalIncome = $incomeQuery->sum('total_amount');
             $totalExpense = $expenseQuery->sum('total_amount');
         }
