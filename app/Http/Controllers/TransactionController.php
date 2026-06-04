@@ -144,7 +144,7 @@ class TransactionController extends Controller
 
         $transactions = $query->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
-            ->get();
+            ->paginate(10);
 
         $categories = Category::all();
 
