@@ -76,10 +76,6 @@
 
                     
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg);">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--text-muted); cursor: pointer;">
-                            <input type="checkbox" id="remember_me" name="remember" style="accent-color: var(--primary-color); width: 16px; height: 16px;">
-                            <span>Ingat saya</span>
-                        </label>
                         @if (Route::has('password.request'))
                             <a class="forgot-link" href="{{ route('password.request') }}" style="font-size: var(--fs-sm); font-weight: 500;">Lupa password?</a>
                         @endif
