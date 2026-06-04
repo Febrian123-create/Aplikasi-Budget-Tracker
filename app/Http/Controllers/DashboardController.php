@@ -18,10 +18,32 @@ class DashboardController extends Controller
         // Cek budget over-threshold saat dashboard dibuka → buat pop-up (dedup harian).
         app(\App\Services\BudgetService::class)->checkAllForUser(Auth::id());
 
+        $today = Carbon::today();
+
         $filterType = $request->input('filter_type', 'bulanan');
-        $year = $request->input('year') ? (int)$request->input('year') : Carbon::today()->year;
-        $month = $request->input('month') ? (int)$request->input('month') : Carbon::today()->month;
+        $year = $request->input('year') ? (int)$request->input('year') : $today->year;
+        $month = $request->input('month') ? (int)$request->input('month') : $today->month;
         $week = $request->input('week') ? (int)$request->input('week') : 1;
+
+        // Cek dan batasi agar input tidak melebihi tanggal hari ini
+        if ($year > $today->year) {
+            $year = $today->year;
+        }
+        if ($year === $today->year && $month > $today->month) {
+            $month = $today->month;
+        }
+        if ($year === $today->year && $month === $today->month) {
+            $todayDay = $today->day;
+            $currentWeekNum = 5;
+            if ($todayDay <= 7) $currentWeekNum = 1;
+            elseif ($todayDay <= 14) $currentWeekNum = 2;
+            elseif ($todayDay <= 21) $currentWeekNum = 3;
+            elseif ($todayDay <= 28) $currentWeekNum = 4;
+
+            if ($week > $currentWeekNum) {
+                $week = $currentWeekNum;
+            }
+        }
 
         $subject = new OverviewSubject();
         $subject->subscribe(new IncomeOverviewObserver());
@@ -56,6 +78,30 @@ class DashboardController extends Controller
             ->whereDate('transaction_date', Carbon::today()->toDateString())
             ->count();
 
+        // Cek status membership user
+        $user = Auth::user();
+        $isPremium = false;
+        if ($user && method_exists($user, 'membership') && $user->membership) {
+            $isPremium = strtolower($user->membership->membership_name) === 'premium';
+        }
+
+        $budgets = collect();
+        $categoryDistribution = null;
+        $chartColors = null;
+
+        if (!$isPremium) {
+            // Kategori budget highlight untuk user free
+            $budgets = \App\Models\Budget::where('user_id', Auth::id())
+                ->with('category')
+                ->get();
+        } else {
+            // Data chart distribusi pengeluaran untuk user membership (premium)
+            $transactionRepository = new \App\Repositories\TransactionRepository();
+            $chartService = new \App\Services\ChartService($transactionRepository);
+            $categoryDistribution = $chartService->getCategoryDistribution(Auth::id(), $month, $year);
+            $chartColors = \App\Helpers\ChartHelper::getChartColors();
+        }
+
         return view('dashboard', compact(
             'totalIncome',
             'totalExpense',
@@ -69,7 +115,11 @@ class DashboardController extends Controller
             'greeting',
             'userName',
             'currentDate',
-            'todayTransactionCount'
+            'todayTransactionCount',
+            'isPremium',
+            'budgets',
+            'categoryDistribution',
+            'chartColors'
         ));
     }
 }

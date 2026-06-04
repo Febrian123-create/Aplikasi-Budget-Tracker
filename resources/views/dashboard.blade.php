@@ -5,18 +5,18 @@
 @section('content')
     @php
         $months = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
             4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
             9 => 'September',
-            10 => 'Oktober',
+            10 => 'October',
             11 => 'November',
-            12 => 'Desember',
+            12 => 'December',
         ];
         $weeks = [
             1 => 'Minggu 1 (Tanggal 1 - 7)',
@@ -36,17 +36,14 @@
 
     <!-- Greeting Section -->
     <div style="margin-bottom: 32px;">
-        <h1 style="margin: 0 0 8px 0; font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px;">
-            Selamat Datang, {{ $userName }}!
-        </h1>
-        <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: var(--fs-base);">
-            {{ $currentDate }}
-        </p>
-        <p
-            style="margin: 0; color: var(--text-muted); font-size: var(--fs-sm); display: flex; align-items: center; gap: 6px;">
-            <i class="bi bi-check-circle" style="color: var(--primary-color);"></i>
-            Kamu memiliki <strong style="color: var(--text-dark);">{{ $todayTransactionCount }}</strong> transaksi hari ini
-        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <h1 style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px;">
+                Selamat Datang, {{ $userName }}!
+            </h1>
+            <p style="margin: 0; color: var(--text-muted); font-size: var(--fs-base); font-weight: 500;">
+                {{ $currentDate }}
+            </p>
+        </div>
         <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border-light);">
     </div>
 
@@ -57,7 +54,7 @@
 
             <div style="flex: 1; min-width: 150px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Rentang Waktu</label>
-                <select name="filter_type" id="filter_type" class="bunrek-select" onchange="toggleFilterFields()"
+                <select name="filter_type" id="filter_type" class="bunrek-select" onchange="toggleFilterFields(); restrictFutureDates();"
                     style="cursor: pointer;">
                     <option value="mingguan" {{ $filterType === 'mingguan' ? 'selected' : '' }}>Mingguan</option>
                     <option value="bulanan" {{ $filterType === 'bulanan' ? 'selected' : '' }}>Bulanan</option>
@@ -68,9 +65,13 @@
 
             <div id="month_wrapper" style="flex: 1; min-width: 150px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Bulan</label>
-                <select name="month" id="filter_month" class="bunrek-select" style="cursor: pointer;">
+                <select name="month" id="filter_month" class="bunrek-select" onchange="restrictFutureDates()" style="cursor: pointer;">
                     @foreach ($months as $num => $name)
-                        <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}
+                        @php
+                            $isFutureMonth = ($year == \Carbon\Carbon::today()->year && $num > \Carbon\Carbon::today()->month);
+                        @endphp
+                        <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }} {{ $isFutureMonth ? 'disabled' : '' }}>
+                            {{ $name }}
                         </option>
                     @endforeach
                 </select>
@@ -80,7 +81,17 @@
                 <label class="bunrek-label" style="margin-bottom: 6px;">Minggu</label>
                 <select name="week" id="filter_week" class="bunrek-select" style="cursor: pointer;">
                     @foreach ($weeks as $num => $desc)
-                        <option value="{{ $num }}" {{ $week === $num ? 'selected' : '' }}>{{ $desc }}
+                        @php
+                            $todayDay = \Carbon\Carbon::today()->day;
+                            $currentWeekNum = 5;
+                            if ($todayDay <= 7) $currentWeekNum = 1;
+                            elseif ($todayDay <= 14) $currentWeekNum = 2;
+                            elseif ($todayDay <= 21) $currentWeekNum = 3;
+                            elseif ($todayDay <= 28) $currentWeekNum = 4;
+                            $isFutureWeek = ($year == \Carbon\Carbon::today()->year && $month == \Carbon\Carbon::today()->month && $num > $currentWeekNum);
+                        @endphp
+                        <option value="{{ $num }}" {{ $week === $num ? 'selected' : '' }} {{ $isFutureWeek ? 'disabled' : '' }}>
+                            {{ $desc }}
                         </option>
                     @endforeach
                 </select>
@@ -88,8 +99,8 @@
 
             <div id="year_wrapper" style="flex: 1; min-width: 120px;">
                 <label class="bunrek-label" style="margin-bottom: 6px;">Tahun</label>
-                <select name="year" id="filter_year" class="bunrek-select" style="cursor: pointer;">
-                    @foreach (range(\Carbon\Carbon::today()->year - 5, \Carbon\Carbon::today()->year + 2) as $y)
+                <select name="year" id="filter_year" class="bunrek-select" onchange="restrictFutureDates()" style="cursor: pointer;">
+                    @foreach (range(\Carbon\Carbon::today()->year - 5, \Carbon\Carbon::today()->year) as $y)
                         <option value="{{ $y }}" {{ $year === $y ? 'selected' : '' }}>{{ $y }}
                         </option>
                     @endforeach
@@ -146,60 +157,115 @@
         </div>
     </div>
 
-    <div class="bunrek-card" style="margin-top: 24px;">
-        <div class="bunrek-card-header">
-            <h2 class="bunrek-card-title">
-                Ringkasan &mdash; <span
-                    style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }}
-                    - {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</span>
-            </h2>
+    @if(!$isPremium)
+        <!-- Free User: Highlight Budget Kategori -->
+        <div class="bunrek-card" style="margin-top: 24px;">
+            <div class="bunrek-card-header">
+                <h2 class="bunrek-card-title">
+                    <i class="bi bi-wallet2" style="color: var(--primary-color); margin-right: 8px;"></i> Highlight Budget Kategori
+                </h2>
+            </div>
+            <div class="bunrek-card-body">
+                @if($budgets->isEmpty())
+                    <div style="text-align: center; padding: var(--space-xl); background: var(--bg-light); border-radius: var(--radius-base);">
+                        <i class="bi bi-wallet2" style="font-size: 2.5rem; color: var(--text-light); display: block; margin-bottom: var(--space-sm);"></i>
+                        <p style="color: var(--text-muted); font-size: var(--fs-base); margin: 0;">Belum ada budget yang ditetapkan.</p>
+                        <p style="color: var(--text-light); font-size: var(--fs-xs); margin: 4px 0 16px;">Mulai buat perencanaan keuanganmu agar pengeluaran lebih terkontrol.</p>
+                        <a href="{{ route('budget.index') }}" class="btn-bunrek btn-primary" style="font-size: var(--fs-sm);">
+                            <i class="bi bi-plus-lg"></i> Atur Budget Kategori
+                        </a>
+                    </div>
+                @else
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg);">
+                        @foreach($budgets as $budget)
+                            @php
+                                $pct = min(100, $budget->getUsagePercentage());
+                                $spent = $budget->getCurrentSpending();
+                                $barColor = $pct >= 100 ? 'var(--color-expense)' : ($pct >= 80 ? '#f59e0b' : 'var(--color-income)');
+                            @endphp
+                            <div class="bunrek-card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+                                <div style="padding: var(--space-md) var(--space-lg);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                                        <div>
+                                            <div style="font-weight: 700; font-size: var(--fs-base); color: var(--text-dark);">
+                                                {{ $budget->category->category_name ?? 'Kategori #' . $budget->category_id }}
+                                            </div>
+                                            <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: capitalize;">{{ $budget->period }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="font-size: var(--fs-lg); font-weight: 800; color: {{ $barColor }}; margin-bottom: 4px;">
+                                        Rp {{ number_format($spent, 0, ',', '.') }}
+                                    </div>
+                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">
+                                        dari <strong>Rp {{ number_format($budget->amount, 0, ',', '.') }}</strong>
+                                    </div>
+
+                                    <div style="margin-top: var(--space-sm); background: var(--border-light); border-radius: 999px; height: 8px;">
+                                        <div style="width: {{ $pct }}%; background: {{ $barColor }}; height: 8px; border-radius: 999px; transition: width 0.4s;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                                        <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $pct }}% terpakai</span>
+                                        @if($pct >= 100)
+                                            <span style="font-size: var(--fs-xs); font-weight: 700; color: var(--color-expense);">Melebihi batas!</span>
+                                        @elseif($pct >= 80)
+                                            <span style="font-size: var(--fs-xs); font-weight: 700; color: #f59e0b;">Hampir habis</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
         </div>
-        <div class="bunrek-card-body">
-            <p style="color: var(--text-muted); margin-bottom: 16px; font-size: var(--fs-sm);">
-                Periode: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }} hingga
-                {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}
-            </p>
+    @else
+        <!-- Membership User: Ringkasan & Chart -->
+        <div class="bunrek-card" style="margin-top: 24px;">
+            <div class="bunrek-card-header">
+                <h2 class="bunrek-card-title">
+                    Ringkasan &mdash; <span style="color: var(--text-muted); margin-bottom: 16px; font-size: var(--fs-sm);">
+                    Periode: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }} hingga
+                    {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</span>
 
-            <div
-                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                <!-- Pemasukan -->
-                <div
-                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-income);">
-                    <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Pemasukan</p>
-                    <h3 style="color: var(--color-income); font-size: 24px; font-weight: 700;">
-                        Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}
-                    </h3>
-                </div>
+                </h2>   
+            </div>
+            <div class="bunrek-card-body">
+                @if($categoryDistribution && !$categoryDistribution['isEmpty'])
+                    <div>
+                        <h3 style="font-size: var(--fs-base); font-weight: 700; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-pie-chart-fill" style="color: var(--primary-color);"></i> Distribusi Pengeluaran
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; align-items: center;">
+                            <div style="position: relative; width: 100%; max-width: 200px; aspect-ratio: 1/1; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="donutChartDashboard" width="180" height="180"></canvas>
+                            </div>
+                            <div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 8px;">
+                                    @foreach($categoryDistribution['categories'] as $i => $cat)
+                                        <div style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm);">
+                                            <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ $chartColors[$i % count($chartColors)] }}; flex-shrink: 0;"></span>
+                                            <span style="flex-grow: 1; color: var(--text-dark); font-weight: 500;">{{ $cat['name'] }}</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">{{ $cat['percentage'] }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
-                <!-- Pengeluaran -->
-                <div
-                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--color-expense);">
-                    <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Pengeluaran</p>
-                    <h3 style="color: var(--color-expense); font-size: 24px; font-weight: 700;">
-                        Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}
-                    </h3>
-                </div>
-
-                <!-- Balance -->
-                <div
-                    style="padding: 16px; background: var(--bg-light); border-radius: var(--radius-base); border-left: 4px solid var(--primary-color);">
-                    <p style="color: var(--text-muted); font-size: var(--fs-sm); margin-bottom: 8px;">Balance</p>
-                    <h3 style="color: var(--primary-color); font-size: 24px; font-weight: 700;">
-                        Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
-                    </h3>
+                <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-top: 24px;">
+                    <a href="{{ route('transactions.index') }}" class="btn-bunrek btn-primary">
+                        <i class="bi bi-plus-circle"></i> Tambah Transaksi
+                    </a>
+                    <a href="{{ route('transactions.history') }}" class="btn-bunrek btn-secondary">
+                        <i class="bi bi-clock-history"></i> Lihat Riwayat
+                    </a>
                 </div>
             </div>
-
-            <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap;">
-                <a href="{{ route('transactions.index') }}" class="btn-bunrek btn-primary">
-                    <i class="bi bi-plus-circle"></i> Tambah Transaksi
-                </a>
-                <a href="{{ route('transactions.history') }}" class="btn-bunrek btn-secondary">
-                    <i class="bi bi-clock-history"></i> Lihat Riwayat
-                </a>
-            </div>
         </div>
-    </div>
+    @endif
 @endsection
 
 @push('scripts')
@@ -229,8 +295,104 @@
             }
         }
 
+        function restrictFutureDates() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth() + 1; // 1-indexed
+            const currentDay = today.getDate();
+
+            let currentWeek = 5;
+            if (currentDay <= 7) currentWeek = 1;
+            else if (currentDay <= 14) currentWeek = 2;
+            else if (currentDay <= 21) currentWeek = 3;
+            else if (currentDay <= 28) currentWeek = 4;
+
+            const filterYear = document.getElementById('filter_year');
+            const filterMonth = document.getElementById('filter_month');
+            const filterWeek = document.getElementById('filter_week');
+
+            if (!filterYear) return;
+
+            const selectedYear = parseInt(filterYear.value);
+            const selectedMonth = parseInt(filterMonth ? filterMonth.value : 0);
+
+            // Batasi tahun
+            Array.from(filterYear.options).forEach(opt => {
+                const val = parseInt(opt.value);
+                if (val > currentYear) {
+                    opt.disabled = true;
+                    if (opt.selected) {
+                        filterYear.value = currentYear;
+                    }
+                }
+            });
+
+            // Batasi bulan
+            if (filterMonth) {
+                Array.from(filterMonth.options).forEach(opt => {
+                    const val = parseInt(opt.value);
+                    if (selectedYear > currentYear || (selectedYear === currentYear && val > currentMonth)) {
+                        opt.disabled = true;
+                        if (opt.selected) {
+                            filterMonth.value = currentMonth;
+                        }
+                    } else {
+                        opt.disabled = false;
+                    }
+                });
+            }
+
+            // Batasi minggu
+            if (filterWeek) {
+                const updatedSelectedMonth = parseInt(filterMonth ? filterMonth.value : 0);
+                Array.from(filterWeek.options).forEach(opt => {
+                    const val = parseInt(opt.value);
+                    if (selectedYear > currentYear || 
+                        (selectedYear === currentYear && updatedSelectedMonth > currentMonth) ||
+                        (selectedYear === currentYear && updatedSelectedMonth === currentMonth && val > currentWeek)) {
+                        opt.disabled = true;
+                        if (opt.selected) {
+                            filterWeek.value = currentWeek;
+                        }
+                    } else {
+                        opt.disabled = false;
+                    }
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             toggleFilterFields();
+            restrictFutureDates();
         });
+
+        @if($isPremium && $categoryDistribution && !$categoryDistribution['isEmpty'])
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('donutChartDashboard').getContext('2d');
+            const catData = @json($categoryDistribution);
+            const colors = @json($chartColors);
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: catData.categories.map(c => c.name),
+                    datasets: [{
+                        data: catData.categories.map(c => c.amount),
+                        backgroundColor: catData.categories.map((_, i) => colors[i % colors.length]),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+        @endif
     </script>
 @endpush
