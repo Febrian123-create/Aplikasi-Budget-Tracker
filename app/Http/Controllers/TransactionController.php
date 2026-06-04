@@ -17,33 +17,14 @@ class TransactionController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        
         $transactions = Transaction::where('user_id', Auth::id())
-            ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        $totalIncome = Transaction::where('user_id', Auth::id())
-            ->whereIn('transactionType_id', function ($query) {
-                $query->select('transactionType_id')
-                    ->from('transactiontype')
-                    ->where('name', 'income');
-            })
-            ->sum('total_amount');
-
-        $totalExpense = Transaction::where('user_id', Auth::id())
-            ->whereIn('transactionType_id', function ($query) {
-                $query->select('transactionType_id')
-                    ->from('transactiontype')
-                    ->where('name', 'expense');
-            })
-            ->sum('total_amount');
-
-        $balance = $totalIncome - $totalExpense;
         $categories = Category::all();
 
-        return view('transactions.index', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'categories', 'today'));
+        return view('transactions.index', compact('transactions', 'categories', 'today'));
     }
 
     public function store(Request $request)
@@ -53,22 +34,20 @@ class TransactionController extends Controller
             'type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
-            'category' => 'required|exists:category,category_id',
+            'category' => $request->input('type') === 'expense' ? 'required|exists:category,category_id' : 'nullable|exists:category,category_id',
         ]);
 
-        
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
         $transaction = Transaction::create([
             'user_id' => Auth::id(),
-            'category_id' => $validated['category'],
+            'category_id' => $validated['type'] === 'expense' ? $validated['category'] : null,
             'transactionType_id' => $transactionTypeId,
             'total_amount' => $validated['amount'],
             'transaction_date' => $validated['date'],
             'description' => $validated['description'],
         ]);
 
-        
         TransactionSubject::getInstance()->notifyObservers('created', $transaction);
 
         return redirect()->back()->with('success', 'Transaksi berhasil ditambahkan!');
@@ -87,13 +66,13 @@ class TransactionController extends Controller
             'type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
-            'category' => 'required|exists:category,category_id',
+            'category' => $request->input('type') === 'expense' ? 'required|exists:category,category_id' : 'nullable|exists:category,category_id',
         ]);
 
         $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
 
         $transaction->update([
-            'category_id' => $validated['category'],
+            'category_id' => $validated['type'] === 'expense' ? $validated['category'] : null,
             'transactionType_id' => $transactionTypeId,
             'total_amount' => $validated['amount'],
             'transaction_date' => $validated['date'],

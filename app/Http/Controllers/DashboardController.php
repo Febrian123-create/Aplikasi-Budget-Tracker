@@ -5,43 +5,47 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\TransactionType;
+use App\Observers\OverviewSubject;
+use App\Observers\IncomeOverviewObserver;
+use App\Observers\ExpenseOverviewObserver;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Cek budget over-threshold saat dashboard dibuka → buat pop-up (dedup harian).
         app(\App\Services\BudgetService::class)->checkAllForUser(Auth::id());
 
-        // Ambil range 1 bulan terakhir
-        $endDate = Carbon::today();
-        $startDate = $endDate->copy()->subMonth();
+        $filterType = $request->input('filter_type', 'bulanan');
+        $year = $request->input('year') ? (int)$request->input('year') : Carbon::today()->year;
+        $month = $request->input('month') ? (int)$request->input('month') : Carbon::today()->month;
+        $week = $request->input('week') ? (int)$request->input('week') : 1;
 
-        // Total Pemasukan 1 bulan
-        $totalIncome = Transaction::where('user_id', Auth::id())
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->whereIn('transactionType_id', function ($query) {
-                $query->select('transactionType_id')
-                    ->from('transactiontype')
-                    ->where('name', 'income');
-            })
-            ->sum('total_amount');
+        $subject = new OverviewSubject();
+        $subject->subscribe(new IncomeOverviewObserver());
+        $subject->subscribe(new ExpenseOverviewObserver());
 
-        // Total Pengeluaran 1 bulan
-        $totalExpense = Transaction::where('user_id', Auth::id())
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->whereIn('transactionType_id', function ($query) {
-                $query->select('transactionType_id')
-                    ->from('transactiontype')
-                    ->where('name', 'expense');
-            })
-            ->sum('total_amount');
+        $subject->setFilter($filterType, $year, $month, $week, Auth::id());
 
-        // Total Balance
-        $balance = $totalIncome - $totalExpense;
+        $totalIncome = $subject->getTotalIncome();
+        $totalExpense = $subject->getTotalExpense();
+        $balance = $subject->getBalance();
+        $startDate = $subject->getStartDate();
+        $endDate = $subject->getEndDate();
 
-        return view('dashboard', compact('totalIncome', 'totalExpense', 'balance', 'startDate', 'endDate'));
+        return view('dashboard', compact(
+            'totalIncome',
+            'totalExpense',
+            'balance',
+            'startDate',
+            'endDate',
+            'filterType',
+            'year',
+            'month',
+            'week'
+        ));
     }
 }
+

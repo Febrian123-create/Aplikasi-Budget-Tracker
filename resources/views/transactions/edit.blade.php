@@ -199,7 +199,7 @@
             kategoriSelect.value = '';
             kategoriSelect.style.opacity = '0.4';
             kategoriSelect.style.cursor = 'not-allowed';
-            hiddenCategory.value = '10';
+            hiddenCategory.value = '';
             hiddenCategory.name = 'category';
             kategoriInfo.style.display = 'block';
         }
