@@ -1,86 +1,185 @@
 @extends('layouts.master')
 
+@section('page_title', 'Visualisasi')
+
 @push('styles')
     <style>
         .chart-card {
-            background: #fff; border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,.03); border: 1px solid #f0f0f0;
-            padding: 24px; transition: box-shadow .3s;
-            display: flex; flex-direction: column;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            padding: var(--space-lg);
+            transition: var(--transition-fast);
+            display: flex;
+            flex-direction: column;
         }
-        .chart-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,.08); }
-        .metric-card {
-            border-radius: 14px; padding: 24px;
-            position: relative; overflow: hidden; transition: transform .2s;
-            height: 100%; display: flex; flex-direction: column; justify-content: center;
+        .chart-card:hover { box-shadow: var(--shadow-md); }
+        .stats-row-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
         }
-        .metric-card:hover { transform: translateY(-3px); }
-        .metric-card .metric-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; margin-bottom: 14px;
+        .stat-card-icon.warning {
+            background: var(--color-warning-bg);
+            color: var(--color-warning);
         }
-        .metric-card .metric-label { font-size: 13px; font-weight: 500; opacity: .8; margin-bottom: 6px; }
-        .metric-card .metric-value { font-size: 22px; font-weight: 700; }
-        .mc-income  { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); color:#2e7d32; }
-        .mc-income  .metric-icon { background: rgba(46,125,50,.15); color:#2e7d32; }
-        .mc-expense { background: linear-gradient(135deg,#ffebee,#ffcdd2); color:#c62828; }
-        .mc-expense .metric-icon { background: rgba(198,40,40,.15); color:#c62828; }
-        .mc-saldo-pos { background: linear-gradient(135deg,#e3f2fd,#bbdefb); color:#1565c0; }
-        .mc-saldo-pos .metric-icon { background: rgba(21,101,192,.15); color:#1565c0; }
-        .mc-saldo-neg { background: linear-gradient(135deg,#fce4ec,#f8bbd0); color:#ad1457; }
-        .mc-saldo-neg .metric-icon { background: rgba(173,20,87,.15); color:#ad1457; }
-        .mc-ratio { background: linear-gradient(135deg,#fff3e0,#ffe0b2); color:#e65100; }
-        .mc-ratio .metric-icon { background: rgba(230,81,0,.15); color:#e65100; }
-        .progress-bar-custom { height:8px; border-radius:4px; background:rgba(0,0,0,.1); overflow:hidden; margin-top:10px; }
-        .progress-bar-custom .fill { height:100%; border-radius:4px; transition:width 1s ease; }
-        .fill-green { background:#43a047; } .fill-yellow { background:#fb8c00; } .fill-red { background:#e53935; }
+        .stat-progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-light);
+            overflow: hidden;
+            margin-top: var(--space-sm);
+        }
+        .stat-progress-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+        .fill-green { background: var(--color-income); }
+        .fill-yellow { background: var(--color-warning); }
+        .fill-red { background: var(--color-expense); }
         .warning-banner {
-            background: linear-gradient(135deg,#fff3e0,#ffe0b2);
-            border:1px solid #ffb74d; border-radius:12px; padding:16px 20px;
-            display:flex; align-items:center; gap:12px; color:#e65100; font-weight:500; margin-bottom:24px;
+            background: var(--color-warning-bg);
+            border: 1px solid var(--color-warning);
+            border-radius: var(--radius-md);
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            color: var(--color-warning);
+            font-weight: 500;
+            margin-bottom: var(--space-lg);
         }
-        .empty-state { text-align:center; padding:48px 24px; color:#9e9e9e; }
-        .empty-state .empty-icon { font-size:56px; margin-bottom:16px; opacity:.4; }
-        .empty-state p { font-size:15px; margin-bottom:16px; }
+        .empty-state { text-align: center; padding: var(--space-2xl) var(--space-lg); color: var(--text-light); }
+        .empty-state .empty-icon { font-size: 3.5rem; margin-bottom: var(--space-md); opacity: .4; }
+        .empty-state p { font-size: var(--fs-base); margin-bottom: var(--space-md); color: var(--text-muted); }
         .empty-state .cta-btn {
-            display:inline-block; padding:10px 28px; background:#6366f1;
-            color:#fff; border-radius:10px; text-decoration:none; font-weight:600;
+            display: inline-block;
+            padding: 10px 28px;
+            background: var(--primary-color);
+            color: #fff;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
         }
         .section-title {
-            font-size:18px; font-weight:700; color:#1a1a2e;
-            margin-bottom:20px; display:flex; align-items:center; gap:10px;
+            font-size: var(--fs-md);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
         }
-        .section-title i { color:#6366f1; }
-        .filter-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-        .filter-bar select, .filter-bar .toggle-btn {
-            padding:8px 16px; border:1px solid #e0e0e0; border-radius:10px;
-            background:#fff; font-size:13px; color:#333; cursor:pointer; transition:border-color .2s;
+        .section-title i { color: var(--primary-color); }
+        .charts-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
         }
-        .toggle-btn.active { background:#6366f1; color:#fff; border-color:#6366f1; }
+        .charts-period {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: var(--fs-base);
+            font-weight: 500;
+        }
+        .filter-bar { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+        .filter-bar .bunrek-select { min-width: 130px; height: 42px; }
+        .filter-bar .toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-white);
+            font-size: var(--fs-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .toggle-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        #pieLegend {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: var(--space-md);
+        }
         .legend-item {
-            display:flex; align-items:center; gap:10px; padding:8px 12px;
-            border-radius:8px; cursor:pointer; transition:background .2s; font-size:13px;
+            display: grid;
+            grid-template-columns: 12px 1fr auto 56px;
+            gap: var(--space-sm);
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background .2s;
+            font-size: var(--fs-sm);
         }
-        .legend-item:hover { background:#f5f5f5; }
-        .legend-item.hidden-segment { opacity:.4; text-decoration:line-through; }
-        .legend-dot { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
-        .legend-name { flex:1; font-weight:500; color:#333; }
-        .legend-amount { font-weight:600; color:#555; }
-        .legend-pct { font-size:12px; color:#999; min-width:45px; text-align:right; }
-        /* Monefy */
-        #monefyOuter { position:relative; width:100%; max-width:420px; aspect-ratio:1/1; margin:0 auto; display:flex; align-items:center; justify-content:center; min-height:360px; }
-        #donutChart  { width:100% !important; height:100% !important; z-index:1; }
-        #iconSvg     { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-        #monefyCenter { position:absolute; inset:0; text-align:center; pointer-events:none; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 0 16px; }
-        .monefy-icon  { position:absolute; pointer-events:none; z-index:3; transition: all 0.3s ease; }
-        
-        /* CSS Grid Layouts */
-        .grid-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 24px; }
-        .grid-charts-1 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
-        .grid-charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .legend-item:hover { background: var(--bg-light); }
+        .legend-item.hidden-segment { opacity: .4; text-decoration: line-through; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+        .legend-name { font-weight: 500; color: var(--text-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .legend-amount { font-weight: 600; color: var(--text-body); white-space: nowrap; }
+        .legend-pct { font-size: var(--fs-xs); color: var(--text-muted); text-align: right; }
+        .donut-chart-wrap {
+            position: relative;
+            width: 100%;
+            min-height: 320px;
+            aspect-ratio: 1 / 1;
+            max-height: 440px;
+            margin: 0 auto;
+        }
+        #donutChart { width: 100% !important; height: 100% !important; }
+        .donut-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            text-align: center;
+            padding: 28%;
+        }
+        .donut-center-label {
+            font-size: var(--fs-xs);
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+        .donut-center-value {
+            font-size: var(--fs-xl);
+            font-weight: 800;
+            color: var(--color-expense);
+            line-height: 1.2;
+            margin-top: 4px;
+        }
+        .area-chart-wrap {
+            position: relative;
+            height: 380px;
+            width: 100%;
+        }
+        .grid-charts-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+        .grid-charts-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
         @media (max-width: 992px) {
+            .stats-row-4 { grid-template-columns: repeat(2, 1fr); }
             .grid-charts-1, .grid-charts-2 { grid-template-columns: 1fr; }
+            .donut-chart-wrap { max-height: none; }
+        }
+        @media (max-width: 576px) {
+            .stats-row-4 { grid-template-columns: 1fr; }
+            .legend-item { grid-template-columns: 12px 1fr auto; }
+            .legend-pct { display: none; }
         }
         /* Area chart blur */
         .blur-overlay { position:relative; }
@@ -135,30 +234,25 @@
 @endpush
 
 @section('content')
-<div class="container">
-  <div class="page-inner">
 
-    {{-- HEADER --}}
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap" style="gap:12px;">
-      <div>
-        <h3 class="fw-bold mb-1" style="color:#1a1a2e;">Visualisasi Keuangan</h3>
-        <p class="text-muted mb-0">
-          {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}
-          @if(!$isPremium)
-            <span class="badge bg-secondary ms-2">Free</span>
-          @else
-            <span class="badge ms-2" style="background:#6366f1;">Premium</span>
-          @endif
-        </p>
-      </div>
+    {{-- PERIOD & FILTER --}}
+    <div class="charts-filter-bar">
+      <p class="charts-period">
+        {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}
+        @if(!$isPremium)
+          <span class="badge bg-secondary ms-2">Free</span>
+        @else
+          <span class="badge ms-2" style="background:var(--primary-color);">Premium</span>
+        @endif
+      </p>
       @if($canSelectMonth)
         <form method="GET" action="{{ route('charts.index') }}" class="filter-bar">
-          <select name="bulan" onchange="this.form.submit()">
+          <select name="bulan" class="bunrek-select" onchange="this.form.submit()">
             @foreach($availableMonths as $m)
               <option value="{{ $m['value'] }}" {{ $m['selected'] ? 'selected' : '' }}>{{ $m['label'] }}</option>
             @endforeach
           </select>
-          <select name="tahun" onchange="this.form.submit()">
+          <select name="tahun" class="bunrek-select" onchange="this.form.submit()">
             @foreach($availableYears as $y)
               <option value="{{ $y['value'] }}" {{ $y['selected'] ? 'selected' : '' }}>{{ $y['label'] }}</option>
             @endforeach
@@ -176,100 +270,115 @@
       </div>
     @endif
 
-    {{-- METRIC CARDS --}}
-    <div class="grid-metrics">
-      <div class="metric-card mc-income">
-        <div class="metric-icon"><i class="bi bi-arrow-down-circle"></i></div>
-        <div class="metric-label">Total Pemasukan</div>
-        <div class="metric-value">{{ $metricCards['totalIncomeFormatted'] }}</div>
+    {{-- SUMMARY CARDS --}}
+    <div class="stats-row-4">
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-label">Total Pemasukan</span>
+          <div class="stat-card-icon income">
+            <i class="bi bi-arrow-down-left-circle"></i>
+          </div>
+        </div>
+        <div class="stat-card-value text-income">{{ $metricCards['totalIncomeFormatted'] }}</div>
       </div>
-      <div class="metric-card mc-expense">
-        <div class="metric-icon"><i class="bi bi-arrow-up-circle"></i></div>
-        <div class="metric-label">Total Pengeluaran</div>
-        <div class="metric-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-label">Total Pengeluaran</span>
+          <div class="stat-card-icon expense">
+            <i class="bi bi-arrow-up-right-circle"></i>
+          </div>
+        </div>
+        <div class="stat-card-value text-expense">{{ $metricCards['totalExpenseFormatted'] }}</div>
       </div>
-      <div class="metric-card {{ $metricCards['isSaldoPositif'] ? 'mc-saldo-pos' : 'mc-saldo-neg' }}">
-        <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
-        <div class="metric-label">Saldo</div>
-        <div class="metric-value">{{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}</div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-label">Saldo</span>
+          <div class="stat-card-icon balance">
+            <i class="bi bi-wallet2"></i>
+          </div>
+        </div>
+        <div class="stat-card-value" style="color: {{ $metricCards['isSaldoPositif'] ? 'var(--primary-color)' : 'var(--color-expense)' }};">
+          {{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}
+        </div>
       </div>
-      <div class="metric-card mc-ratio">
-        <div class="metric-icon"><i class="bi bi-percent"></i></div>
-        <div class="metric-label">Rasio Pengeluaran</div>
-        <div class="metric-value">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
-        <div class="progress-bar-custom">
-          <div class="fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-label">Rasio Pengeluaran</span>
+          <div class="stat-card-icon warning">
+            <i class="bi bi-percent"></i>
+          </div>
+        </div>
+        <div class="stat-card-value" style="color: var(--color-warning);">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
+        <div class="stat-progress-bar">
+          <div class="stat-progress-fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
         </div>
       </div>
     </div>
 
-    {{-- ROW 1: MONEFY DONUT + AREA CHART --}}
+    {{-- ROW 1: DONUT + AREA CHART --}}
     <div class="grid-charts-1">
       <div class="chart-card">
-          <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Pengeluaran</div>
-          @if($categoryDistribution['isEmpty'] && $categoryDistribution['allIncome'])
-            <div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada pengeluaran bulan ini!</p></div>
-          @elseif($categoryDistribution['isEmpty'])
-            <div class="empty-state">
-              <div class="empty-icon">📊</div><p>Belum ada pengeluaran bulan ini.</p>
-              <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
-            </div>
-          @else
-            <div id="monefyOuter">
-              <canvas id="donutChart" width="240" height="240"></canvas>
-              <svg id="iconSvg"></svg>
-              <div id="monefyCenter">
-                <div style="font-size:12px;color:#6b7280;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Total Pengeluaran</div>
-                <div style="font-size:22px;font-weight:800;color:#dc2626;line-height:1.1;">{{ $categoryDistribution['totalFormatted'] }}</div>
-              </div>
-            </div>
-            <div class="mt-3" id="pieLegend">
-              @foreach($categoryDistribution['categories'] as $i => $cat)
-                <div class="legend-item" data-index="{{ $i }}" onclick="togglePieSegment({{ $i }})">
-                  <span class="legend-dot" style="background:{{ $chartColors[$i % count($chartColors)] }}"></span>
-                  <span class="legend-name">{{ $cat['name'] }}</span>
-                  <span class="legend-amount">{{ $cat['formatted'] }}</span>
-                  <span class="legend-pct">{{ $cat['percentage'] }}</span>
-                </div>
-              @endforeach
-            </div>
-          @endif
-        </div>
-      </div>
-      <div class="d-flex flex-column gap-3">
-        <div class="chart-card" style="position: relative; flex: 1;">
-          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
-            <div class="section-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tren Keuangan</div>
-            <div class="filter-bar">
-              <button class="toggle-btn active" id="btnArea" onclick="setAreaMode('area')">Tren</button>
-              <button class="toggle-btn" id="btnMom"  onclick="setAreaMode('mom')">% MoM</button>
-              @if($isPremium)
-                <select id="rangeSelect" onchange="changeRange(this.value)">
-                  <option value="3"  {{ $barRange==3  ? 'selected':'' }}>3 Bulan</option>
-                  <option value="6"  {{ $barRange==6  ? 'selected':'' }}>6 Bulan</option>
-                  <option value="12" {{ $barRange==12 ? 'selected':'' }}>Tahun ini</option>
-                </select>
-              @else
-                <span class="text-muted" style="font-size:12px;">Maks. 3 bulan</span>
-              @endif
+        <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Pengeluaran</div>
+        @if($categoryDistribution['isEmpty'] && $categoryDistribution['allIncome'])
+          <div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada pengeluaran bulan ini!</p></div>
+        @elseif($categoryDistribution['isEmpty'])
+          <div class="empty-state">
+            <div class="empty-icon">📊</div><p>Belum ada pengeluaran bulan ini.</p>
+            <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
+          </div>
+        @else
+          <div class="donut-chart-wrap">
+            <canvas id="donutChart"></canvas>
+            <div class="donut-center">
+              <div class="donut-center-label">Total Pengeluaran</div>
+              <div class="donut-center-value">{{ $categoryDistribution['totalFormatted'] }}</div>
             </div>
           </div>
-          @if($monthlyChartData['isEmpty'])
-            <div class="empty-state">
-              <div class="empty-icon">📈</div><p>Belum ada data transaksi.</p>
-              <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
-            </div>
-          @else
-            @if($monthlyChartData['lessThanTwoMonths'])
-              <div class="alert alert-info" style="border-radius:10px;font-size:13px;">
-                <i class="bi bi-info-circle me-1"></i> Butuh minimal 2 bulan data untuk melihat tren.
+          <div id="pieLegend">
+            @foreach($categoryDistribution['categories'] as $i => $cat)
+              <div class="legend-item" data-index="{{ $i }}" onclick="togglePieSegment({{ $i }})">
+                <span class="legend-dot" style="background:{{ $chartColors[$i % count($chartColors)] }}"></span>
+                <span class="legend-name">{{ $cat['name'] }}</span>
+                <span class="legend-amount">{{ $cat['formatted'] }}</span>
+                <span class="legend-pct">{{ $cat['percentage'] }}</span>
               </div>
+            @endforeach
+          </div>
+        @endif
+      </div>
+
+      <div class="chart-card">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
+          <div class="section-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tren Keuangan</div>
+          <div class="filter-bar">
+            <button class="toggle-btn active" id="btnArea" onclick="setAreaMode('area')">Tren</button>
+            <button class="toggle-btn" id="btnMom" onclick="setAreaMode('mom')">% MoM</button>
+            @if($isPremium)
+              <select id="rangeSelect" class="bunrek-select" style="min-width:110px;height:38px;" onchange="changeRange(this.value)">
+                <option value="3"  {{ $barRange==3  ? 'selected':'' }}>3 Bulan</option>
+                <option value="6"  {{ $barRange==6  ? 'selected':'' }}>6 Bulan</option>
+                <option value="12" {{ $barRange==12 ? 'selected':'' }}>Tahun ini</option>
+              </select>
+            @else
+              <span style="font-size:var(--fs-xs);color:var(--text-muted);">Maks. 3 bulan</span>
             @endif
-            <div style="position:relative;"><canvas id="areaChart" height="280"></canvas></div>
-          @endif
+          </div>
         </div>
+        @if($monthlyChartData['isEmpty'])
+          <div class="empty-state">
+            <div class="empty-icon">📈</div><p>Belum ada data transaksi.</p>
+            <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
+          </div>
+        @else
+          @if($monthlyChartData['lessThanTwoMonths'])
+            <div class="alert alert-info" style="border-radius:var(--radius-md);font-size:var(--fs-sm);">
+              <i class="bi bi-info-circle me-1"></i> Butuh minimal 2 bulan data untuk melihat tren.
+            </div>
+          @endif
+          <div class="area-chart-wrap"><canvas id="areaChart"></canvas></div>
+        @endif
         @if(!$isPremium && $barRange >= 3)
-          <div class="chart-card blur-overlay" style="min-height:80px;">
+          <div class="blur-overlay" style="position:relative;min-height:80px;margin-top:var(--space-md);border-radius:var(--radius-md);">
             <div class="upgrade-badge"><i class="bi bi-gem me-2"></i> Upgrade ke Premium<br><small style="font-weight:400;opacity:.9;">Lihat data hingga 12 bulan</small></div>
           </div>
         @endif
@@ -277,11 +386,11 @@
     </div>
 
     {{-- ROW 2: HEATMAP --}}
-    <div style="margin-bottom: 24px;">
-        <div class="chart-card">
+    <div style="margin-bottom: var(--space-lg);">
+      <div class="chart-card">
           <div class="section-title">
             <i class="bi bi-calendar3"></i> Heatmap Pengeluaran Harian
-            <span style="font-size:13px;color:#9e9e9e;font-weight:400;">— {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}</span>
+            <span style="font-size:var(--fs-sm);color:var(--text-muted);font-weight:400;">— {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}</span>
           </div>
           @php
             $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
@@ -330,61 +439,57 @@
     {{-- ROW 3: COMPARISON + HEALTH SCORE --}}
     <div class="grid-charts-2">
       <div class="chart-card">
-          <div class="section-title">
-            <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
-            <span style="font-size:12px;color:#9e9e9e;font-weight:400;">vs {{ $monthComparison['prevLabel'] }}</span>
-          </div>
-          @if($monthComparison['isEmpty'])
-            <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">📉</div><p>Belum ada data untuk dibandingkan.</p></div>
-          @else
-            <div style="position:relative;"><canvas id="comparisonChart" height="260"></canvas></div>
-            <div class="mt-3 d-flex flex-wrap gap-2">
-              @foreach($monthComparison['comparison'] as $item)
-                @if($item['change'] !== null)
-                  <span class="change-badge {{ $item['isIncrease'] ? 'change-up':'change-down' }}">
-                    <i class="bi {{ $item['isIncrease'] ? 'bi-arrow-up-short':'bi-arrow-down-short' }}"></i>
-                    {{ $item['name'] }}: {{ $item['isIncrease'] ? '+':'' }}{{ $item['change'] }}%
-                  </span>
-                @else
-                  <span class="change-badge change-nil">{{ $item['name'] }}: baru</span>
-                @endif
-              @endforeach
-            </div>
-          @endif
+        <div class="section-title">
+          <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
+          <span style="font-size:var(--fs-xs);color:var(--text-muted);font-weight:400;">vs {{ $monthComparison['prevLabel'] }}</span>
         </div>
+        @if($monthComparison['isEmpty'])
+          <div class="empty-state" style="padding:var(--space-xl) 0;"><div class="empty-icon">📉</div><p>Belum ada data untuk dibandingkan.</p></div>
+        @else
+          <div class="area-chart-wrap" style="height:260px;"><canvas id="comparisonChart"></canvas></div>
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            @foreach($monthComparison['comparison'] as $item)
+              @if($item['change'] !== null)
+                <span class="change-badge {{ $item['isIncrease'] ? 'change-up':'change-down' }}">
+                  <i class="bi {{ $item['isIncrease'] ? 'bi-arrow-up-short':'bi-arrow-down-short' }}"></i>
+                  {{ $item['name'] }}: {{ $item['isIncrease'] ? '+':'' }}{{ $item['change'] }}%
+                </span>
+              @else
+                <span class="change-badge change-nil">{{ $item['name'] }}: baru</span>
+              @endif
+            @endforeach
+          </div>
+        @endif
       </div>
 
       <div class="chart-card">
-          <div class="section-title"><i class="bi bi-heart-pulse-fill"></i> Financial Health Score</div>
-          @if($healthScore['isEmpty'])
-            <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">🏥</div><p>{{ $healthScore['tips'] }}</p></div>
-          @else
-            <div class="health-gauge-wrap">
-              <canvas id="healthGauge"></canvas>
-              <div class="health-gauge-center">
-                <div class="health-score-num" style="color:{{ $healthScore['color'] }};">{{ $healthScore['score'] }}</div>
-                <div class="health-score-label" style="color:{{ $healthScore['color'] }};">{{ $healthScore['label'] }}</div>
-              </div>
+        <div class="section-title"><i class="bi bi-heart-pulse-fill"></i> Financial Health Score</div>
+        @if($healthScore['isEmpty'])
+          <div class="empty-state" style="padding:var(--space-xl) 0;"><div class="empty-icon">🏥</div><p>{{ $healthScore['tips'] }}</p></div>
+        @else
+          <div class="health-gauge-wrap">
+            <canvas id="healthGauge"></canvas>
+            <div class="health-gauge-center">
+              <div class="health-score-num" style="color:{{ $healthScore['color'] }};">{{ $healthScore['score'] }}</div>
+              <div class="health-score-label" style="color:{{ $healthScore['color'] }};">{{ $healthScore['label'] }}</div>
             </div>
-            <div class="mt-3">
-              @foreach($healthScore['components'] as $comp)
-                <div class="health-comp-row">
-                  <div class="health-comp-name">{{ $comp['name'] }} <span style="color:#bbb;font-size:10px;">({{ $comp['weight'] }})</span></div>
-                  <div class="health-comp-bar-wrap">
-                    <div class="health-comp-bar" style="width:{{ $comp['score'] }}%;background:{{ $comp['score']>=70?'#22C55E':($comp['score']>=40?'#F59E0B':'#EF4444') }};"></div>
-                  </div>
-                  <div class="health-comp-score">{{ $comp['score'] }}</div>
+          </div>
+          <div class="mt-3">
+            @foreach($healthScore['components'] as $comp)
+              <div class="health-comp-row">
+                <div class="health-comp-name">{{ $comp['name'] }} <span style="color:var(--text-light);font-size:10px;">({{ $comp['weight'] }})</span></div>
+                <div class="health-comp-bar-wrap">
+                  <div class="health-comp-bar" style="width:{{ $comp['score'] }}%;background:{{ $comp['score']>=70?'#22C55E':($comp['score']>=40?'#F59E0B':'#EF4444') }};"></div>
                 </div>
-              @endforeach
-            </div>
-            <div class="tips-box"><i class="bi bi-lightbulb-fill"></i><span>{{ $healthScore['tips'] }}</span></div>
-          @endif
-        </div>
+                <div class="health-comp-score">{{ $comp['score'] }}</div>
+              </div>
+            @endforeach
+          </div>
+          <div class="tips-box"><i class="bi bi-lightbulb-fill"></i><span>{{ $healthScore['tips'] }}</span></div>
+        @endif
       </div>
     </div>
 
-  </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -401,97 +506,52 @@ document.addEventListener('DOMContentLoaded', function () {
     function formatRupiah(n) {
         return 'Rp ' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
-    function formatRupiahRingkas(n) {
-        if (n >= 1e9) return (n/1e9).toFixed(1).replace('.0','').replace('.',',')+'M';
-        if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','').replace('.',',')+'jt';
-        if (n >= 1e3) return (n/1e3).toFixed(1).replace('.0','').replace('.',',')+'rb';
-        return n.toString();
-    }
-    function getCategoryIcon(name) {
-        const map = {
-            'food':'bi bi-egg-fried','transport':'bi bi-car-front-fill',
-            'bills':'bi bi-receipt-cutoff','clothes':'bi bi-bag-fill',
-            'health':'bi bi-heart-pulse-fill','grocery':'bi bi-cart3',
-            'house':'bi bi-house-fill','communications':'bi bi-telephone-fill',
-            'other':'bi bi-three-dots','lainnya':'bi bi-collection-fill',
-        };
-        return map[name.toLowerCase()] || 'bi bi-tag-fill';
+    function formatRupiahAxis(n) {
+        const abs = Math.abs(n);
+        if (abs >= 1e9) {
+            const val = (n / 1e9).toFixed(1).replace('.0', '').replace('.', ',');
+            return 'Rp ' + val + 'M';
+        }
+        if (abs >= 1e6) {
+            const val = (n / 1e6).toFixed(1).replace('.0', '').replace('.', ',');
+            return 'Rp ' + val + 'jt';
+        }
+        if (abs >= 1e3) {
+            const val = (n / 1e3).toFixed(1).replace('.0', '').replace('.', ',');
+            return 'Rp ' + val + 'rb';
+        }
+        return formatRupiah(n);
     }
 
-    // ===== MONEFY DONUT =====
+    // ===== DONUT CHART =====
     let pieChart = null;
     let hiddenSegments = new Set();
-
-    function positionIcons(chart) {
-        const outer = document.getElementById('monefyOuter');
-        const svg   = document.getElementById('iconSvg');
-        const centerEl = document.getElementById('monefyCenter');
-        if (!outer || !svg) return;
-        svg.innerHTML = '';
-        outer.querySelectorAll('.monefy-icon').forEach(e => e.remove());
-        const meta = chart.getDatasetMeta(0);
-        if (!meta.data.length) return;
-        const canvas = document.getElementById('donutChart');
-        if (!canvas) return;
-        const outerRect = outer.getBoundingClientRect();
-        const canvasRect = canvas.getBoundingClientRect();
-        const offsetX = canvasRect.left - outerRect.left;
-        const offsetY = canvasRect.top - outerRect.top;
-        
-        const ccx = meta.data[0].x, ccy = meta.data[0].y;
-        const outerR = meta.data[0].outerRadius;
-        const wcx = offsetX + ccx, wcy = offsetY + ccy;
-        const iconR = outerR + 50, pctR = outerR + 80, iconSz = 36;
-
-        catData.categories.forEach((cat, i) => {
-            const arc = meta.data[i]; if (!arc) return;
-            const mid = (arc.startAngle + arc.endAngle) / 2;
-            const col = colors[i % colors.length];
-            const ix = wcx + Math.cos(mid)*iconR, iy = wcy + Math.sin(mid)*iconR;
-            const iconDiv = document.createElement('div');
-            iconDiv.className = 'monefy-icon';
-            Object.assign(iconDiv.style, {
-                left:(ix-iconSz/2)+'px', top:(iy-iconSz/2)+'px',
-                width:iconSz+'px', height:iconSz+'px', borderRadius:'50%',
-                background:col+'22', border:'2px solid '+col,
-                display:'flex', alignItems:'center', justifyContent:'center',
-            });
-            iconDiv.innerHTML = `<i class="${getCategoryIcon(cat.name)}" style="color:${col};font-size:15px;"></i>`;
-            outer.appendChild(iconDiv);
-            const px = wcx+Math.cos(mid)*pctR, py = wcy+Math.sin(mid)*pctR;
-            const pctDiv = document.createElement('div');
-            pctDiv.className = 'monefy-icon';
-            Object.assign(pctDiv.style, { left:(px-18)+'px', top:(py-9)+'px', fontSize:'11px', fontWeight:'700', color:col, whiteSpace:'nowrap' });
-            pctDiv.textContent = cat.percentNum+'%';
-            outer.appendChild(pctDiv);
-            const x1 = wcx+Math.cos(mid)*(outerR+3), y1 = wcy+Math.sin(mid)*(outerR+3);
-            const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-            line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-            line.setAttribute('x2',ix); line.setAttribute('y2',iy);
-            line.setAttribute('stroke',col); line.setAttribute('stroke-width','1.5'); line.setAttribute('stroke-opacity','0.5');
-            svg.appendChild(line);
-        });
-        if (centerEl) { centerEl.style.left=(wcx-60)+'px'; centerEl.style.top=(wcy-42)+'px'; }
-    }
 
     if (!catData.isEmpty && document.getElementById('donutChart')) {
         const ctx = document.getElementById('donutChart').getContext('2d');
         pieChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: catData.categories.map(c=>c.name),
-                datasets: [{ data: catData.categories.map(c=>c.amount), backgroundColor: catData.categories.map((_,i)=>colors[i%colors.length]), borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
+                labels: catData.categories.map(c => c.name),
+                datasets: [{
+                    data: catData.categories.map(c => c.amount),
+                    backgroundColor: catData.categories.map((_, i) => colors[i % colors.length]),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 8
+                }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false, cutout: '62%',
-                animation: { onComplete: function(e){ positionIcons(e.chart); } },
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
                 plugins: {
-                    legend: { display:false },
+                    legend: { display: false },
                     tooltip: {
                         enabled: true,
-                        position: 'nearest',
-                        displayColors: false,
-                        backgroundColor:'#1a1a2e', padding:12, cornerRadius:10,
+                        backgroundColor: '#1a1a2e',
+                        padding: 12,
+                        cornerRadius: 10,
                         callbacks: {
                             title: items => catData.categories[items[0].dataIndex].name,
                             label: ctx => {
@@ -503,28 +563,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-        
-        window.addEventListener('resize', () => {
-            if (pieChart) {
-                pieChart.resize();
-                positionIcons(pieChart);
-            }
-        });
     }
 
     window.togglePieSegment = function(index) {
         if (!pieChart) return;
         const item = document.querySelector(`.legend-item[data-index="${index}"]`);
-        if (hiddenSegments.has(index)) { hiddenSegments.delete(index); item.classList.remove('hidden-segment'); pieChart.show(0,index); }
-        else { hiddenSegments.add(index); item.classList.add('hidden-segment'); pieChart.hide(0,index); }
-        let vis=0; catData.categories.forEach((c,i)=>{ if(!hiddenSegments.has(i)) vis+=c.amount; });
-        document.querySelectorAll('.legend-item').forEach((el,i)=>{
-            if(!hiddenSegments.has(i)){
-                const p = vis>0?((catData.categories[i].amount/vis)*100).toFixed(1):0;
-                el.querySelector('.legend-pct').textContent = String(p).replace('.',',')+' %';
+        if (hiddenSegments.has(index)) {
+            hiddenSegments.delete(index);
+            item.classList.remove('hidden-segment');
+            pieChart.show(0, index);
+        } else {
+            hiddenSegments.add(index);
+            item.classList.add('hidden-segment');
+            pieChart.hide(0, index);
+        }
+        let vis = 0;
+        catData.categories.forEach((c, i) => { if (!hiddenSegments.has(i)) vis += c.amount; });
+        document.querySelectorAll('.legend-item').forEach((el, i) => {
+            if (!hiddenSegments.has(i)) {
+                const p = vis > 0 ? ((catData.categories[i].amount / vis) * 100).toFixed(1) : 0;
+                el.querySelector('.legend-pct').textContent = String(p).replace('.', ',') + ' %';
             }
         });
-        setTimeout(()=>{ if(pieChart) positionIcons(pieChart); }, 450);
     };
 
     // ===== AREA CHART =====
@@ -538,25 +598,57 @@ document.addEventListener('DOMContentLoaded', function () {
         const months = monthData.months;
 
         if (areaMode === 'area') {
-            const ig = ctx.createLinearGradient(0,0,0,260);
-            ig.addColorStop(0,'rgba(34,197,94,.45)'); ig.addColorStop(1,'rgba(34,197,94,.02)');
-            const eg = ctx.createLinearGradient(0,0,0,260);
-            eg.addColorStop(0,'rgba(239,68,68,.40)'); eg.addColorStop(1,'rgba(239,68,68,.02)');
+            const chartHeight = 380;
+            const ig = ctx.createLinearGradient(0, 0, 0, chartHeight);
+            ig.addColorStop(0, 'rgba(34,197,94,.45)'); ig.addColorStop(1, 'rgba(34,197,94,.02)');
+            const eg = ctx.createLinearGradient(0, 0, 0, chartHeight);
+            eg.addColorStop(0, 'rgba(239,68,68,.40)'); eg.addColorStop(1, 'rgba(239,68,68,.02)');
             areaChart = new Chart(ctx, {
-                type:'line',
-                data: { labels: months.map(m=>m.label), datasets: [
-                    { label:'Pemasukan', data:months.map(m=>m.pemasukan), borderColor:'#22C55E', borderWidth:2.5, backgroundColor:ig, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#22C55E', pointHoverRadius:7 },
-                    { label:'Pengeluaran', data:months.map(m=>m.pengeluaran), borderColor:'#EF4444', borderWidth:2.5, backgroundColor:eg, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#EF4444', pointHoverRadius:7 }
-                ]},
+                type: 'line',
+                data: {
+                    labels: months.map(m => m.label),
+                    datasets: [
+                        { label: 'Pemasukan', data: months.map(m => m.pemasukan), borderColor: '#22C55E', borderWidth: 2.5, backgroundColor: ig, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#22C55E', pointHoverRadius: 7 },
+                        { label: 'Pengeluaran', data: months.map(m => m.pengeluaran), borderColor: '#EF4444', borderWidth: 2.5, backgroundColor: eg, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#EF4444', pointHoverRadius: 7 }
+                    ]
+                },
                 options: {
-                    responsive:true, maintainAspectRatio:false,
-                    interaction:{ mode:'index', intersect:false },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend:{ position:'bottom', labels:{ padding:16, usePointStyle:true, pointStyleWidth:10, font:{size:12} } },
-                        tooltip:{ backgroundColor:'#1a1a2e', padding:14, cornerRadius:10, titleFont:{size:13,weight:'600'}, bodyFont:{size:12},
-                            callbacks:{ title:items=>months[items[0].dataIndex].labelLengkap, label:ctx=>ctx.dataset.label+': '+formatRupiah(ctx.raw), afterBody:items=>months[items[0].dataIndex].selisihFormatted } }
+                        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 12 } } },
+                        tooltip: {
+                            backgroundColor: '#1a1a2e',
+                            padding: 14,
+                            cornerRadius: 10,
+                            titleFont: { size: 13, weight: '600' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                title: items => months[items[0].dataIndex].labelLengkap,
+                                label: ctx => ctx.dataset.label + ': ' + formatRupiah(ctx.raw),
+                                afterBody: items => months[items[0].dataIndex].selisihFormatted
+                            }
+                        }
                     },
-                    scales:{ y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{size:11}, callback:v=>formatRupiahRingkas(v)} }, x:{ grid:{display:false}, ticks:{font:ctx2=>{ const m=months[ctx2.index]; return m&&m.bulan===currentMonth&&m.tahun===currentYear?{size:12,weight:'bold'}:{size:11}; }} } }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,.05)' },
+                            ticks: { font: { size: 11 }, callback: v => formatRupiahAxis(v) }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: ctx2 => {
+                                    const m = months[ctx2.index];
+                                    return m && m.bulan === currentMonth && m.tahun === currentYear
+                                        ? { size: 12, weight: 'bold' }
+                                        : { size: 11 };
+                                }
+                            }
+                        }
+                    }
                 }
             });
         } else {
@@ -596,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function () {
             options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
                 plugins:{ legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:10,font:{size:12}}},
                     tooltip:{backgroundColor:'#1a1a2e',padding:12,cornerRadius:10,callbacks:{label:ctx=>ctx.dataset.label+': '+formatRupiah(ctx.raw)}} },
-                scales:{ x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},callback:v=>formatRupiahRingkas(v)}}, y:{grid:{display:false},ticks:{font:{size:11}}} }
+                scales: { x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 }, callback: v => formatRupiahAxis(v) } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } }
             }
         });
     }
