@@ -24,8 +24,15 @@ class User extends Authenticatable
         'email_verified_at',
         'role_id',
         'membership_id',
+        'google_calendar_token',
     ];
 
+    public function hasGoogleCalendar(): bool
+    {
+        return !empty($this->google_calendar_token);
+    }
+
+    
 
     protected $hidden = [
         'password',
