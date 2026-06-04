@@ -9,10 +9,10 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    
+
     use HasFactory, Notifiable;
 
-    
+
     protected $fillable = [
         'name',
         'email',
@@ -32,13 +32,13 @@ class User extends Authenticatable
         return !empty($this->google_calendar_token);
     }
 
-    
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    
+
     protected function casts(): array
     {
         return [
@@ -49,7 +49,7 @@ class User extends Authenticatable
         ];
     }
 
-    
+
     public function membership()
     {
         return $this->belongsTo(\App\Models\Membership::class, 'membership_id', 'membership_id');
@@ -58,5 +58,13 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
+    }
+
+    /**
+     * Relasi ke Wishlist
+     */
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
     }
 }
