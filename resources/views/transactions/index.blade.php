@@ -3,44 +3,6 @@
 @section('page_title', 'Transactions')
 
 @section('content')
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Overview Saldo</span>
-                <div class="stat-card-icon balance">
-                    <i class="bi bi-wallet2"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-balance">
-                Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Total Pemasukan</span>
-                <div class="stat-card-icon income">
-                    <i class="bi bi-arrow-down-left-circle"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-income">
-                Rp {{ number_format($totalIncome ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-card-label">Total Pengeluaran</span>
-                <div class="stat-card-icon expense">
-                    <i class="bi bi-arrow-up-right-circle"></i>
-                </div>
-            </div>
-            <div class="stat-card-value text-expense">
-                Rp {{ number_format($totalExpense ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-    </div>
-
     @php
         $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
     @endphp
@@ -421,7 +383,7 @@
                         kategoriSelect.value = '';
                         kategoriSelect.style.opacity = '0.4';
                         kategoriSelect.style.cursor = 'not-allowed';
-                        hiddenCategory.value = '10';
+                        hiddenCategory.value = '';
                         hiddenCategory.name = 'category';
                         kategoriInfo.style.display = 'block';
                     }
