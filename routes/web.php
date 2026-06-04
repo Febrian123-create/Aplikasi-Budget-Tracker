@@ -7,6 +7,7 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\GoogleCalendarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -60,11 +61,18 @@ Route::middleware(['auth', 'role:user'])->group(function () {
             ->name('recurring.confirm');
         Route::post('/recurring/{id}/skip', [RecurringTransactionController::class, 'skipPayment'])
             ->name('recurring.skip');
-        Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
-            ->name('recurring.popups.unread');
-        Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
-            ->name('recurring.popups.read');
+
+        // Google Calendar OAuth (Premium only)
+        Route::get('/google/connect', [GoogleCalendarController::class, 'connect'])->name('google.connect');
+        Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])->name('google.callback');
+        Route::post('/google/disconnect', [GoogleCalendarController::class, 'disconnect'])->name('google.disconnect');
     });
+
+    // Pop-up notifikasi — semua user (Free & Premium) agar budget alert juga muncul.
+    Route::get('/recurring/popups/unread', [RecurringTransactionController::class, 'unreadPopups'])
+        ->name('recurring.popups.unread');
+    Route::post('/recurring/popups/{logId}/read', [RecurringTransactionController::class, 'markPopupRead'])
+        ->name('recurring.popups.read');
 
     
     Route::get('/history/export/excel', [ExportController::class, 'historyExportExcel'])

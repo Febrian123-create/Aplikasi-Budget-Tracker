@@ -12,6 +12,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Cek budget over-threshold saat dashboard dibuka → buat pop-up (dedup harian).
+        app(\App\Services\BudgetService::class)->checkAllForUser(Auth::id());
+
         // Ambil range 1 bulan terakhir
         $endDate = Carbon::today();
         $startDate = $endDate->copy()->subMonth();

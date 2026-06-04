@@ -15,12 +15,14 @@ class Budget extends Model
         'category_id',
         'amount',
         'period',
+        'duration',
         'start_date',
         'end_date',
     ];
 
     protected $casts = [
         'amount'     => 'decimal:2',
+        'duration'   => 'integer',
         'start_date' => 'date',
         'end_date'   => 'date',
     ];
@@ -60,10 +62,28 @@ class Budget extends Model
         return $this->getCurrentSpending() >= (float) $this->amount;
     }
 
+    public function isActive(): bool
+    {
+        return $this->end_date === null || $this->end_date->gte(Carbon::today());
+    }
+
+    public function periodLabel(): string
+    {
+        $periodName = ucfirst($this->period);
+
+        if ($this->period === 'mingguan' || empty($this->duration)) {
+            return $periodName;
+        }
+
+        $unit = $this->period === 'tahunan' ? 'tahun' : 'bulan';
+        return "{$periodName} · berlaku {$this->duration} {$unit}";
+    }
+
     private function getPeriodStart(): string
     {
         return match ($this->period) {
-            'mingguan' => Carbon::now()->startOfWeek()->toDateString(),
+            // Mingguan memakai window tanggal yang diisi manual.
+            'mingguan' => ($this->start_date ?? Carbon::now()->startOfWeek())->toDateString(),
             'tahunan'  => Carbon::now()->startOfYear()->toDateString(),
             default    => Carbon::now()->startOfMonth()->toDateString(),
         };
@@ -72,7 +92,7 @@ class Budget extends Model
     private function getPeriodEnd(): string
     {
         return match ($this->period) {
-            'mingguan' => Carbon::now()->endOfWeek()->toDateString(),
+            'mingguan' => ($this->end_date ?? Carbon::now()->endOfWeek())->toDateString(),
             'tahunan'  => Carbon::now()->endOfYear()->toDateString(),
             default    => Carbon::now()->endOfMonth()->toDateString(),
         };

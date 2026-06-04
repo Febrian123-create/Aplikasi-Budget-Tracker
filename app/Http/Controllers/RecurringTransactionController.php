@@ -84,6 +84,9 @@ class RecurringTransactionController extends Controller
 
         $data = $request->validated();
         $data['reminder_enabled'] = $request->boolean('reminder_enabled');
+        if (($data['amount_type'] ?? null) === 'pemasukan') {
+            $data['category_id'] = 10;
+        }
 
         $startDate = Carbon::parse($data['start_date']);
         $warningMessage = null;
@@ -146,6 +149,9 @@ class RecurringTransactionController extends Controller
 
         $data = $request->validated();
         $data['reminder_enabled'] = $request->boolean('reminder_enabled');
+        if (($data['amount_type'] ?? null) === 'pemasukan') {
+            $data['category_id'] = 10;
+        }
 
         $recurring = $this->recurringService->update($id, $userId, $data);
 
