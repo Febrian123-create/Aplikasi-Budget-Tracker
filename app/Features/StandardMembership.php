@@ -11,7 +11,7 @@ class StandardMembership implements MembershipFeatureInterface
 
     public function canExportPdf(): bool
     {
-        return false; // Fitur export dibatasi untuk Free
+        return true; // Base feature - semua user bisa export
     }
 
     public function canUseRecurring(): bool

@@ -69,24 +69,28 @@
                         <label class="bunrek-label">Tipe Transaksi</label>
                         <div class="bunrek-radio-group">
                             <label class="bunrek-radio-label" for="income">
-                                <input type="radio" name="type" value="income" id="income" checked>
+                                <input type="radio" name="type" value="income" id="income" checked onchange="toggleKategori()">
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
-                                <input type="radio" name="type" value="expense" id="expense">
+                                <input type="radio" name="type" value="expense" id="expense" onchange="toggleKategori()">
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="bunrek-form-group">
-                        <label class="bunrek-label">Kategori</label>
-                        <select name="category" class="bunrek-select" required>
+                    <div class="bunrek-form-group" id="kategoriGroup">
+                        <label class="bunrek-label" id="kategoriLabel">Kategori</label>
+                        <select name="category" id="kategoriSelect" class="bunrek-select">
                             <option value="">Pilih Kategori</option>
                             @foreach ($categories ?? [] as $cat)
                                 <option value="{{ $cat->category_id }}">{{ $cat->category_name }}</option>
                             @endforeach
                         </select>
+                        <input type="hidden" id="hiddenCategory" name="" value="10">
+                        <p id="kategoriInfo" style="display:none; margin: 6px 0 0 0; font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;">
+                            <i class="bi bi-info-circle"></i> Pemasukan tidak memerlukan kategori.
+                        </p>
                     </div>
 
                     <div class="bunrek-form-group">
@@ -113,25 +117,18 @@
                     Transaksi Hari Ini &mdash; <span
                         style="font-weight: 500; font-size: 0.95rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y') }}</span>
                 </h2>
-                @if ($membershipFeature->canExportPdf())
-                    <div style="display: flex; gap: var(--space-xs);">
-                        <a href="{{ route('transactions.export.excel') }}"
-                            class="btn-bunrek btn-sm btn-outline text-success" id="btnExportExcelTx"
-                            style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
-                            <i class="bi bi-file-earmark-excel"></i> Excel
-                        </a>
-                        <a href="{{ route('transactions.export.pdf') }}"
-                            class="btn-bunrek btn-sm btn-outline text-danger" id="btnExportPdfTx"
-                            style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
-                            <i class="bi bi-file-earmark-pdf"></i> PDF
-                        </a>
-                    </div>
-                @else
-                    <span
-                        style="font-size: var(--fs-xs); color: var(--text-muted); background: var(--bg-light); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
-                        <i class="bi bi-gem text-warning"></i> Export Premium
-                    </span>
-                @endif
+                <div style="display: flex; gap: var(--space-xs);">
+                    <a href="{{ route('transactions.export.excel') }}"
+                        class="btn-bunrek btn-sm btn-outline text-success" id="btnExportExcelTx"
+                        style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                        <i class="bi bi-file-earmark-excel"></i> Excel
+                    </a>
+                    <a href="{{ route('transactions.export.pdf') }}"
+                        class="btn-bunrek btn-sm btn-outline text-danger" id="btnExportPdfTx"
+                        style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                </div>
             </div>
             <div class="bunrek-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
@@ -403,24 +400,30 @@
             <script>
                 function toggleKategori() {
                     const expenseRadio = document.getElementById('expense');
-                    const kategoriGroup = document.getElementById('kategoriGroup');
                     const kategoriSelect = document.getElementById('kategoriSelect');
                     const hiddenCategory = document.getElementById('hiddenCategory');
+                    const kategoriInfo = document.getElementById('kategoriInfo');
 
                     if (expenseRadio.checked) {
-                        // Pengeluaran: tampilkan dropdown
-                        kategoriGroup.style.display = 'block';
+                        // Pengeluaran: aktifkan dan tampilkan dropdown kategori
+                        kategoriSelect.disabled = false;
                         kategoriSelect.setAttribute('required', 'required');
-                        hiddenCategory.name = ''; // Disable hidden input
-                        kategoriSelect.name = 'category'; // Enable dropdown
+                        kategoriSelect.name = 'category';
+                        kategoriSelect.style.opacity = '1';
+                        kategoriSelect.style.cursor = 'pointer';
+                        hiddenCategory.name = '';
+                        kategoriInfo.style.display = 'none';
                     } else {
-                        // Pemasukan: gunakan category ID 10 (income)
-                        kategoriGroup.style.display = 'none';
+                        // Pemasukan: nonaktifkan dropdown kategori, gunakan hidden input
+                        kategoriSelect.disabled = true;
                         kategoriSelect.removeAttribute('required');
+                        kategoriSelect.name = '';
                         kategoriSelect.value = '';
-                        hiddenCategory.value = '10'; // Set category ID to 10
-                        hiddenCategory.name = 'category'; // Enable hidden input
-                        kategoriSelect.name = ''; // Disable dropdown
+                        kategoriSelect.style.opacity = '0.4';
+                        kategoriSelect.style.cursor = 'not-allowed';
+                        hiddenCategory.value = '10';
+                        hiddenCategory.name = 'category';
+                        kategoriInfo.style.display = 'block';
                     }
                 }
                 let pendingDeleteForm = null;
