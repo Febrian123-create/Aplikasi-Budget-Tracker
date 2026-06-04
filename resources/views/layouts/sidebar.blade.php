@@ -41,6 +41,12 @@
           <span>Riwayat</span>
         </a>
       </li>
+      <li>
+        <a href="{{ route('budget.index') }}" class="sidebar-link {{ request()->routeIs('budget.*') ? 'active' : '' }}">
+          <i class="bi bi-wallet2"></i>
+          <span>Budget Kategori</span>
+        </a>
+      </li>
       @if($canViewChart)
         <li>
           <a href="{{ route('charts.index') }}" class="sidebar-link {{ request()->routeIs('charts.index') ? 'active' : '' }}">

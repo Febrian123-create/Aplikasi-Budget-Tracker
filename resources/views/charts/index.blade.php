@@ -4,13 +4,15 @@
     <style>
         .chart-card {
             background: #fff; border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #f0f0f0;
-            padding: 28px; transition: box-shadow .3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,.03); border: 1px solid #f0f0f0;
+            padding: 24px; transition: box-shadow .3s;
+            display: flex; flex-direction: column;
         }
-        .chart-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); }
+        .chart-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,.08); }
         .metric-card {
-            border-radius: 14px; padding: 22px 24px;
+            border-radius: 14px; padding: 24px;
             position: relative; overflow: hidden; transition: transform .2s;
+            height: 100%; display: flex; flex-direction: column; justify-content: center;
         }
         .metric-card:hover { transform: translateY(-3px); }
         .metric-card .metric-icon {
@@ -67,11 +69,19 @@
         .legend-amount { font-weight:600; color:#555; }
         .legend-pct { font-size:12px; color:#999; min-width:45px; text-align:right; }
         /* Monefy */
-        #monefyOuter { position:relative; width:380px; height:380px; margin:0 auto; }
-        #donutChart  { position:absolute; top:70px; left:70px; width:240px; height:240px; }
-        #iconSvg     { position:absolute; top:0; left:0; width:380px; height:380px; pointer-events:none; }
-        #monefyCenter { position:absolute; text-align:center; pointer-events:none; width:120px; }
-        .monefy-icon  { position:absolute; pointer-events:none; }
+        #monefyOuter { position:relative; width:100%; max-width:320px; aspect-ratio:1/1; margin:0 auto; display:flex; align-items:center; justify-content:center; }
+        #donutChart  { width:65% !important; height:65% !important; z-index:1; }
+        #iconSvg     { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+        #monefyCenter { position:absolute; text-align:center; pointer-events:none; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .monefy-icon  { position:absolute; pointer-events:none; z-index:3; transition: all 0.3s ease; }
+        
+        /* CSS Grid Layouts */
+        .grid-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .grid-charts-1 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
+        .grid-charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 992px) {
+            .grid-charts-1, .grid-charts-2 { grid-template-columns: 1fr; }
+        }
         /* Area chart blur */
         .blur-overlay { position:relative; }
         .blur-overlay::after {
@@ -167,44 +177,35 @@
     @endif
 
     {{-- METRIC CARDS --}}
-    <div class="row g-3 mb-4">
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-income">
-          <div class="metric-icon"><i class="bi bi-arrow-down-circle"></i></div>
-          <div class="metric-label">Total Pemasukan</div>
-          <div class="metric-value">{{ $metricCards['totalIncomeFormatted'] }}</div>
-        </div>
+    <div class="grid-metrics">
+      <div class="metric-card mc-income">
+        <div class="metric-icon"><i class="bi bi-arrow-down-circle"></i></div>
+        <div class="metric-label">Total Pemasukan</div>
+        <div class="metric-value">{{ $metricCards['totalIncomeFormatted'] }}</div>
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-expense">
-          <div class="metric-icon"><i class="bi bi-arrow-up-circle"></i></div>
-          <div class="metric-label">Total Pengeluaran</div>
-          <div class="metric-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
-        </div>
+      <div class="metric-card mc-expense">
+        <div class="metric-icon"><i class="bi bi-arrow-up-circle"></i></div>
+        <div class="metric-label">Total Pengeluaran</div>
+        <div class="metric-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card {{ $metricCards['isSaldoPositif'] ? 'mc-saldo-pos' : 'mc-saldo-neg' }}">
-          <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
-          <div class="metric-label">Saldo</div>
-          <div class="metric-value">{{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}</div>
-        </div>
+      <div class="metric-card {{ $metricCards['isSaldoPositif'] ? 'mc-saldo-pos' : 'mc-saldo-neg' }}">
+        <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="metric-label">Saldo</div>
+        <div class="metric-value">{{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}</div>
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-ratio">
-          <div class="metric-icon"><i class="bi bi-percent"></i></div>
-          <div class="metric-label">Rasio Pengeluaran</div>
-          <div class="metric-value">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
-          <div class="progress-bar-custom">
-            <div class="fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
-          </div>
+      <div class="metric-card mc-ratio">
+        <div class="metric-icon"><i class="bi bi-percent"></i></div>
+        <div class="metric-label">Rasio Pengeluaran</div>
+        <div class="metric-value">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
+        <div class="progress-bar-custom">
+          <div class="fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
         </div>
       </div>
     </div>
 
     {{-- ROW 1: MONEFY DONUT + AREA CHART --}}
-    <div class="row g-4 mb-4">
-      <div class="col-lg-5">
-        <div class="chart-card h-100">
+    <div class="grid-charts-1">
+      <div class="chart-card">
           <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Pengeluaran</div>
           @if($categoryDistribution['isEmpty'] && $categoryDistribution['allIncome'])
             <div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada pengeluaran bulan ini!</p></div>
@@ -238,9 +239,8 @@
           @endif
         </div>
       </div>
-
-      <div class="col-lg-7">
-        <div class="chart-card">
+      <div class="d-flex flex-column gap-3">
+        <div class="chart-card" style="position: relative; flex: 1;">
           <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
             <div class="section-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tren Keuangan</div>
             <div class="filter-bar">
@@ -272,7 +272,7 @@
           @endif
         </div>
         @if(!$isPremium && $barRange >= 3)
-          <div class="chart-card mt-3 blur-overlay" style="min-height:80px;">
+          <div class="chart-card blur-overlay" style="min-height:80px;">
             <div class="upgrade-badge"><i class="bi bi-gem me-2"></i> Upgrade ke Premium<br><small style="font-weight:400;opacity:.9;">Lihat data hingga 12 bulan</small></div>
           </div>
         @endif
@@ -280,8 +280,7 @@
     </div>
 
     {{-- ROW 2: HEATMAP --}}
-    <div class="row mb-4">
-      <div class="col-12">
+    <div style="margin-bottom: 24px;">
         <div class="chart-card">
           <div class="section-title">
             <i class="bi bi-calendar3"></i> Heatmap Pengeluaran Harian
@@ -329,13 +328,11 @@
             @endif
           </div>
         </div>
-      </div>
     </div>
 
     {{-- ROW 3: COMPARISON + HEALTH SCORE --}}
-    <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="chart-card h-100">
+    <div class="grid-charts-2">
+      <div class="chart-card">
           <div class="section-title">
             <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
             <span style="font-size:12px;color:#9e9e9e;font-weight:400;">vs {{ $monthComparison['prevLabel'] }}</span>
@@ -360,8 +357,7 @@
         </div>
       </div>
 
-      <div class="col-lg-6">
-        <div class="chart-card h-100">
+      <div class="chart-card">
           <div class="section-title"><i class="bi bi-heart-pulse-fill"></i> Financial Health Score</div>
           @if($healthScore['isEmpty'])
             <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">🏥</div><p>{{ $healthScore['tips'] }}</p></div>
@@ -438,10 +434,16 @@ document.addEventListener('DOMContentLoaded', function () {
         outer.querySelectorAll('.monefy-icon').forEach(e => e.remove());
         const meta = chart.getDatasetMeta(0);
         if (!meta.data.length) return;
-        const OFFSET = 70;
+        const canvas = document.getElementById('donutChart');
+        if (!canvas) return;
+        const outerRect = outer.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const offsetX = canvasRect.left - outerRect.left;
+        const offsetY = canvasRect.top - outerRect.top;
+        
         const ccx = meta.data[0].x, ccy = meta.data[0].y;
         const outerR = meta.data[0].outerRadius;
-        const wcx = OFFSET + ccx, wcy = OFFSET + ccy;
+        const wcx = offsetX + ccx, wcy = offsetY + ccy;
         const iconR = outerR + 50, pctR = outerR + 80, iconSz = 36;
 
         catData.categories.forEach((cat, i) => {
@@ -484,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{ data: catData.categories.map(c=>c.amount), backgroundColor: catData.categories.map((_,i)=>colors[i%colors.length]), borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
             },
             options: {
-                responsive: false, cutout: '62%',
+                responsive: true, maintainAspectRatio: false, cutout: '62%',
                 animation: { onComplete: function(e){ positionIcons(e.chart); } },
                 plugins: {
                     legend: { display:false },
@@ -493,6 +495,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         callbacks: { label: ctx => { const c=catData.categories[ctx.dataIndex]; return [c.formatted, c.percentage]; } }
                     }
                 }
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            if (pieChart) {
+                pieChart.resize();
+                positionIcons(pieChart);
             }
         });
     }
