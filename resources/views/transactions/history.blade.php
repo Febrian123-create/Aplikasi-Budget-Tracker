@@ -60,47 +60,21 @@
 </div>
 
 <div id="balance-cards-container" style="margin-bottom: var(--space-lg);">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md);">
-        <!-- Card Pemasukan -->
-        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
+        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-sm);">
             <div>
-                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px;">Total Pemasukan</div>
-                <div style="font-size: var(--fs-xl); font-weight: 700; color: var(--color-income);">
-                    Rp {{ number_format($totalIncome, 0, ',', '.') }}
-                </div>
+                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px;">Transaksi Ditemukan</div>
+                <div style="font-size: var(--fs-2xl); font-weight: 800; color: var(--text-dark);">{{ $transactions->total() }}</div>
             </div>
-            <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: var(--color-income-bg); display: flex; align-items: center; justify-content: center; color: var(--color-income); font-size: 1.25rem;">
-                <i class="bi bi-arrow-down-left"></i>
-            </div>
+            <div style="font-size: var(--fs-sm); color: var(--text-muted);">Jumlah transaksi yang sesuai filter saat ini.</div>
         </div>
 
-        <!-- Card Pengeluaran -->
-        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-sm);">
             <div>
-                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px;">Total Pengeluaran</div>
-                <div style="font-size: var(--fs-xl); font-weight: 700; color: var(--color-expense);">
-                    Rp {{ number_format($totalExpense, 0, ',', '.') }}
-                </div>
+                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px;">{{ $summaryTitle }}</div>
+                <div style="font-size: var(--fs-2xl); font-weight: 800; color: var(--text-dark);">Rp {{ number_format($totalNominal, 0, ',', '.') }}</div>
             </div>
-            <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: var(--color-expense-bg); display: flex; align-items: center; justify-content: center; color: var(--color-expense); font-size: 1.25rem;">
-                <i class="bi bi-arrow-up-right"></i>
-            </div>
-        </div>
-
-        <!-- Card Saldo -->
-        @php
-            $balance = $totalIncome - $totalExpense;
-        @endphp
-        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
-            <div>
-                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px;">Saldo</div>
-                <div style="font-size: var(--fs-xl); font-weight: 700; color: {{ $balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)' }};">
-                    Rp {{ number_format($balance, 0, ',', '.') }}
-                </div>
-            </div>
-            <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: {{ $balance >= 0 ? 'var(--color-income-bg)' : 'var(--color-expense-bg)' }}; display: flex; align-items: center; justify-content: center; color: {{ $balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)' }}; font-size: 1.25rem;">
-                <i class="bi bi-wallet2"></i>
-            </div>
+            <div style="font-size: var(--fs-sm); color: var(--text-muted);">Total nominal transaksi yang sesuai filter.</div>
         </div>
     </div>
 </div>
