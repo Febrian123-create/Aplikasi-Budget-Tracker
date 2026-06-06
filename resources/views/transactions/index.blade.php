@@ -7,7 +7,8 @@
         $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
     @endphp
     <!-- Summary Cards for Today's Income and Expenses -->
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div
+        style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-bottom: var(--space-lg);">
         <!-- Income Card -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-income); box-shadow: var(--shadow-sm);">
@@ -72,8 +73,7 @@
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
-                                <input type="radio" name="type" value="expense" id="expense"
-                                    onchange="toggleKategori()">
+                                <input type="radio" name="type" value="expense" id="expense" onchange="toggleKategori()">
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
@@ -101,7 +101,8 @@
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Deskripsi</label>
-                        <textarea name="description" class="bunrek-textarea" required placeholder="Deskripsi transaksi..."></textarea>
+                        <textarea name="description" class="bunrek-textarea" required
+                            placeholder="Deskripsi transaksi..."></textarea>
                     </div>
 
                     <button type="submit" class="btn-bunrek btn-primary btn-w-full">
@@ -172,8 +173,8 @@
                                                 class="btn-bunrek btn-sm btn-warning-sm action-btn">
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
-                                            <form action="{{ route('transactions.destroy', $t->transaction_id) }}"
-                                                method="POST" class="action-form">
+                                            <form action="{{ route('transactions.destroy', $t->transaction_id) }}" method="POST"
+                                                class="action-form">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" class="btn-bunrek btn-sm btn-danger-sm action-btn"
@@ -450,7 +451,7 @@
                     }
                 }
 
-                document.addEventListener('keydown', function(event) {
+                document.addEventListener('keydown', function (event) {
                     if (event.key === 'Escape') {
                         const modal = document.getElementById('deleteModal');
                         if (modal && modal.style.display === 'flex') {
@@ -458,10 +459,10 @@
                         }
                     }
                 });
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     toggleKategori(); // Set initial state
                 });
             </script>
         @endpush
 
-    @endsection
+@endsection
