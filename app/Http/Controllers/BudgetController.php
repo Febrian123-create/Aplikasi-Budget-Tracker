@@ -92,6 +92,44 @@ class BudgetController extends Controller
         ];
     }
 
+    public function update(Request $request, int $id)
+    {
+        $isWeekly = $request->input('period') === 'mingguan';
+
+        $validated = $request->validate([
+            'amount'     => 'required|numeric|min:1000',
+            'period'     => 'required|in:bulanan,mingguan,tahunan',
+            'start_date' => [$isWeekly ? 'required' : 'nullable', 'date'],
+            'end_date'   => [$isWeekly ? 'required' : 'nullable', 'date', 'after:start_date'],
+            'duration'   => ['nullable', 'integer', 'min:1', 'max:60'],
+        ], [
+            'amount.required'      => 'Nominal budget wajib diisi.',
+            'amount.min'           => 'Nominal budget minimal Rp 1.000.',
+            'period.required'      => 'Periode wajib dipilih.',
+            'start_date.required'  => 'Tanggal mulai wajib diisi untuk periode mingguan.',
+            'end_date.required'    => 'Tanggal berakhir wajib diisi untuk periode mingguan.',
+            'end_date.after'       => 'Tanggal berakhir harus setelah tanggal mulai.',
+        ]);
+
+        // Preserve existing category_id; only amount/period/duration/dates are editable
+        $existing = $this->budgetService->getAll(Auth::id())->firstWhere('budget_id', $id);
+        if (!$existing) {
+            return redirect()->route('budget.index')->with('error', 'Budget tidak ditemukan.');
+        }
+
+        $data = $this->normalizeBudgetPeriod(array_merge($validated, [
+            'category_id' => $existing->category_id,
+        ]));
+
+        $updated = $this->budgetService->update($id, Auth::id(), $data);
+
+        if (!$updated) {
+            return redirect()->route('budget.index')->with('error', 'Budget tidak ditemukan.');
+        }
+
+        return redirect()->route('budget.index')->with('success', 'Budget berhasil diperbarui!');
+    }
+
     public function destroy(int $id)
     {
         $deleted = $this->budgetService->delete($id, Auth::id());
@@ -116,19 +154,13 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'threshold'   => 'required|integer|min:50|max:100',
             'channels'    => 'nullable|array',
-            'channels.*'  => 'string|in:email,popup,google_calendar',
+            'channels.*'  => 'string|in:email,popup',
         ], [
             'threshold.min' => 'Threshold minimal 50%.',
             'threshold.max' => 'Threshold maksimal 100%.',
         ]);
 
         $isPremium = $this->isPremium();
-        if (!$isPremium) {
-            $validated['channels'] = array_filter(
-                $validated['channels'] ?? ['popup'],
-                fn($c) => $c !== 'google_calendar'
-            );
-        }
 
         $this->budgetService->saveBudgetReminderSetting(Auth::id(), $validated);
 

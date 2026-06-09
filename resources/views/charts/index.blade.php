@@ -118,19 +118,6 @@
         .change-up   { background:#ffebee; color:#e53935; }
         .change-down { background:#e8f5e9; color:#43a047; }
         .change-nil  { background:#f5f5f5; color:#9e9e9e; }
-        /* Health Score */
-        .health-gauge-wrap { position:relative; width:200px; height:200px; margin:0 auto 8px; }
-        .health-gauge-wrap canvas { width:200px !important; height:200px !important; }
-        .health-gauge-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
-        .health-score-num   { font-size:36px; font-weight:800; line-height:1; color:#1a1a2e; }
-        .health-score-label { font-size:12px; font-weight:600; margin-top:4px; }
-        .health-comp-row    { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-        .health-comp-name   { font-size:12px; color:#555; flex:1; }
-        .health-comp-bar-wrap { width:90px; height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; }
-        .health-comp-bar    { height:100%; border-radius:3px; transition:width .8s ease; }
-        .health-comp-score  { font-size:11px; font-weight:700; color:#555; width:28px; text-align:right; }
-        .tips-box { background:#f8f9ff; border:1px solid #e8eaff; border-radius:10px; padding:12px 14px; font-size:12px; color:#4f46e5; margin-top:14px; display:flex; gap:8px; align-items:flex-start; }
-        .tips-box i { flex-shrink:0; margin-top:2px; }
     </style>
 @endpush
 
@@ -330,8 +317,8 @@
         </div>
     </div>
 
-    {{-- ROW 3: COMPARISON + HEALTH SCORE --}}
-    <div class="grid-charts-2">
+    {{-- ROW 3: COMPARISON --}}
+    <div style="margin-bottom: 24px;">
       <div class="chart-card">
           <div class="section-title">
             <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
@@ -355,35 +342,6 @@
             </div>
           @endif
         </div>
-      </div>
-
-      <div class="chart-card">
-          <div class="section-title"><i class="bi bi-heart-pulse-fill"></i> Financial Health Score</div>
-          @if($healthScore['isEmpty'])
-            <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">🏥</div><p>{{ $healthScore['tips'] }}</p></div>
-          @else
-            <div class="health-gauge-wrap">
-              <canvas id="healthGauge"></canvas>
-              <div class="health-gauge-center">
-                <div class="health-score-num" style="color:{{ $healthScore['color'] }};">{{ $healthScore['score'] }}</div>
-                <div class="health-score-label" style="color:{{ $healthScore['color'] }};">{{ $healthScore['label'] }}</div>
-              </div>
-            </div>
-            <div class="mt-3">
-              @foreach($healthScore['components'] as $comp)
-                <div class="health-comp-row">
-                  <div class="health-comp-name">{{ $comp['name'] }} <span style="color:#bbb;font-size:10px;">({{ $comp['weight'] }})</span></div>
-                  <div class="health-comp-bar-wrap">
-                    <div class="health-comp-bar" style="width:{{ $comp['score'] }}%;background:{{ $comp['score']>=70?'#22C55E':($comp['score']>=40?'#F59E0B':'#EF4444') }};"></div>
-                  </div>
-                  <div class="health-comp-score">{{ $comp['score'] }}</div>
-                </div>
-              @endforeach
-            </div>
-            <div class="tips-box"><i class="bi bi-lightbulb-fill"></i><span>{{ $healthScore['tips'] }}</span></div>
-          @endif
-        </div>
-      </div>
     </div>
 
   </div>
@@ -396,7 +354,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const catData    = @json($categoryDistribution);
     const monthData  = @json($monthlyChartData);
     const compData   = @json($monthComparison);
-    const healthData = @json($healthScore);
     const colors     = @json($chartColors);
     const currentMonth = {{ $bulan }};
     const currentYear  = {{ $tahun }};
@@ -595,15 +552,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== HEALTH GAUGE =====
-    if (!healthData.isEmpty && document.getElementById('healthGauge')) {
-        const ctx = document.getElementById('healthGauge').getContext('2d');
-        new Chart(ctx, {
-            type:'doughnut',
-            data:{ datasets:[{ data:[healthData.score, 100-healthData.score], backgroundColor:[healthData.color,'#f0f0f0'], borderWidth:0 }] },
-            options:{ responsive:false, cutout:'74%', rotation:-90, circumference:360, animation:{duration:1200,easing:'easeInOutQuart'}, plugins:{legend:{display:false},tooltip:{enabled:false}} }
-        });
-    }
 });
+
 </script>
 @endpush

@@ -416,6 +416,47 @@
         </div>
     @endif
 
+    {{-- Google Calendar Connection (Premium only) --}}
+    @if($isPremium)
+    @php $googleConnected = auth()->user()->hasGoogleCalendar(); @endphp
+    <div class="bunrek-card" style="margin-bottom: var(--space-lg);">
+        <div class="bunrek-card-body" style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; padding: var(--space-md) var(--space-lg);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fff1f2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-calendar-event-fill" style="color: #ef4444; font-size: 1.15rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: var(--fs-sm); color: var(--text-dark);">Google Calendar</div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">
+                        @if($googleConnected)
+                            Terhubung — reminder transaksi rutin akan muncul di kalender kamu
+                        @else
+                            Hubungkan agar reminder transaksi rutin otomatis masuk ke Google Calendar
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @if($googleConnected)
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                    <span style="font-size: var(--fs-xs); font-weight: 700; color: var(--color-income); display: flex; align-items: center; gap: 5px;">
+                        <i class="bi bi-check-circle-fill"></i> Tersambung
+                    </span>
+                    <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Putuskan koneksi Google Calendar?')" style="margin: 0;">
+                        @csrf
+                        <button type="submit" class="btn-bunrek btn-outline" style="font-size: var(--fs-xs); padding: 5px 12px; color: var(--color-expense); border-color: var(--color-expense);">
+                            Putuskan
+                        </button>
+                    </form>
+                </div>
+            @else
+                <a href="{{ route('google.connect') }}" class="btn-bunrek btn-outline" style="font-size: var(--fs-xs); padding: 6px 14px; white-space: nowrap; flex-shrink: 0;">
+                    <i class="bi bi-calendar-event"></i> Hubungkan
+                </a>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <!-- Main Content Area: Spacious Table / List -->
     <div>
 
@@ -725,13 +766,19 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal Mulai</label>
-                        <input type="date" name="start_date" class="bunrek-input" required value="{{ old('start_date', date('Y-m-d')) }}" id="addStartDate">
+                        <input type="date" name="start_date" class="bunrek-input" required
+                               value="{{ old('start_date', date('Y-m-d')) }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="addStartDate">
                         @error('start_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted); font-weight: 500;">(Opsional)</small></label>
-                        <input type="date" name="end_date" class="bunrek-input" value="{{ old('end_date') }}" id="addEndDate">
+                        <input type="date" name="end_date" class="bunrek-input"
+                               value="{{ old('end_date') }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="addEndDate">
                         @error('end_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -799,7 +846,12 @@ $(document).ready(function() {
         }
     }
     
-    $('#addFrequency, #addStartDate').on('change', updatePreview);
+    $('#addStartDate').on('change', function() {
+        const val = $(this).val();
+        if (val) $('#addEndDate').attr('min', val);
+        updatePreview();
+    });
+    $('#addFrequency').on('change', updatePreview);
     updatePreview();
 
     // Sembunyikan kategori saat tipe = Pemasukan

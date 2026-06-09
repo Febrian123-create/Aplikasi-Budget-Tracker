@@ -70,29 +70,6 @@
                             </div>
                         </label>
 
-                        @if($isPremium)
-                            <label style="display: flex; align-items: center; gap: 10px; padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
-                                <input type="checkbox" name="channels[]" value="google_calendar"
-                                       {{ in_array('google_calendar', $selectedChannels) ? 'checked' : '' }}
-                                       style="accent-color: var(--primary-color); width: 16px; height: 16px;">
-                                <i class="bi bi-calendar-event-fill" style="color: #ef4444; font-size: 1rem;"></i>
-                                <div>
-                                    <div style="font-weight: 600; font-size: var(--fs-sm);">Google Calendar</div>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Buat event di Google Calendar kamu</div>
-                                </div>
-                            </label>
-                        @else
-                            <div style="display: flex; align-items: center; gap: 10px; padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;">
-                                <i class="bi bi-calendar-event-fill" style="color: #ef4444; font-size: 1rem;"></i>
-                                <div>
-                                    <div style="font-weight: 600; font-size: var(--fs-sm); display: flex; align-items: center; gap: 6px;">
-                                        Google Calendar
-                                        <span style="font-size: 0.65rem; background: #fbbf24; color: white; padding: 1px 6px; border-radius: 3px; font-weight: 700;">PREMIUM</span>
-                                    </div>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Upgrade ke Premium untuk menggunakan fitur ini</div>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                     @error('channels.*')
                         <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small>
@@ -104,30 +81,6 @@
                 </button>
             </form>
 
-            @if($isPremium)
-                @php $googleConnected = auth()->user()->hasGoogleCalendar(); @endphp
-                <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border-light);">
-                    <label class="bunrek-label">Koneksi Google Calendar</label>
-                    @if($googleConnected)
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--color-income); background: var(--color-income-bg); border-radius: var(--radius-sm);">
-                            <span style="font-size: var(--fs-sm); font-weight: 600; color: var(--color-income); display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-check-circle-fill"></i> Tersambung
-                            </span>
-                            <form action="{{ route('google.disconnect') }}" method="POST" onsubmit="return confirm('Putuskan koneksi Google Calendar?')">
-                                @csrf
-                                <button type="submit" style="background: none; border: none; color: var(--color-expense); font-size: var(--fs-xs); font-weight: 700; cursor: pointer;">Putuskan</button>
-                            </form>
-                        </div>
-                    @else
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm);">
-                            <span style="font-size: var(--fs-xs); color: var(--text-muted);">Belum tersambung. Hubungkan agar alert masuk ke kalender.</span>
-                            <a href="{{ route('google.connect') }}" class="btn-bunrek btn-outline" style="font-size: var(--fs-xs); padding: 5px 12px; white-space: nowrap;">
-                                <i class="bi bi-calendar-event"></i> Hubungkan
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            @endif
         </div>
     </div>
 </div>

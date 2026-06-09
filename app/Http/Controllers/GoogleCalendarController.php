@@ -21,13 +21,13 @@ class GoogleCalendarController extends Controller
     public function callback(Request $request)
     {
         if ($request->has('error')) {
-            return redirect()->route('budget.settings')
+            return redirect()->route('recurring.index')
                 ->with('error', 'Koneksi Google Calendar dibatalkan.');
         }
 
         $code = $request->get('code');
         if (!$code) {
-            return redirect()->route('budget.settings')
+            return redirect()->route('recurring.index')
                 ->with('error', 'Kode otorisasi Google tidak ditemukan.');
         }
 
@@ -43,11 +43,11 @@ class GoogleCalendarController extends Controller
             $user->google_calendar_token = json_encode($token);
             $user->save();
 
-            return redirect()->route('budget.settings')
+            return redirect()->route('recurring.index')
                 ->with('success', 'Google Calendar berhasil disambungkan!');
         } catch (\Throwable $e) {
             Log::error('Google Calendar callback gagal: ' . $e->getMessage());
-            return redirect()->route('budget.settings')
+            return redirect()->route('recurring.index')
                 ->with('error', 'Gagal menyambungkan Google Calendar. Coba lagi.');
         }
     }
@@ -58,7 +58,7 @@ class GoogleCalendarController extends Controller
         $user->google_calendar_token = null;
         $user->save();
 
-        return redirect()->route('budget.settings')
+        return redirect()->route('recurring.index')
             ->with('success', 'Koneksi Google Calendar diputuskan.');
     }
 

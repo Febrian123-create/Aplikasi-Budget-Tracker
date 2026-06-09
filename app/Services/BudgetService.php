@@ -30,6 +30,11 @@ class BudgetService
         return $this->budgetRepo->findAllByUser($userId);
     }
 
+    public function update(int $budgetId, int $userId, array $data): ?Budget
+    {
+        return $this->budgetRepo->updateById($budgetId, $userId, $data);
+    }
+
     public function delete(int $budgetId, int $userId): bool
     {
         return $this->budgetRepo->delete($budgetId, $userId);

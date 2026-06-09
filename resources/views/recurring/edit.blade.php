@@ -122,14 +122,18 @@
                     <div>
                         <label class="bunrek-label">Tanggal Mulai</label>
                         <input type="date" name="start_date" class="bunrek-input" required
-                               value="{{ old('start_date', $recurring->start_date->format('Y-m-d')) }}" id="editStartDate">
+                               value="{{ old('start_date', $recurring->start_date->format('Y-m-d')) }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="editStartDate">
                         @error('start_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
 
                     <div>
                         <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted); font-weight: 500;">(Opsional)</small></label>
                         <input type="date" name="end_date" class="bunrek-input"
-                               value="{{ old('end_date', $recurring->end_date ? $recurring->end_date->format('Y-m-d') : '') }}" id="editEndDate">
+                               value="{{ old('end_date', $recurring->end_date ? $recurring->end_date->format('Y-m-d') : '') }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="editEndDate">
                         @error('end_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -174,7 +178,12 @@ $(document).ready(function() {
         }
     }
     
-    $('#editFrequency, #editStartDate').on('change', updateEditPreview);
+    $('#editStartDate').on('change', function() {
+        const val = $(this).val();
+        if (val) $('#editEndDate').attr('min', val);
+        updateEditPreview();
+    });
+    $('#editFrequency').on('change', updateEditPreview);
     updateEditPreview();
 
     function toggleEditCategory() {

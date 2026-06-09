@@ -65,7 +65,6 @@ class ChartController extends Controller
         $monthlyChartData     = $this->chartService->getMonthlyChartData($userId, $startDate);
         $dailySpending        = $this->chartService->getDailySpending($userId, $bulan, $tahun);
         $monthComparison      = $this->chartService->getMonthComparison($userId, $bulan, $tahun);
-        $healthScore          = $this->chartService->getHealthScore($userId, $bulan, $tahun);
 
         $chartColors = ChartHelper::getChartColors();
 
@@ -99,7 +98,6 @@ class ChartController extends Controller
             'monthlyChartData',
             'dailySpending',
             'monthComparison',
-            'healthScore',
             'chartColors',
             'bulan',
             'tahun',
@@ -140,7 +138,6 @@ class ChartController extends Controller
         $monthlyChartData     = $this->chartService->getMonthlyChartData($userId, $startDate);
         $dailySpending        = $this->chartService->getDailySpending($userId, $bulan, $tahun);
         $monthComparison      = $this->chartService->getMonthComparison($userId, $bulan, $tahun);
-        $healthScore          = $this->chartService->getHealthScore($userId, $bulan, $tahun);
 
         return response()->json([
             'metricCards'          => $metricCards,
@@ -148,7 +145,6 @@ class ChartController extends Controller
             'monthlyChartData'     => $monthlyChartData,
             'dailySpending'        => $dailySpending,
             'monthComparison'      => $monthComparison,
-            'healthScore'          => $healthScore,
             'chartColors'          => ChartHelper::getChartColors(),
         ]);
     }
