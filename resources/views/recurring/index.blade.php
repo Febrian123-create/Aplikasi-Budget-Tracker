@@ -766,13 +766,19 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal Mulai</label>
-                        <input type="date" name="start_date" class="bunrek-input" required value="{{ old('start_date', date('Y-m-d')) }}" id="addStartDate">
+                        <input type="date" name="start_date" class="bunrek-input" required
+                               value="{{ old('start_date', date('Y-m-d')) }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="addStartDate">
                         @error('start_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted); font-weight: 500;">(Opsional)</small></label>
-                        <input type="date" name="end_date" class="bunrek-input" value="{{ old('end_date') }}" id="addEndDate">
+                        <input type="date" name="end_date" class="bunrek-input"
+                               value="{{ old('end_date') }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="addEndDate">
                         @error('end_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -840,7 +846,12 @@ $(document).ready(function() {
         }
     }
     
-    $('#addFrequency, #addStartDate').on('change', updatePreview);
+    $('#addStartDate').on('change', function() {
+        const val = $(this).val();
+        if (val) $('#addEndDate').attr('min', val);
+        updatePreview();
+    });
+    $('#addFrequency').on('change', updatePreview);
     updatePreview();
 
     // Sembunyikan kategori saat tipe = Pemasukan
