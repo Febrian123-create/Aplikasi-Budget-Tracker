@@ -154,19 +154,13 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'threshold'   => 'required|integer|min:50|max:100',
             'channels'    => 'nullable|array',
-            'channels.*'  => 'string|in:email,popup,google_calendar',
+            'channels.*'  => 'string|in:email,popup',
         ], [
             'threshold.min' => 'Threshold minimal 50%.',
             'threshold.max' => 'Threshold maksimal 100%.',
         ]);
 
         $isPremium = $this->isPremium();
-        if (!$isPremium) {
-            $validated['channels'] = array_filter(
-                $validated['channels'] ?? ['popup'],
-                fn($c) => $c !== 'google_calendar'
-            );
-        }
 
         $this->budgetService->saveBudgetReminderSetting(Auth::id(), $validated);
 
