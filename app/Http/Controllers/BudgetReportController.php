@@ -21,12 +21,12 @@ class BudgetReportController extends Controller
         $now    = Carbon::now();
         $userId = Auth::id();
 
-        // Earliest budget start_date defines the lower bound for the month filter
-        $earliest = Budget::where('user_id', $userId)->orderBy('start_date')->value('start_date');
+        // created_at = kapan user membuat budget, bukan start_date (yg bisa mundur ke awal tahun/bulan)
+        $earliest = Budget::where('user_id', $userId)->orderBy('created_at')->value('created_at');
         $minDate  = $earliest ? Carbon::parse($earliest)->startOfMonth() : $now->copy()->startOfMonth();
 
-        $bulan = (int) $request->get('bulan', $now->month);
-        $tahun = (int) $request->get('tahun', $now->year);
+        $bulan = (int) $request->query('bulan', $now->month);
+        $tahun = (int) $request->query('tahun', $now->year);
 
         // Clamp requested period to the allowed range
         $requested = Carbon::create($tahun, $bulan, 1);
@@ -76,8 +76,8 @@ class BudgetReportController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $bulan  = (int) $request->get('bulan', Carbon::now()->month);
-        $tahun  = (int) $request->get('tahun', Carbon::now()->year);
+        $bulan  = (int) $request->query('bulan', Carbon::now()->month);
+        $tahun  = (int) $request->query('tahun', Carbon::now()->year);
         $report = $this->budgetReportService->getMonthlyReport(Auth::id(), $bulan, $tahun);
         $report['user'] = Auth::user();
 
@@ -87,8 +87,8 @@ class BudgetReportController extends Controller
 
     public function sendEmail(Request $request)
     {
-        $bulan  = (int) $request->get('bulan', Carbon::now()->month);
-        $tahun  = (int) $request->get('tahun', Carbon::now()->year);
+        $bulan  = (int) $request->query('bulan', Carbon::now()->month);
+        $tahun  = (int) $request->query('tahun', Carbon::now()->year);
         $user   = Auth::user();
         $report = $this->budgetReportService->getMonthlyReport($user->id, $bulan, $tahun);
         $report['user'] = $user;
