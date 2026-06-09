@@ -89,6 +89,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 
     Route::get('/budget', [BudgetController::class, 'index'])->name('budget.index');
     Route::post('/budget', [BudgetController::class, 'store'])->name('budget.store');
+    Route::put('/budget/{id}', [BudgetController::class, 'update'])->name('budget.update');
     Route::delete('/budget/{id}', [BudgetController::class, 'destroy'])->name('budget.destroy');
     Route::get('/budget/settings', [BudgetController::class, 'settings'])->name('budget.settings');
     Route::post('/budget/settings', [BudgetController::class, 'saveSettings'])->name('budget.settings.save');

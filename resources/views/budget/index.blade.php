@@ -95,14 +95,21 @@
                                 </div>
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $budget->periodLabel() }}</div>
                             </div>
-                            <form action="{{ route('budget.destroy', $budget->budget_id) }}" method="POST"
-                                  onsubmit="return confirm('Hapus budget ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Hapus">
-                                    <i class="bi bi-trash3"></i>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button type="button"
+                                    onclick="openEditModal({{ $budget->budget_id }}, '{{ addslashes($budget->category->category_name ?? 'Kategori #'.$budget->category_id) }}', {{ $budget->amount }}, '{{ $budget->period }}', {{ $budget->duration ?? 'null' }}, '{{ $budget->start_date?->toDateString() ?? '' }}', '{{ $budget->end_date?->toDateString() ?? '' }}')"
+                                    style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Edit">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                            </form>
+                                <form action="{{ route('budget.destroy', $budget->budget_id) }}" method="POST"
+                                      onsubmit="return confirm('Hapus budget ini?')" style="margin: 0;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Hapus">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                         <div style="font-size: var(--fs-lg); font-weight: 800; color: {{ $barColor }}; margin-bottom: 4px;">
@@ -200,6 +207,67 @@
         </div>
     </div>
 </div>
+{{-- Modal Edit Budget --}}
+<div id="editBudgetModal" class="bunrek-modal-overlay">
+    <div class="bunrek-modal-card">
+        <div class="bunrek-modal-header">
+            <h3 style="font-family: var(--font-heading); font-weight: 800; color: var(--text-dark); margin: 0; font-size: var(--fs-lg); display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-pencil-square" style="color: var(--primary-color);"></i> Edit Budget
+            </h3>
+            <button id="btnCloseEditModal" class="bunrek-modal-close"><i class="bi bi-x"></i></button>
+        </div>
+        <div class="bunrek-modal-body">
+            <form id="editBudgetForm" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="bunrek-form-group">
+                    <label class="bunrek-label">Kategori</label>
+                    <div id="editCategoryDisplay" style="padding: 8px 12px; background: var(--bg-light); border-radius: var(--radius-sm); font-weight: 600; color: var(--text-muted); font-size: var(--fs-sm);"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div class="bunrek-form-group">
+                        <label class="bunrek-label">Batas Pengeluaran (Rp)</label>
+                        <input type="number" name="amount" id="editAmount" class="bunrek-input" required min="1000" placeholder="0">
+                    </div>
+                    <div class="bunrek-form-group">
+                        <label class="bunrek-label">Periode</label>
+                        <select name="period" id="editPeriod" class="bunrek-select" required>
+                            <option value="bulanan">Bulanan</option>
+                            <option value="mingguan">Mingguan</option>
+                            <option value="tahunan">Tahunan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="editBudgetDateFields" style="display: none; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div class="bunrek-form-group">
+                        <label class="bunrek-label">Tanggal Mulai</label>
+                        <input type="date" name="start_date" id="editStartDate" class="bunrek-input">
+                    </div>
+                    <div class="bunrek-form-group">
+                        <label class="bunrek-label">Tanggal Berakhir</label>
+                        <input type="date" name="end_date" id="editEndDate" class="bunrek-input">
+                    </div>
+                </div>
+
+                <div id="editBudgetDurationField" class="bunrek-form-group">
+                    <label class="bunrek-label">Berlaku Selama <small style="color: var(--text-muted);">(Opsional)</small></label>
+                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                        <input type="number" name="duration" id="editDuration" class="bunrek-input" min="1" max="60" placeholder="Kosongkan = selamanya" style="flex: 1;">
+                        <span id="editDurationUnit" style="font-weight: 600; color: var(--text-muted); min-width: 48px;">bulan</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-lg); border-top: 1px solid var(--border-light); padding-top: var(--space-md);">
+                    <button type="button" id="btnCancelEditModal" class="btn-bunrek btn-outline">Batal</button>
+                    <button type="submit" class="btn-bunrek btn-primary"><i class="bi bi-check-lg"></i> Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -229,7 +297,41 @@ $(document).ready(function() {
     $('#budgetPeriod').on('change', toggleBudgetPeriodFields);
     toggleBudgetPeriodFields();
 
+    // Edit modal
+    $('#btnCloseEditModal, #btnCancelEditModal').on('click', function() { $('#editBudgetModal').removeClass('active'); });
+    $('#editBudgetModal').on('click', function(e) {
+        if ($(e.target).is('#editBudgetModal')) $('#editBudgetModal').removeClass('active');
+    });
+
+    function toggleEditPeriodFields() {
+        var period = $('#editPeriod').val();
+        if (period === 'mingguan') {
+            $('#editBudgetDateFields').css('display', 'grid');
+            $('#editBudgetDurationField').hide();
+            $('#editStartDate, #editEndDate').prop('disabled', false);
+            $('#editDuration').prop('disabled', true);
+        } else {
+            $('#editBudgetDateFields').hide();
+            $('#editBudgetDurationField').show();
+            $('#editStartDate, #editEndDate').prop('disabled', true);
+            $('#editDuration').prop('disabled', false);
+            $('#editDurationUnit').text(period === 'tahunan' ? 'tahun' : 'bulan');
+        }
+    }
+    $('#editPeriod').on('change', toggleEditPeriodFields);
+
     setTimeout(function() { $('.bunrek-alert').fadeOut(500); }, 5000);
 });
+
+window.openEditModal = function(id, categoryName, amount, period, duration, startDate, endDate) {
+    $('#editBudgetForm').attr('action', '/budget/' + id);
+    $('#editCategoryDisplay').text(categoryName);
+    $('#editAmount').val(amount);
+    $('#editPeriod').val(period).trigger('change');
+    $('#editDuration').val(duration || '');
+    $('#editStartDate').val(startDate || '');
+    $('#editEndDate').val(endDate || '');
+    $('#editBudgetModal').addClass('active');
+};
 </script>
 @endpush

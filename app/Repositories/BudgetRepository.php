@@ -50,6 +50,16 @@ class BudgetRepository
         );
     }
 
+    public function updateById(int $budgetId, int $userId, array $data): ?Budget
+    {
+        $budget = $this->findById($budgetId, $userId);
+        if (!$budget) {
+            return null;
+        }
+        $budget->update($data);
+        return $budget->fresh();
+    }
+
     public function delete(int $budgetId, int $userId): bool
     {
         $budget = $this->findById($budgetId, $userId);

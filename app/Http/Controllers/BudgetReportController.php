@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ChartHelper;
 use App\Mail\BudgetMonthlyReportMail;
+use App\Models\Budget;
 use App\Services\BudgetReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -17,21 +18,57 @@ class BudgetReportController extends Controller
 
     public function index(Request $request)
     {
-        $now   = Carbon::now();
+        $now    = Carbon::now();
+        $userId = Auth::id();
+
+        // Earliest budget start_date defines the lower bound for the month filter
+        $earliest = Budget::where('user_id', $userId)->orderBy('start_date')->value('start_date');
+        $minDate  = $earliest ? Carbon::parse($earliest)->startOfMonth() : $now->copy()->startOfMonth();
+
         $bulan = (int) $request->get('bulan', $now->month);
         $tahun = (int) $request->get('tahun', $now->year);
 
-        $report = $this->budgetReportService->getMonthlyReport(Auth::id(), $bulan, $tahun);
-
-        $availableMonths = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $availableMonths[] = ['value' => $m, 'label' => ChartHelper::formatBulanLengkap($m), 'selected' => $m === $bulan];
+        // Clamp requested period to the allowed range
+        $requested = Carbon::create($tahun, $bulan, 1);
+        if ($requested->lt($minDate)) {
+            $bulan = $minDate->month;
+            $tahun = $minDate->year;
+        }
+        if ($requested->gt($now->copy()->startOfMonth())) {
+            $bulan = $now->month;
+            $tahun = $now->year;
         }
 
-        $currentYear    = $now->year;
-        $availableYears = [];
-        for ($y = $currentYear - 2; $y <= $currentYear; $y++) {
-            $availableYears[] = ['value' => $y, 'label' => (string) $y, 'selected' => $y === $tahun];
+        $report = $this->budgetReportService->getMonthlyReport($userId, $bulan, $tahun);
+
+        // Build available months/years from minDate to current month
+        $availableMonths = [];
+        $availableYears  = [];
+        $cursor = $minDate->copy();
+        $end    = $now->copy()->startOfMonth();
+
+        $yearsSet = [];
+        while ($cursor->lte($end)) {
+            if (!in_array($cursor->year, $yearsSet)) {
+                $yearsSet[] = $cursor->year;
+                $availableYears[] = [
+                    'value'    => $cursor->year,
+                    'label'    => (string) $cursor->year,
+                    'selected' => $cursor->year === $tahun,
+                ];
+            }
+            $cursor->addMonth();
+        }
+
+        // Months valid for selected year
+        $minMonthForYear = ($tahun === $minDate->year) ? $minDate->month : 1;
+        $maxMonthForYear = ($tahun === $now->year)     ? $now->month     : 12;
+        for ($m = $minMonthForYear; $m <= $maxMonthForYear; $m++) {
+            $availableMonths[] = [
+                'value'    => $m,
+                'label'    => ChartHelper::formatBulanLengkap($m),
+                'selected' => $m === $bulan,
+            ];
         }
 
         return view('budget.report', compact('report', 'bulan', 'tahun', 'availableMonths', 'availableYears'));
