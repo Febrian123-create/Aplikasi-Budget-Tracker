@@ -47,6 +47,9 @@
             <p style="color: var(--text-muted); font-size: var(--fs-sm); margin: 0; margin-top: 2px;">Tetapkan batas pengeluaran per kategori</p>
         </div>
         <div style="display: flex; gap: var(--space-sm);">
+            <a href="{{ route('budget.report') }}" class="btn-bunrek btn-outline" style="font-size: var(--fs-sm);">
+                <i class="bi bi-calendar-week"></i> Laporan Mingguan
+            </a>
             <a href="{{ route('budget.settings') }}" class="btn-bunrek btn-outline" style="font-size: var(--fs-sm);">
                 <i class="bi bi-gear"></i> Pengaturan Alert
             </a>

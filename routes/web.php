@@ -7,6 +7,7 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\BudgetReportController;
 use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -91,6 +92,10 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::delete('/budget/{id}', [BudgetController::class, 'destroy'])->name('budget.destroy');
     Route::get('/budget/settings', [BudgetController::class, 'settings'])->name('budget.settings');
     Route::post('/budget/settings', [BudgetController::class, 'saveSettings'])->name('budget.settings.save');
+
+    Route::get('/budget/report', [BudgetReportController::class, 'index'])->name('budget.report');
+    Route::get('/budget/report/export/pdf', [BudgetReportController::class, 'exportPdf'])->name('budget.report.export.pdf');
+    Route::post('/budget/report/send-email', [BudgetReportController::class, 'sendEmail'])->name('budget.report.send-email');
 
     // Wishlist Routes
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
