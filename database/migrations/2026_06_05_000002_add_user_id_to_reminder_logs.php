@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (!Schema::hasColumn('reminder_logs', 'user_id')) {
@@ -15,12 +16,10 @@ return new class extends Migration {
             });
 
             DB::statement('
-                UPDATE reminder_logs
-                SET user_id = (
-                    SELECT user_id FROM recurring_transaction
-                    WHERE recurring_transaction.recurring_id = reminder_logs.recurring_id
-                )
-                WHERE user_id IS NULL AND recurring_id IS NOT NULL
+                UPDATE reminder_logs rl
+                JOIN recurring_transaction rt ON rt.recurring_id = rl.recurring_id
+                SET rl.user_id = rt.user_id
+                WHERE rl.user_id IS NULL AND rl.recurring_id IS NOT NULL
             ');
         }
     }
