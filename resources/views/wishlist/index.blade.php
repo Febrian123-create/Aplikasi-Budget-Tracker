@@ -40,13 +40,13 @@
             </div>
         </div>
 
-        <!-- Total Dana Dialokasikan Card -->
+        <!-- Saving Balance Card -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-income); box-shadow: var(--shadow-sm);">
             <div style="flex: 1;">
                 <p
                     style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
-                    Total Dana Dialokasikan
+                    Saving Balance
                 </p>
                 <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-income);">
                     Rp {{ number_format($totalAllocated, 0, ',', '.') }}
@@ -58,21 +58,7 @@
         </div>
 
         <!-- Available Balance Card -->
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--primary-color); box-shadow: var(--shadow-sm);">
-            <div style="flex: 1;">
-                <p
-                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
-                    Saldo Tersedia
-                </p>
-                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--primary-color);">
-                    Rp {{ number_format($availableBalance, 0, ',', '.') }}
-                </p>
-            </div>
-            <div style="font-size: 3rem; color: rgba(88, 86, 214, 0.2); line-height: 1; margin-left: var(--space-lg);">
-                <i class="bi bi-cash-stack"></i>
-            </div>
-        </div>
+        
     </div>
 
     <!-- Toast Notifikasi Alokasi -->

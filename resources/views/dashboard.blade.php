@@ -151,9 +151,14 @@
                     <i class="bi bi-wallet2"></i>
                 </div>
             </div>
-            <div class="stat-card-value" style="color: var(--primary-color);">
+            <div class="stat-card-value" style="color: var(--primary-color); margin-bottom: 4px;">
                 Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
             </div>
+            @if(($savingBalance ?? 0) > 0)
+                <div style="font-size: var(--fs-xs); color: var(--text-muted); font-weight: 500; margin-top: 4px;">
+                    <i class="bi bi-info-circle-fill" style="color: var(--primary-color);"></i> Rp {{ number_format($savingBalance, 0, ',', '.') }} terpakai untuk saving balance
+                </div>
+            @endif
         </div>
     </div>
 

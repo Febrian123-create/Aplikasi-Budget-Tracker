@@ -11,7 +11,7 @@ return new class extends Migration {
             Schema::create('recurring_transaction', function (Blueprint $table) {
                 $table->id('recurring_id');
                 $table->unsignedBigInteger('user_id');
-                $table->integer('category_id');
+                $table->unsignedBigInteger('category_id');
                 $table->decimal('amount', 15, 2);
                 $table->enum('frequency', ['harian', 'mingguan', 'bulanan', 'tahunan']);
                 $table->date('start_date');

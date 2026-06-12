@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('wishlists', function (Blueprint $table) {
-            $table->bigIncrements('id')->primary()->change();
-        });
+        // No-op: 'id' is already defined as auto-increment primary key in the create_wishlists_table migration
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('wishlists', function (Blueprint $table) {
-            $table->bigInteger('id')->change();
-        });
+        // No-op
     }
 };

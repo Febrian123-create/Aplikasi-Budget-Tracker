@@ -132,11 +132,6 @@ class WishlistController extends Controller
         }
 
         $maxAlokasi = (int) max(0, floor($wishlist->target_harga - $wishlist->allocated_amount));
-        $totalAllocated = Wishlist::where('user_id', Auth::id())
-            ->whereIn('status', ['aktif', 'tercapai'])
-            ->sum('allocated_amount');
-        $currentBalance = $this->getCurrentBalance(Auth::id());
-        $availableBalance = max(0, $currentBalance - $totalAllocated);
 
         $validator = Validator::make($request->all(), [
             'jumlah' => 'required|integer|min:1000',
@@ -166,18 +161,6 @@ class WishlistController extends Controller
                 ->withErrors(['jumlah' => 'Nominal melebihi sisa target. Maksimal yang bisa kamu alokasikan adalah Rp ' . number_format($maxAlokasi, 0, ',', '.') . '.'])
                 ->withInput()
                 ->with('allocationError', 'Nominal alokasi melebihi sisa target.')
-                ->with('allocationWishlist', [
-                    'id' => $wishlist->id,
-                    'nama' => $wishlist->nama,
-                    'sisa' => $maxAlokasi,
-                ]);
-        }
-
-        if ($jumlah > $availableBalance) {
-            return redirect()->route('wishlist.index')
-                ->withErrors(['jumlah' => 'Saldo tersedia tidak mencukupi. Saldo bebas saat ini hanya Rp ' . number_format((int) floor($availableBalance), 0, ',', '.') . '.'])
-                ->withInput()
-                ->with('allocationError', 'Saldo tersedia tidak mencukupi.')
                 ->with('allocationWishlist', [
                     'id' => $wishlist->id,
                     'nama' => $wishlist->nama,

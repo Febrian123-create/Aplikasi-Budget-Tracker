@@ -15,11 +15,16 @@ return new class extends Migration
                 $table->index('user_id');
             });
 
+            // Use subquery approach compatible with both MySQL and SQLite
             DB::statement('
-                UPDATE reminder_logs rl
-                JOIN recurring_transaction rt ON rt.recurring_id = rl.recurring_id
-                SET rl.user_id = rt.user_id
-                WHERE rl.user_id IS NULL AND rl.recurring_id IS NOT NULL
+                UPDATE reminder_logs
+                SET user_id = (
+                    SELECT rt.user_id
+                    FROM recurring_transaction rt
+                    WHERE rt.recurring_id = reminder_logs.recurring_id
+                    LIMIT 1
+                )
+                WHERE user_id IS NULL AND recurring_id IS NOT NULL
             ');
         }
     }

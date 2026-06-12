@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('weekly_budget_snapshots', function (Blueprint $table) {
             $table->id('snapshot_id');
             $table->unsignedBigInteger('user_id');
-            $table->integer('category_id');
+            $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('budget_id');
             $table->date('week_start');
             $table->date('week_end');

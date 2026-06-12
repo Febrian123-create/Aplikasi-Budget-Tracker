@@ -102,10 +102,15 @@ class DashboardController extends Controller
             $chartColors = \App\Helpers\ChartHelper::getChartColors();
         }
 
+        $savingBalance = \App\Models\Wishlist::where('user_id', Auth::id())
+            ->whereIn('status', ['aktif', 'tercapai'])
+            ->sum('allocated_amount');
+
         return view('dashboard', compact(
             'totalIncome',
             'totalExpense',
             'balance',
+            'savingBalance',
             'startDate',
             'endDate',
             'filterType',
