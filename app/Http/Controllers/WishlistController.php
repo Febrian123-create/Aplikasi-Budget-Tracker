@@ -27,13 +27,36 @@ class WishlistController extends Controller
         $activeWishlists = $wishlists->where('status', 'aktif');
         $totalActiveWishlists = $activeWishlists->count();
         $totalRemainingNeeded = $activeWishlists->sum(function ($wishlist) {
-            return max(0, $wishlist->target_harga - $wishlist->terkumpul);
+            return max(0, $wishlist->target_harga - $wishlist->allocated_amount);
         });
 
-        // Hitung total saldo saving dari wishlist yang statusnya aktif atau tercapai (belum dibeli dan belum dibatalkan)
-        $totalSaldoSaving = $wishlists->whereIn('status', ['aktif', 'tercapai'])->sum('terkumpul');
+        $totalAllocated = $wishlists->whereIn('status', ['aktif', 'tercapai'])->sum('allocated_amount');
+        $currentBalance = $this->getCurrentBalance(Auth::id());
+        $availableBalance = max(0, $currentBalance - $totalAllocated);
 
-        return view('wishlist.index', compact('wishlists', 'totalActiveWishlists', 'totalRemainingNeeded', 'totalSaldoSaving'));
+        return view('wishlist.index', compact(
+            'wishlists',
+            'totalActiveWishlists',
+            'totalRemainingNeeded',
+            'totalAllocated',
+            'availableBalance'
+        ));
+    }
+
+    private function getCurrentBalance(int $userId): float
+    {
+        $incomeTypeId = TransactionType::where('name', 'Income')->value('transactionType_id');
+        $expenseTypeId = TransactionType::where('name', 'Expense')->value('transactionType_id');
+
+        $totalIncome = Transaction::where('user_id', $userId)
+            ->where('transactionType_id', $incomeTypeId)
+            ->sum('total_amount');
+
+        $totalExpense = Transaction::where('user_id', $userId)
+            ->where('transactionType_id', $expenseTypeId)
+            ->sum('total_amount');
+
+        return $totalIncome - $totalExpense;
     }
 
     /**
@@ -55,6 +78,7 @@ class WishlistController extends Controller
             'user_id' => Auth::id(),
             'nama' => $validated['nama'],
             'target_harga' => $validated['target_harga'],
+            'allocated_amount' => 0,
             'deadline' => $validated['deadline'] ?? null,
             'catatan' => $validated['catatan'] ?? null,
             'status' => 'aktif',
@@ -96,9 +120,9 @@ class WishlistController extends Controller
     }
 
     /**
-     * alokasi: Tambah dana ke wishlist
-     * Jika terkumpul >= target_harga, otomatis ubah status menjadi tercapai
-     * Buat transaksi Pengeluaran baru dengan kategori WISHLIST (id 11)
+     * alokasi: Tambah dana ke wishlist sebagai alokasi reservasi
+     * Jika allocated_amount >= target_harga, otomatis ubah status menjadi tercapai
+     * Tidak membuat transaksi pengeluaran saat alokasi.
      */
     public function alokasi(Request $request, Wishlist $wishlist)
     {
@@ -107,15 +131,19 @@ class WishlistController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $maxAlokasi = max(0, $wishlist->target_harga - $wishlist->terkumpul);
+        $maxAlokasi = (int) max(0, floor($wishlist->target_harga - $wishlist->allocated_amount));
+        $totalAllocated = Wishlist::where('user_id', Auth::id())
+            ->whereIn('status', ['aktif', 'tercapai'])
+            ->sum('allocated_amount');
+        $currentBalance = $this->getCurrentBalance(Auth::id());
+        $availableBalance = max(0, $currentBalance - $totalAllocated);
 
         $validator = Validator::make($request->all(), [
-            'jumlah' => 'required|integer|min:1000|max:' . $maxAlokasi,
+            'jumlah' => 'required|integer|min:1000',
         ], [
             'jumlah.required' => 'Nominal alokasi wajib diisi.',
             'jumlah.integer'  => 'Nominal alokasi harus berupa angka bulat tanpa koma.',
             'jumlah.min'      => 'Jumlah alokasi minimum Rp 1.000',
-            'jumlah.max'      => 'Nominal melebihi sisa target. Maksimal yang bisa kamu alokasikan adalah Rp ' . number_format($maxAlokasi, 0, ',', '.') . '.',
         ]);
 
         if ($validator->fails()) {
@@ -131,35 +159,47 @@ class WishlistController extends Controller
         }
 
         $validated = $validator->validated();
+        $jumlah = $validated['jumlah'];
 
-        // Tambahkan ke terkumpul
-        $wishlist->terkumpul += $validated['jumlah'];
+        if ($jumlah > $maxAlokasi) {
+            return redirect()->route('wishlist.index')
+                ->withErrors(['jumlah' => 'Nominal melebihi sisa target. Maksimal yang bisa kamu alokasikan adalah Rp ' . number_format($maxAlokasi, 0, ',', '.') . '.'])
+                ->withInput()
+                ->with('allocationError', 'Nominal alokasi melebihi sisa target.')
+                ->with('allocationWishlist', [
+                    'id' => $wishlist->id,
+                    'nama' => $wishlist->nama,
+                    'sisa' => $maxAlokasi,
+                ]);
+        }
 
-        // Jika terkumpul >= target_harga, ubah status menjadi tercapai
-        if ($wishlist->terkumpul >= $wishlist->target_harga) {
+        if ($jumlah > $availableBalance) {
+            return redirect()->route('wishlist.index')
+                ->withErrors(['jumlah' => 'Saldo tersedia tidak mencukupi. Saldo bebas saat ini hanya Rp ' . number_format((int) floor($availableBalance), 0, ',', '.') . '.'])
+                ->withInput()
+                ->with('allocationError', 'Saldo tersedia tidak mencukupi.')
+                ->with('allocationWishlist', [
+                    'id' => $wishlist->id,
+                    'nama' => $wishlist->nama,
+                    'sisa' => $maxAlokasi,
+                ]);
+        }
+
+        $wishlist->allocated_amount += $jumlah;
+        $wishlist->terkumpul = $wishlist->allocated_amount;
+
+        if ($wishlist->allocated_amount >= $wishlist->target_harga) {
             $wishlist->status = 'tercapai';
         }
 
         $wishlist->save();
-
-        // Buat transaksi Pengeluaran baru (kategori WISHLIST = 11)
-        $expenseTypeId = TransactionType::where('name', 'Expense')->value('transactionType_id');
-
-        Transaction::create([
-            'user_id' => Auth::id(),
-            'category_id' => 11,
-            'transactionType_id' => $expenseTypeId,
-            'total_amount' => $validated['jumlah'],
-            'transaction_date' => Carbon::today()->toDateString(),
-            'description' => "Saving Wishlist: {$wishlist->nama}",
-        ]);
 
         return redirect()->route('wishlist.index')->with('success', 'Dana berhasil dialokasikan!');
     }
 
     /**
      * destroy: Ubah status menjadi dibatalkan
-     * Kembalikan dana terkumpul ke balance utama sebagai PEMASUKAN dengan kategori INCOME (id 10)
+     * Batalkan alokasi dana dan kembalikan alokasi tersebut ke saldo utama.
      */
     public function destroy(Wishlist $wishlist)
     {
@@ -168,32 +208,17 @@ class WishlistController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $terkumpul = $wishlist->terkumpul;
-
-        if ($terkumpul > 0) {
-            // Buat transaksi Pemasukan (kategori INCOME = 10)
-            $incomeTypeId = TransactionType::where('name', 'Income')->value('transactionType_id');
-
-            Transaction::create([
-                'user_id' => Auth::id(),
-                'category_id' => 10,
-                'transactionType_id' => $incomeTypeId,
-                'total_amount' => $terkumpul,
-                'transaction_date' => Carbon::today()->toDateString(),
-                'description' => "Pembatalan Wishlist: {$wishlist->nama}",
-            ]);
-        }
-
         $wishlist->update([
+            'allocated_amount' => 0,
             'terkumpul' => 0,
-            'status' => 'dibatalkan'
+            'status' => 'dibatalkan',
         ]);
 
         return redirect()->route('wishlist.index')->with('success', 'Wishlist berhasil dibatalkan!');
     }
 
     /**
-     * konfirmasiPembelian: Ubah status wishlist menjadi dibeli dan update deskripsi transaksi saving terkait
+     * konfirmasiPembelian: Ubah status wishlist menjadi dibeli dan catat transaksi pembelian sesungguhnya.
      */
     public function konfirmasiPembelian(Wishlist $wishlist)
     {
@@ -206,18 +231,18 @@ class WishlistController extends Controller
             return redirect()->route('wishlist.index')->with('error', 'Hanya wishlist yang sudah tercapai yang dapat dikonfirmasi pembeliannya.');
         }
 
-        // Cari transaksi saving terkait dari wishlist ini yang berdeskripsi "Saving Wishlist: nama"
-        // Kita update semua deskripsinya menjadi "Pembelian Wishlist: nama"
-        Transaction::where('user_id', Auth::id())
-            ->where('category_id', 11)
-            ->where('description', "Saving Wishlist: {$wishlist->nama}")
-            ->update([
-                'description' => "Pembelian Wishlist: {$wishlist->nama}"
-            ]);
+        $expenseTypeId = TransactionType::where('name', 'Expense')->value('transactionType_id');
 
-        $wishlist->update([
-            'status' => 'dibeli'
+        Transaction::create([
+            'user_id' => Auth::id(),
+            'category_id' => 11,
+            'transactionType_id' => $expenseTypeId,
+            'total_amount' => $wishlist->target_harga,
+            'transaction_date' => Carbon::today()->toDateString(),
+            'description' => "Pembelian Wishlist: {$wishlist->nama}",
         ]);
+
+        $wishlist->update(['status' => 'dibeli']);
 
         return redirect()->route('wishlist.index')->with('success', 'Pembelian wishlist berhasil dikonfirmasi!');
     }

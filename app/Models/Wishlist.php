@@ -11,9 +11,14 @@ class Wishlist extends Model
         'nama',
         'target_harga',
         'terkumpul',
+        'allocated_amount',
         'deadline',
         'status',
         'catatan',
+    ];
+
+    protected $casts = [
+        'allocated_amount' => 'decimal:2',
     ];
 
     /**
@@ -42,7 +47,8 @@ class Wishlist extends Model
             return 0;
         }
 
-        $persentase = ($this->terkumpul / $this->target_harga) * 100;
+        $collected = $this->allocated_amount ?? $this->terkumpul;
+        $persentase = ($collected / $this->target_harga) * 100;
         return min((int)$persentase, 100);
     }
 }

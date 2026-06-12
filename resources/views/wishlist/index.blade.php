@@ -4,7 +4,8 @@
 
 @section('content')
     <!-- Summary Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-lg);">
         <!-- Total Active Wishlists Card -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--primary-color); box-shadow: var(--shadow-sm);">
@@ -39,26 +40,44 @@
             </div>
         </div>
 
-        <!-- Total Saldo Saving Card -->
+        <!-- Total Dana Dialokasikan Card -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--color-income); box-shadow: var(--shadow-sm);">
             <div style="flex: 1;">
                 <p
                     style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
-                    Total Saldo Saving
+                    Total Dana Dialokasikan
                 </p>
                 <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--color-income);">
-                    Rp {{ number_format($totalSaldoSaving, 0, ',', '.') }}
+                    Rp {{ number_format($totalAllocated, 0, ',', '.') }}
                 </p>
             </div>
             <div style="font-size: 3rem; color: rgba(52, 199, 89, 0.2); line-height: 1; margin-left: var(--space-lg);">
                 <i class="bi bi-wallet2"></i>
             </div>
         </div>
+
+        <!-- Available Balance Card -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg); background: var(--bg-white); border-radius: var(--radius-lg); border-left: 5px solid var(--primary-color); box-shadow: var(--shadow-sm);">
+            <div style="flex: 1;">
+                <p
+                    style="margin: 0 0 var(--space-xs) 0; color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500;">
+                    Saldo Tersedia
+                </p>
+                <p style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--primary-color);">
+                    Rp {{ number_format($availableBalance, 0, ',', '.') }}
+                </p>
+            </div>
+            <div style="font-size: 3rem; color: rgba(88, 86, 214, 0.2); line-height: 1; margin-left: var(--space-lg);">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notifikasi Alokasi -->
-    <div id="wishlistGlobalToast" class="bunrek-alert bunrek-alert-error" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 10050; min-width: 300px; max-width: 360px; box-shadow: 0 18px 40px rgba(0,0,0,0.12);">
+    <div id="wishlistGlobalToast" class="bunrek-alert bunrek-alert-error"
+        style="display: none; position: fixed; top: 20px; right: 20px; z-index: 10050; min-width: 300px; max-width: 360px; box-shadow: 0 18px 40px rgba(0,0,0,0.12);">
         <i class="bi bi-exclamation-circle-fill"></i> <span id="wishlistGlobalToastMessage"></span>
     </div>
 
@@ -66,7 +85,8 @@
     <div class="bunrek-card" style="margin-bottom: var(--space-lg);">
         <div class="bunrek-card-body" style="padding: var(--space-md) var(--space-lg);">
             <div style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
-                <span style="font-weight: 600; color: var(--text-dark); margin-right: var(--space-xs);">Filter Status:</span>
+                <span style="font-weight: 600; color: var(--text-dark); margin-right: var(--space-xs);">Filter
+                    Status:</span>
                 <button type="button" class="filter-btn active" onclick="filterStatus('all')">Semua</button>
                 <button type="button" class="filter-btn" onclick="filterStatus('aktif')">Aktif</button>
                 <button type="button" class="filter-btn" onclick="filterStatus('tercapai')">Tercapai</button>
@@ -153,29 +173,38 @@
                 Daftar Wishlist
             </h3>
 
-            <div id="wishlistGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-lg);">
+            <div id="wishlistGrid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-lg);">
                 @forelse($wishlists as $wishlist)
-                    <div class="bunrek-card wishlist-card" data-status="{{ $wishlist->status }}" style="display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease;">
-                        <div class="bunrek-card-body" onclick="toggleAccordion({{ $wishlist->id }})" style="flex: 1; user-select: none;">
+                    <div class="bunrek-card wishlist-card" data-status="{{ $wishlist->status }}"
+                        style="display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s ease;">
+                        <div class="bunrek-card-body" onclick="toggleAccordion({{ $wishlist->id }})"
+                            style="flex: 1; user-select: none;">
                             <!-- Header dengan nama, expand icon, dan badge status -->
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
-                                <h4 style="margin: 0; flex: 1; color: var(--text-dark); font-size: var(--fs-base); font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                    <span id="accordion-icon-{{ $wishlist->id }}" class="accordion-icon" style="transition: transform 0.3s ease; color: var(--primary-color);">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                                <h4
+                                    style="margin: 0; flex: 1; color: var(--text-dark); font-size: var(--fs-base); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                    <span id="accordion-icon-{{ $wishlist->id }}" class="accordion-icon"
+                                        style="transition: transform 0.3s ease; color: var(--primary-color);">
                                         <i class="bi bi-plus-lg"></i>
                                     </span>
                                     {{ $wishlist->nama }}
                                 </h4>
                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                                     @if ($wishlist->status === 'tercapai')
-                                        <span style="background: var(--color-income); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
+                                        <span
+                                            style="background: var(--color-income); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
                                             <i class="bi bi-check-circle"></i> Tercapai
                                         </span>
                                     @elseif ($wishlist->status === 'dibeli')
-                                        <span style="background: var(--primary-color); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
+                                        <span
+                                            style="background: var(--primary-color); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
                                             <i class="bi bi-bag-check"></i> Dibeli
                                         </span>
                                     @elseif ($wishlist->status === 'dibatalkan')
-                                        <span style="background: var(--text-muted); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
+                                        <span
+                                            style="background: var(--text-muted); color: white; padding: 4px 10px; border-radius: var(--radius-base); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;">
                                             <i class="bi bi-x-circle"></i> Dibatalkan
                                         </span>
                                     @endif
@@ -183,32 +212,42 @@
                             </div>
 
                             <!-- Target info -->
-                            <div style="margin-bottom: var(--space-sm); display: flex; justify-content: space-between; font-size: var(--fs-sm);">
+                            <div
+                                style="margin-bottom: var(--space-sm); display: flex; justify-content: space-between; font-size: var(--fs-sm);">
                                 <span style="color: var(--text-muted);">Target:</span>
-                                <span style="color: var(--text-dark); font-weight: 600;">Rp {{ number_format($wishlist->target_harga, 0, ',', '.') }}</span>
+                                <span style="color: var(--text-dark); font-weight: 600;">Rp
+                                    {{ number_format($wishlist->target_harga, 0, ',', '.') }}</span>
                             </div>
 
                             <!-- Progress Bar Singkat -->
                             <div>
-                                <div style="background: var(--bg-light); border-radius: 20px; height: 6px; overflow: hidden; display: flex;">
-                                    <div style="background: linear-gradient(90deg, var(--color-income), var(--primary-color)); height: 100%; width: {{ $wishlist->prosesan }}%; transition: width 0.3s ease;">
+                                <div
+                                    style="background: var(--bg-light); border-radius: 20px; height: 6px; overflow: hidden; display: flex;">
+                                    <div
+                                        style="background: linear-gradient(90deg, var(--color-income), var(--primary-color)); height: 100%; width: {{ $wishlist->prosesan }}%; transition: width 0.3s ease;">
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                                     <span style="color: var(--text-muted); font-size: var(--fs-xs);">Progress</span>
-                                    <span style="color: var(--text-dark); font-size: var(--fs-xs); font-weight: 600;">{{ $wishlist->prosesan }}%</span>
+                                    <span
+                                        style="color: var(--text-dark); font-size: var(--fs-xs); font-weight: 600;">{{ $wishlist->prosesan }}%</span>
                                 </div>
                             </div>
 
                             <!-- Detail Tersembunyi (Accordion) -->
-                            <div id="accordion-content-{{ $wishlist->id }}" class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; margin-top: 0;">
-                                <div style="padding-top: var(--space-md); border-top: 1px solid var(--border-light); margin-top: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
+                            <div id="accordion-content-{{ $wishlist->id }}" class="accordion-content"
+                                style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; margin-top: 0;">
+                                <div
+                                    style="padding-top: var(--space-md); border-top: 1px solid var(--border-light); margin-top: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
                                     <div style="display: flex; justify-content: space-between; font-size: var(--fs-sm);">
-                                        <span style="color: var(--text-muted);">Terkumpul:</span>
-                                        <span style="color: var(--color-income); font-weight: 600;">Rp {{ number_format($wishlist->terkumpul, 0, ',', '.') }}</span>
+                                        <span style="color: var(--text-muted);">Dialokasikan:</span>
+                                        <span style="color: var(--color-income); font-weight: 600;">Rp
+                                            {{ number_format($wishlist->allocated_amount, 0, ',', '.') }}</span>
                                     </div>
                                     @if ($wishlist->deadline)
-                                        <div style="display: flex; justify-content: space-between; font-size: var(--fs-sm);">
+                                        <div
+                                            style="display: flex; justify-content: space-between; font-size: var(--fs-sm);">
                                             <span style="color: var(--text-muted);">Deadline:</span>
                                             <span style="color: var(--text-dark); font-weight: 500;">
                                                 {{ \Carbon\Carbon::parse($wishlist->deadline)->translatedFormat('d F Y') }}
@@ -216,30 +255,35 @@
                                         </div>
                                     @endif
                                     @if ($wishlist->catatan)
-                                        <div style="padding: 8px 12px; background: var(--bg-light); border-radius: var(--radius-base); color: var(--text-muted); font-size: var(--fs-xs); border-left: 3px solid var(--primary-color);">
+                                        <div
+                                            style="padding: 8px 12px; background: var(--bg-light); border-radius: var(--radius-base); color: var(--text-muted); font-size: var(--fs-xs); border-left: 3px solid var(--primary-color);">
                                             <strong>Catatan:</strong><br>
                                             {{ $wishlist->catatan }}
                                         </div>
                                     @endif
 
                                     <!-- Action Buttons -->
-                                    <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-sm);" onclick="event.stopPropagation()">
+                                    <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-sm);"
+                                        onclick="event.stopPropagation()">
                                         @if ($wishlist->status === 'aktif')
                                             <button type="button" class="btn-bunrek btn-sm btn-primary" style="flex: 1;"
-                                                onclick="openAlokasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->target_harga - $wishlist->terkumpul }})">
+                                                onclick="openAlokasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->target_harga - $wishlist->allocated_amount }})">
                                                 <i class="bi bi-plus-circle"></i> Alokasi
                                             </button>
-                                            <button type="button" class="btn-bunrek btn-sm btn-outline" style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
-                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->terkumpul }})">
+                                            <button type="button" class="btn-bunrek btn-sm btn-outline"
+                                                style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
+                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
                                                 <i class="bi bi-x-circle"></i> Batalkan
                                             </button>
                                         @elseif ($wishlist->status === 'tercapai')
-                                            <button type="button" class="btn-bunrek btn-sm" style="flex: 1; background-color: var(--color-income); color: white;"
+                                            <button type="button" class="btn-bunrek btn-sm"
+                                                style="flex: 1; background-color: var(--color-income); color: white;"
                                                 onclick="openKonfirmasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}')">
                                                 <i class="bi bi-bag-check"></i> Konfirmasi Beli
                                             </button>
-                                            <button type="button" class="btn-bunrek btn-sm btn-outline" style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
-                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->terkumpul }})">
+                                            <button type="button" class="btn-bunrek btn-sm btn-outline"
+                                                style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
+                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
                                                 <i class="bi bi-x-circle"></i> Batalkan
                                             </button>
                                         @endif
@@ -249,7 +293,8 @@
                         </div>
                     </div>
                 @empty
-                    <div style="grid-column: 1 / -1; padding: var(--space-xl) 0; text-align: center; color: var(--text-muted);">
+                    <div
+                        style="grid-column: 1 / -1; padding: var(--space-xl) 0; text-align: center; color: var(--text-muted);">
                         <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
                         <p>Belum ada wishlist. Buat yang pertama sekarang!</p>
                     </div>
@@ -269,8 +314,10 @@
                 </button>
             </div>
             <div class="delete-modal-body" style="text-align: left;">
-                <p id="modalWishlistName" style="margin: 0 0 var(--space-md) 0; color: var(--text-muted); font-weight: 500;"></p>
-                <div id="modalSisaKekurangan" style="margin-bottom: var(--space-md); font-size: var(--fs-sm); color: var(--text-dark);"></div>
+                <p id="modalWishlistName"
+                    style="margin: 0 0 var(--space-md) 0; color: var(--text-muted); font-weight: 500;"></p>
+                <div id="modalSisaKekurangan"
+                    style="margin-bottom: var(--space-md); font-size: var(--fs-sm); color: var(--text-dark);"></div>
                 <form id="alokasiForm" method="POST">
                     @csrf
                     <div class="bunrek-form-group">
@@ -311,7 +358,8 @@
                 <form id="batalForm" method="POST" style="margin: 0; display: inline-block;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-bunrek" style="background-color: var(--color-expense); color: white;">
+                    <button type="submit" class="btn-bunrek"
+                        style="background-color: var(--color-expense); color: white;">
                         Batalkan Wishlist
                     </button>
                 </form>
@@ -338,7 +386,8 @@
                 </button>
                 <form id="konfirmasiForm" method="POST" style="margin: 0; display: inline-block;">
                     @csrf
-                    <button type="submit" class="btn-bunrek" style="background-color: var(--color-income); color: white;">
+                    <button type="submit" class="btn-bunrek"
+                        style="background-color: var(--color-income); color: white;">
                         Konfirmasi Pembelian
                     </button>
                 </form>
@@ -427,8 +476,13 @@
             }
 
             @keyframes modalFadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
             }
 
             @keyframes modalSlideUp {
@@ -436,6 +490,7 @@
                     transform: translateY(20px);
                     opacity: 0;
                 }
+
                 to {
                     transform: translateY(0);
                     opacity: 1;
@@ -530,15 +585,20 @@
             function openAlokasiModal(wishlistId, wishlistName, sisaKekurangan) {
                 currentWishlistId = wishlistId;
                 document.getElementById('modalWishlistName').textContent = 'Wishlist: ' + wishlistName;
-                
+
                 // Format sisa kekurangan ke Rupiah
-                const formattedSisa = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(sisaKekurangan);
-                document.getElementById('modalSisaKekurangan').innerHTML = `Sisa kekurangan dana: <strong>${formattedSisa}</strong>`;
-                
+                const formattedSisa = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    maximumFractionDigits: 0
+                }).format(sisaKekurangan);
+                document.getElementById('modalSisaKekurangan').innerHTML =
+                    `Sisa kekurangan dana: <strong>${formattedSisa}</strong>`;
+
                 const input = document.getElementById('jumlahInput');
                 input.max = sisaKekurangan;
                 input.value = '';
-                
+
                 document.getElementById('alokasiForm').action = '/wishlist/' + wishlistId + '/alokasi';
                 document.getElementById('alokasiModal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -564,17 +624,22 @@
                 const modal = document.getElementById('batalModal');
                 const form = document.getElementById('batalForm');
                 const message = document.getElementById('batalModalMessage');
-                
+
                 form.action = '/wishlist/' + wishlistId;
-                
-                const formattedTerkumpul = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(terkumpul);
-                
+
+                const formattedAllocated = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    maximumFractionDigits: 0
+                }).format(terkumpul);
+
                 if (terkumpul > 0) {
-                    message.innerHTML = `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?<br><br>Dana terkumpul sebesar <strong>${formattedTerkumpul}</strong> akan dikembalikan ke saldo utama sebagai pemasukan.`;
+                    message.innerHTML =
+                        `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?<br><br>Dana yang sudah dialokasikan sebesar <strong>${formattedAllocated}</strong> akan dibatalkan dan dibebaskan kembali ke saldo utama.`;
                 } else {
                     message.innerHTML = `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?`;
                 }
-                
+
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
@@ -589,10 +654,10 @@
                 const modal = document.getElementById('konfirmasiModal');
                 const form = document.getElementById('konfirmasiForm');
                 const message = document.getElementById('konfirmasiModalMessage');
-                
+
                 form.action = '/wishlist/' + wishlistId + '/konfirmasi';
-                message.innerHTML = `Apakah Anda yakin ingin mengonfirmasi pembelian untuk wishlist <strong>"${wishlistName}"</strong>?<br><br>Dana tabungan (saving) yang telah dikumpulkan akan dideklarasikan sebagai pembelian secara permanen.`;
-                
+                message.innerHTML = `Beli wishlist ini sekarang?`;
+
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
@@ -612,7 +677,9 @@
                 setTimeout(() => {
                     toast.style.transition = 'opacity 0.3s ease';
                     toast.style.opacity = '0';
-                    setTimeout(() => { toast.style.display = 'none'; }, 300);
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                    }, 300);
                 }, 6000);
             }
 

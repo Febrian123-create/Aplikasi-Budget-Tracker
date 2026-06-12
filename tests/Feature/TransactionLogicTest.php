@@ -47,16 +47,16 @@ class TransactionLogicTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $transaction = Transaction::where('user_id', $user->id)->first();
         $this->assertNotNull($transaction);
         $this->assertEquals(10, $transaction->category_id);
     }
 
-    public function test_wishlist_allocation_sets_category_id_to_11()
+    public function test_wishlist_allocation_does_not_create_transaction()
     {
         $user = User::factory()->create();
-        
+
         $wishlist = Wishlist::create([
             'user_id' => $user->id,
             'nama' => 'Beli Sepatu Baru',
@@ -64,6 +64,7 @@ class TransactionLogicTest extends TestCase
             'deadline' => Carbon::tomorrow()->toDateString(),
             'catatan' => 'Sepatu lari',
             'status' => 'aktif',
+            'allocated_amount' => 0,
             'terkumpul' => 0,
         ]);
 
@@ -73,11 +74,9 @@ class TransactionLogicTest extends TestCase
 
         $response->assertRedirect();
 
-        $transaction = Transaction::where('user_id', $user->id)->first();
-        $this->assertNotNull($transaction);
-        $this->assertEquals(11, $transaction->category_id);
-        $this->assertEquals(150000, $transaction->total_amount);
-        $this->assertEquals('Saving Wishlist: Beli Sepatu Baru', $transaction->description);
+        $this->assertCount(0, Transaction::where('user_id', $user->id)->get());
+        $wishlist->refresh();
+        $this->assertEquals(150000, $wishlist->allocated_amount);
     }
 
     public function test_transactions_with_other_dates_do_not_appear_on_today_transactions()
@@ -147,7 +146,7 @@ class TransactionLogicTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Transaksi DUABELAS');
         $response->assertDontSee('Transaksi SATU'); // Order by desc, so 11 and 12 are first. Transactions 1 and 2 are on page 2.
-        
+
         // Check that pagination links exist
         $response->assertSee('Pagination Navigation');
 

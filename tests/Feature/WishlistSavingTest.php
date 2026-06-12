@@ -19,7 +19,7 @@ class WishlistSavingTest extends TestCase
         $this->seed();
     }
 
-    public function test_wishlist_allocation_reduces_balance_and_creates_expense_transaction()
+    public function test_wishlist_allocation_reserves_amount_without_creating_transaction()
     {
         $user = User::factory()->create();
 
@@ -28,6 +28,7 @@ class WishlistSavingTest extends TestCase
             'nama' => 'Liburan ke Bali',
             'target_harga' => 5000000,
             'status' => 'aktif',
+            'allocated_amount' => 0,
             'terkumpul' => 0,
         ]);
 
@@ -36,17 +37,10 @@ class WishlistSavingTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
-        $wishlist->refresh();
-        $this->assertEquals(1000000, $wishlist->terkumpul);
 
-        // Check transaction created
-        $transaction = Transaction::where('user_id', $user->id)->first();
-        $this->assertNotNull($transaction);
-        $this->assertEquals(11, $transaction->category_id); // WISHLIST category
-        $this->assertEquals(2, $transaction->transactionType_id); // Expense type
-        $this->assertEquals(1000000, $transaction->total_amount);
-        $this->assertEquals('Saving Wishlist: Liburan ke Bali', $transaction->description);
+        $wishlist->refresh();
+        $this->assertEquals(1000000, $wishlist->allocated_amount);
+        $this->assertCount(0, Transaction::where('user_id', $user->id)->get());
     }
 
     public function test_wishlist_allocation_cannot_exceed_remaining_target()
@@ -58,6 +52,7 @@ class WishlistSavingTest extends TestCase
             'nama' => 'Sepeda Lipat',
             'target_harga' => 2000000,
             'status' => 'aktif',
+            'allocated_amount' => 1500000,
             'terkumpul' => 1500000,
         ]);
 
@@ -67,10 +62,11 @@ class WishlistSavingTest extends TestCase
 
         $response->assertSessionHasErrors(['jumlah']);
         $wishlist->refresh();
-        $this->assertEquals(1500000, $wishlist->terkumpul);
+        $this->assertEquals(1500000, $wishlist->allocated_amount);
+        $this->assertCount(0, Transaction::where('user_id', $user->id)->get());
     }
 
-    public function test_wishlist_cancellation_adds_income_transaction_and_resets_terkumpul()
+    public function test_wishlist_cancellation_resets_allocation_without_creating_transaction()
     {
         $user = User::factory()->create();
 
@@ -79,28 +75,21 @@ class WishlistSavingTest extends TestCase
             'nama' => 'Smart TV',
             'target_harga' => 3000000,
             'status' => 'aktif',
+            'allocated_amount' => 1000000,
             'terkumpul' => 1000000,
         ]);
 
         $response = $this->actingAs($user)->delete(route('wishlist.destroy', $wishlist->id));
 
         $response->assertRedirect();
-        
-        $wishlist->refresh();
-        $this->assertEquals(0, $wishlist->terkumpul);
-        $this->assertEquals('dibatalkan', $wishlist->status);
 
-        // Check income transaction created
-        $transaction = Transaction::where('user_id', $user->id)
-            ->where('category_id', 10) // INCOME category
-            ->first();
-        $this->assertNotNull($transaction);
-        $this->assertEquals(1, $transaction->transactionType_id); // Income type
-        $this->assertEquals(1000000, $transaction->total_amount);
-        $this->assertEquals('Pembatalan Wishlist: Smart TV', $transaction->description);
+        $wishlist->refresh();
+        $this->assertEquals(0, $wishlist->allocated_amount);
+        $this->assertEquals('dibatalkan', $wishlist->status);
+        $this->assertCount(0, Transaction::where('user_id', $user->id)->get());
     }
 
-    public function test_wishlist_confirmation_updates_status_and_saving_transaction_description()
+    public function test_wishlist_confirmation_creates_purchase_transaction()
     {
         $user = User::factory()->create();
 
@@ -109,28 +98,22 @@ class WishlistSavingTest extends TestCase
             'nama' => 'Smartphone',
             'target_harga' => 4000000,
             'status' => 'tercapai',
+            'allocated_amount' => 4000000,
             'terkumpul' => 4000000,
-        ]);
-
-        // Mock the original saving transaction
-        Transaction::create([
-            'user_id' => $user->id,
-            'category_id' => 11,
-            'transactionType_id' => 2, // Expense
-            'total_amount' => 4000000,
-            'transaction_date' => Carbon::today()->toDateString(),
-            'description' => 'Saving Wishlist: Smartphone',
         ]);
 
         $response = $this->actingAs($user)->post(route('wishlist.konfirmasi', $wishlist->id));
 
         $response->assertRedirect();
-        
+
         $wishlist->refresh();
         $this->assertEquals('dibeli', $wishlist->status);
 
-        // Check transaction description changed
         $transaction = Transaction::where('user_id', $user->id)->first();
+        $this->assertNotNull($transaction);
+        $this->assertEquals(11, $transaction->category_id);
+        $this->assertEquals(2, $transaction->transactionType_id);
+        $this->assertEquals(4000000, $transaction->total_amount);
         $this->assertEquals('Pembelian Wishlist: Smartphone', $transaction->description);
     }
 }
