@@ -82,10 +82,21 @@ class RecurringTransactionService
             $updateData['end_date'] = $data['end_date'];
         }
 
-        
-        if ($frequencyChanged) {
+        $startDateChanged = false;
+        if (isset($data['start_date'])) {
+            $newStartDate = Carbon::parse($data['start_date'])->toDateString();
+            $currentStartDate = Carbon::parse($recurring->start_date)->toDateString();
+            $startDateChanged = $newStartDate !== $currentStartDate;
+            
+            $updateData['start_date'] = $newStartDate;
+            if ($startDateChanged) {
+                $updateData['next_run_date'] = $newStartDate;
+                $updateData['last_due_date'] = $newStartDate;
+            }
+        }
+
+        if ($frequencyChanged && !$startDateChanged) {
             $baseDate = Carbon::today();
-            $newFrequency = $data['frequency'];
             $updateData['next_run_date'] = $baseDate->toDateString();
         }
 
