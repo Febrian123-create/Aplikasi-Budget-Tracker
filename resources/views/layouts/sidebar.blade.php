@@ -94,14 +94,10 @@
                 </a>
             </li>
             <li>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                    class="sidebar-link">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal" class="sidebar-link">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Keluar</span>
                 </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
             </li>
         </ul>
     </nav>

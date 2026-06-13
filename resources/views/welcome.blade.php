@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BUNREK | Aplikasi Pengatur Keuangan & Budget Tracker Cerdas</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
 
     
     <meta name="description" content="Kuasai keuangan pribadi Anda dengan BUNREK. Pantau pengeluaran harian, atur anggaran bulanan, analisis grafik keuangan, dan ekspor laporan PDF/Excel secara instan.">
@@ -255,10 +256,14 @@
             margin-bottom: 0.25rem;
         }
 
+        .mockup-card-balance .mockup-balance {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
         .mockup-amount {
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--text-dark);
+            color: #ffffff;
             margin: 0;
         }
 
