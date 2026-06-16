@@ -184,8 +184,8 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg);">
                         @foreach($budgets as $budget)
                             @php
-                                $pct = min(100, $budget->getUsagePercentage());
-                                $spent = $budget->getCurrentSpending();
+                                $pct = min(100, $budget->getUsagePercentage($startDate, $endDate));
+                                $spent = $budget->getCurrentSpending($startDate, $endDate);
                                 $barColor = $pct >= 100 ? 'var(--color-expense)' : ($pct >= 80 ? '#f59e0b' : 'var(--color-income)');
                             @endphp
                             <div class="bunrek-card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">

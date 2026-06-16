@@ -13,13 +13,37 @@ class ChartService
     ) {}
 
     
-    public function getCategoryDistribution(int $userId, int $bulan, int $tahun): array
+    public function getCategoryDistribution(int $userId, int $bulan, int $tahun, ?string $startDate = null, ?string $endDate = null): array
     {
-        $data  = $this->transactionRepository->getCategoryExpenses($userId, $bulan, $tahun);
-        $total = $data->sum('total');
+        $expenseTypeId = \App\Models\TransactionType::where('name', 'expense')->value('transactionType_id');
+        $incomeTypeId = \App\Models\TransactionType::where('name', 'income')->value('transactionType_id');
 
-        
-        $totalIncome = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
+        $query = \DB::table('transaction as t')
+            ->join('category as c', 't.category_id', '=', 'c.category_id')
+            ->select('c.category_name', \DB::raw('SUM(t.total_amount) as total'))
+            ->where('t.user_id', $userId)
+            ->where('t.transactionType_id', $expenseTypeId);
+
+        $incomeQuery = \DB::table('transaction')
+            ->where('user_id', $userId)
+            ->where('transactionType_id', $incomeTypeId);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('t.transaction_date', [$startDate, $endDate]);
+            $incomeQuery->whereBetween('transaction_date', [$startDate, $endDate]);
+        } else {
+            $query->whereMonth('t.transaction_date', $bulan)
+                  ->whereYear('t.transaction_date', $tahun);
+            $incomeQuery->whereMonth('transaction_date', $bulan)
+                        ->whereYear('transaction_date', $tahun);
+        }
+
+        $data = $query->groupBy('c.category_id', 'c.category_name')
+            ->orderByDesc('total')
+            ->get();
+
+        $total = $data->sum('total');
+        $totalIncome = (float) $incomeQuery->sum('total_amount');
 
         if ($data->isEmpty()) {
             return [
@@ -33,7 +57,6 @@ class ChartService
         $categories = [];
 
         if ($data->count() <= 6) {
-            
             foreach ($data as $item) {
                 $categories[] = [
                     'name'       => $item->category_name,
@@ -44,7 +67,6 @@ class ChartService
                 ];
             }
         } else {
-            
             $top5  = $data->take(5);
             $rest  = $data->slice(5);
             $lainnyaTotal = $rest->sum('total');
