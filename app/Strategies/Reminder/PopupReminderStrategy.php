@@ -11,12 +11,12 @@ class PopupReminderStrategy implements ReminderChannelInterface
 
     public function send(RecurringTransaction $recurring, int $daysBefore, ?string $customMessage): void
     {
+        // Popup hanya insert ke reminder_logs; ditampilkan saat user buka app
         $this->reminderRepo->logSent(
             $recurring->recurring_id,
             $daysBefore,
             now()->toDateString(),
-            'popup',
-            $recurring->user_id
+            'popup'
         );
     }
 
@@ -25,8 +25,7 @@ class PopupReminderStrategy implements ReminderChannelInterface
         $this->reminderRepo->logBudgetSent(
             $categoryId,
             now()->toDateString(),
-            'popup',
-            $userId
+            'popup'
         );
     }
 }

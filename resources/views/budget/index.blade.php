@@ -1,43 +1,5 @@
 @extends('layouts.master')
 
-@push('styles')
-<style>
-.bunrek-modal-overlay {
-    position: fixed; inset: 0; background: rgba(15,23,42,0.35);
-    backdrop-filter: blur(8px); z-index: 2000;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
-}
-.bunrek-modal-overlay.active { opacity: 1; pointer-events: auto; }
-.bunrek-modal-card {
-    background: var(--bg-white); border-radius: var(--radius-lg);
-    width: 92%; max-width: 520px; max-height: 90vh;
-    display: flex; flex-direction: column;
-    box-shadow: var(--shadow-xl); border: 1px solid var(--border-color);
-    transform: scale(0.95) translateY(15px);
-    transition: all 0.35s cubic-bezier(0.16,1,0.3,1); overflow: hidden;
-}
-.bunrek-modal-overlay.active .bunrek-modal-card { transform: scale(1) translateY(0); }
-.bunrek-modal-header {
-    padding: var(--space-lg) var(--space-xl);
-    border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-}
-.bunrek-modal-body {
-    padding: var(--space-lg) var(--space-xl); overflow-y: auto; flex: 1;
-    scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
-}
-.bunrek-modal-body::-webkit-scrollbar { width: 5px; }
-.bunrek-modal-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 99px; }
-.bunrek-modal-close {
-    background: transparent; border: none; font-size: 1.4rem;
-    color: var(--text-light); cursor: pointer; transition: var(--transition-fast);
-}
-.bunrek-modal-close:hover { color: var(--color-expense); transform: scale(1.1); }
-</style>
-@endpush
-
 @section('content')
 <div class="content-inner">
 
@@ -90,7 +52,7 @@
                                 <div style="font-weight: 700; font-size: var(--fs-base); color: var(--text-dark);">
                                     {{ $budget->category->category_name ?? 'Kategori #' . $budget->category_id }}
                                 </div>
-                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $budget->periodLabel() }}</div>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: capitalize;">{{ $budget->period }}</div>
                             </div>
                             <form action="{{ route('budget.destroy', $budget->budget_id) }}" method="POST"
                                   onsubmit="return confirm('Hapus budget ini?')">
@@ -145,9 +107,7 @@
                     <select name="category_id" class="bunrek-select" required>
                         <option value="">Pilih Kategori</option>
                         @foreach($categories as $cat)
-                            @if(!in_array($cat->category_id, [10, 11]))
-                                <option value="{{ $cat->category_id }}">{{ $cat->category_name }}</option>
-                            @endif
+                            <option value="{{ $cat->category_id }}">{{ $cat->category_name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -159,7 +119,7 @@
                     </div>
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Periode</label>
-                        <select name="period" id="budgetPeriod" class="bunrek-select" required>
+                        <select name="period" class="bunrek-select" required>
                             <option value="bulanan">Bulanan</option>
                             <option value="mingguan">Mingguan</option>
                             <option value="tahunan">Tahunan</option>
@@ -167,26 +127,15 @@
                     </div>
                 </div>
 
-                {{-- Mingguan: tanggal manual --}}
-                <div id="budgetDateFields" style="display: none; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tanggal Mulai</label>
-                        <input type="date" name="start_date" id="budgetStartDate" class="bunrek-input" value="{{ date('Y-m-d') }}">
+                        <input type="date" name="start_date" class="bunrek-input" required value="{{ date('Y-m-d') }}">
                     </div>
                     <div class="bunrek-form-group">
-                        <label class="bunrek-label">Tanggal Berakhir</label>
-                        <input type="date" name="end_date" id="budgetEndDate" class="bunrek-input">
+                        <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted);">(Opsional)</small></label>
+                        <input type="date" name="end_date" class="bunrek-input">
                     </div>
-                </div>
-
-                {{-- Bulanan/Tahunan: durasi opsional --}}
-                <div id="budgetDurationField" class="bunrek-form-group">
-                    <label class="bunrek-label">Berlaku Selama <small style="color: var(--text-muted);">(Opsional)</small></label>
-                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                        <input type="number" name="duration" id="budgetDuration" class="bunrek-input" min="1" max="60" placeholder="Kosongkan = selamanya" style="flex: 1;">
-                        <span id="budgetDurationUnit" style="font-weight: 600; color: var(--text-muted); min-width: 48px;">bulan</span>
-                    </div>
-                    <small style="color: var(--text-light); font-size: var(--fs-xs);">Budget otomatis mengikuti periode berjalan dan reset tiap periode.</small>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-lg); border-top: 1px solid var(--border-light); padding-top: var(--space-md);">
@@ -207,25 +156,6 @@ $(document).ready(function() {
     $('#addBudgetModal').on('click', function(e) {
         if ($(e.target).is('#addBudgetModal')) $('#addBudgetModal').removeClass('active');
     });
-
-    function toggleBudgetPeriodFields() {
-        var period = $('#budgetPeriod').val();
-        if (period === 'mingguan') {
-            $('#budgetDateFields').css('display', 'grid');
-            $('#budgetDurationField').hide();
-            $('#budgetStartDate, #budgetEndDate').prop('disabled', false);
-            $('#budgetDuration').prop('disabled', true);
-        } else {
-            $('#budgetDateFields').hide();
-            $('#budgetDurationField').show();
-            $('#budgetStartDate, #budgetEndDate').prop('disabled', true);
-            $('#budgetDuration').prop('disabled', false);
-            $('#budgetDurationUnit').text(period === 'tahunan' ? 'tahun' : 'bulan');
-        }
-    }
-    $('#budgetPeriod').on('change', toggleBudgetPeriodFields);
-    toggleBudgetPeriodFields();
-
     setTimeout(function() { $('.bunrek-alert').fadeOut(500); }, 5000);
 });
 </script>

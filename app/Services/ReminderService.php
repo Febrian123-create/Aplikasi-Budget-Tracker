@@ -71,7 +71,7 @@ class ReminderService
                         $channel->send($recurring, (int) $daysBefore, $reminder->custom_message);
 
                         if ($channelKey !== 'popup') {
-                            $this->reminderRepo->logSent($recurring->recurring_id, $daysBefore, $today, $channelKey, $recurring->user_id);
+                            $this->reminderRepo->logSent($recurring->recurring_id, $daysBefore, $today, $channelKey);
                         }
 
                         $sent++;

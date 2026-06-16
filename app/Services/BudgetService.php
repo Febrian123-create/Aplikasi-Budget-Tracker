@@ -35,17 +35,6 @@ class BudgetService
         return $this->budgetRepo->delete($budgetId, $userId);
     }
 
-    public function checkAllForUser(int $userId): void
-    {
-        $budgets = $this->budgetRepo->findAllByUser($userId);
-        foreach ($budgets as $budget) {
-            if (!$budget->isActive()) {
-                continue;
-            }
-            $this->checkAndNotify($userId, $budget->category_id);
-        }
-    }
-
     public function checkAndNotify(int $userId, int $categoryId): void
     {
         $budget = $this->budgetRepo->findActiveByUserAndCategory($userId, $categoryId);
@@ -68,7 +57,7 @@ class BudgetService
         $limit = (float) $budget->amount;
 
         foreach ($selectedChannels as $channelKey) {
-            if ($this->reminderRepo->isBudgetAlreadySent($categoryId, $today, $channelKey, $userId)) {
+            if ($this->reminderRepo->isBudgetAlreadySent($categoryId, $today, $channelKey)) {
                 continue;
             }
 
@@ -81,7 +70,7 @@ class BudgetService
                 $channel->sendBudgetAlert($userId, $categoryName, $usagePercent, $spent, $limit, $categoryId);
 
                 if ($channelKey !== 'popup') {
-                    $this->reminderRepo->logBudgetSent($categoryId, $today, $channelKey, $userId);
+                    $this->reminderRepo->logBudgetSent($categoryId, $today, $channelKey);
                 }
             } catch (\Exception $e) {
                 Log::error("BudgetService alert gagal [{$channelKey}] user#{$userId} cat#{$categoryId}: " . $e->getMessage());

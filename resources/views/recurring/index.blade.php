@@ -682,14 +682,12 @@
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-                    <div class="bunrek-form-group" id="addCategoryGroup">
+                    <div class="bunrek-form-group">
                         <label class="bunrek-label">Kategori</label>
-                        <select name="category_id" id="addCategory" class="bunrek-select">
+                        <select name="category_id" class="bunrek-select" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $cat)
-                                @if(!in_array($cat->category_id, [10, 11]))
-                                    <option value="{{ $cat->category_id }}" {{ old('category_id') == $cat->category_id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
-                                @endif
+                                <option value="{{ $cat->category_id }}" {{ old('category_id') == $cat->category_id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
                             @endforeach
                         </select>
                         @error('category_id') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
@@ -697,8 +695,8 @@
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Tipe Transaksi</label>
-                        <select name="amount_type" id="addAmountType" class="bunrek-select" required>
-                            <option value="pengeluaran" {{ old('amount_type', 'pengeluaran') === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
+                        <select name="amount_type" class="bunrek-select" required>
+                            <option value="pengeluaran" checked>Pengeluaran</option>
                             <option value="pemasukan" {{ old('amount_type') === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
                         </select>
                     </div>
@@ -801,19 +799,6 @@ $(document).ready(function() {
     
     $('#addFrequency, #addStartDate').on('change', updatePreview);
     updatePreview();
-
-    // Sembunyikan kategori saat tipe = Pemasukan
-    function toggleAddCategory() {
-        if ($('#addAmountType').val() === 'pemasukan') {
-            $('#addCategoryGroup').hide();
-            $('#addCategory').prop('required', false).prop('disabled', true);
-        } else {
-            $('#addCategoryGroup').show();
-            $('#addCategory').prop('required', true).prop('disabled', false);
-        }
-    }
-    $('#addAmountType').on('change', toggleAddCategory);
-    toggleAddCategory();
 
     // Auto-dismiss alerts
     setTimeout(function() { 

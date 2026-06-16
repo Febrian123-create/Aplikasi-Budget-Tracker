@@ -24,72 +24,25 @@ class BudgetController extends Controller
 
     public function store(Request $request)
     {
-        $isWeekly = $request->input('period') === 'mingguan';
-
         $validated = $request->validate([
             'category_id' => 'required|exists:category,category_id',
             'amount'      => 'required|numeric|min:1000',
             'period'      => 'required|in:bulanan,mingguan,tahunan',
-            'start_date'  => [$isWeekly ? 'required' : 'nullable', 'date'],
-            'end_date'    => [$isWeekly ? 'required' : 'nullable', 'date', 'after:start_date'],
-            'duration'    => ['nullable', 'integer', 'min:1', 'max:60'],
+            'start_date'  => 'required|date',
+            'end_date'    => 'nullable|date|after:start_date',
         ], [
             'category_id.required' => 'Kategori wajib dipilih.',
             'category_id.exists'   => 'Kategori tidak ditemukan.',
             'amount.required'      => 'Nominal budget wajib diisi.',
             'amount.min'           => 'Nominal budget minimal Rp 1.000.',
             'period.required'      => 'Periode wajib dipilih.',
-            'start_date.required'  => 'Tanggal mulai wajib diisi untuk periode mingguan.',
-            'end_date.required'    => 'Tanggal berakhir wajib diisi untuk periode mingguan.',
-            'end_date.after'       => 'Tanggal berakhir harus setelah tanggal mulai.',
-            'duration.min'         => 'Durasi minimal 1 periode.',
-            'duration.max'         => 'Durasi maksimal 60 periode.',
+            'start_date.required'  => 'Tanggal mulai wajib diisi.',
         ]);
 
-        $data = $this->normalizeBudgetPeriod($validated);
-        $data['user_id'] = Auth::id();
-
-        $this->budgetService->createOrUpdate(Auth::id(), $data);
+        $validated['user_id'] = Auth::id();
+        $this->budgetService->createOrUpdate(Auth::id(), $validated);
 
         return redirect()->route('budget.index')->with('success', 'Budget berhasil disimpan!');
-    }
-
-    private function normalizeBudgetPeriod(array $validated): array
-    {
-        $period   = $validated['period'];
-        $duration = $validated['duration'] ?? null;
-
-        if ($period === 'mingguan') {
-            return [
-                'category_id' => $validated['category_id'],
-                'amount'      => $validated['amount'],
-                'period'      => $period,
-                'duration'    => null,
-                'start_date'  => $validated['start_date'],
-                'end_date'    => $validated['end_date'],
-            ];
-        }
-
-        $anchor = $period === 'tahunan'
-            ? \Carbon\Carbon::now()->startOfYear()
-            : \Carbon\Carbon::now()->startOfMonth();
-
-        $endDate = null;
-        if ($duration) {
-            $endDate = ($period === 'tahunan'
-                ? $anchor->copy()->addYears((int) $duration)
-                : $anchor->copy()->addMonths((int) $duration)
-            )->subDay()->toDateString();
-        }
-
-        return [
-            'category_id' => $validated['category_id'],
-            'amount'      => $validated['amount'],
-            'period'      => $period,
-            'duration'    => $duration ? (int) $duration : null,
-            'start_date'  => $anchor->toDateString(),
-            'end_date'    => $endDate,
-        ];
     }
 
     public function destroy(int $id)

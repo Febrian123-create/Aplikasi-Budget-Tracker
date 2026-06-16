@@ -28,6 +28,10 @@ class ReminderRepository
         Reminder::where('recurring_id', $recurringId)->delete();
     }
 
+    /**
+     * Ambil semua reminder aktif yang perlu dikirim pada tanggal tertentu.
+     * Cek berdasarkan next_run_date - days_before = $date.
+     */
     public function getActiveRemindersForDate(string $date): Collection
     {
         return Reminder::where('reminder_enabled', true)
@@ -61,13 +65,10 @@ class ReminderRepository
             ->exists();
     }
 
-    public function logSent(int $recurringId, int $daysBefore, string $scheduledDate, string $channel, ?int $userId = null): ReminderLog
+    public function logSent(int $recurringId, int $daysBefore, string $scheduledDate, string $channel): ReminderLog
     {
-        $userId ??= RecurringTransaction::where('recurring_id', $recurringId)->value('user_id');
-
         return ReminderLog::create([
             'recurring_id'   => $recurringId,
-            'user_id'        => $userId,
             'days_before'    => $daysBefore,
             'scheduled_date' => $scheduledDate,
             'channel'        => $channel,
@@ -77,21 +78,19 @@ class ReminderRepository
         ]);
     }
 
-    public function isBudgetAlreadySent(int $categoryId, string $scheduledDate, string $channel, ?int $userId = null): bool
+    public function isBudgetAlreadySent(int $categoryId, string $scheduledDate, string $channel): bool
     {
         return ReminderLog::where('category_id', $categoryId)
             ->where('scheduled_date', $scheduledDate)
             ->where('channel', $channel)
             ->where('type', 'budget')
-            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->exists();
     }
 
-    public function logBudgetSent(int $categoryId, string $scheduledDate, string $channel, ?int $userId = null): ReminderLog
+    public function logBudgetSent(int $categoryId, string $scheduledDate, string $channel): ReminderLog
     {
         return ReminderLog::create([
             'recurring_id'   => null,
-            'user_id'        => $userId,
             'category_id'    => $categoryId,
             'days_before'    => null,
             'scheduled_date' => $scheduledDate,
@@ -104,9 +103,16 @@ class ReminderRepository
 
     public function getUnreadPopups(int $userId): Collection
     {
+        $recurringIds = RecurringTransaction::where('user_id', $userId)->pluck('recurring_id');
+
         return ReminderLog::where('is_read', false)
             ->where('channel', 'popup')
-            ->where('user_id', $userId)
+            ->where(function ($q) use ($recurringIds, $userId) {
+                $q->whereIn('recurring_id', $recurringIds)
+                  ->orWhere(function ($q2) use ($userId) {
+                      $q2->where('type', 'budget')->whereNull('recurring_id');
+                  });
+            })
             ->orderByDesc('created_at')
             ->get();
     }
@@ -118,9 +124,11 @@ class ReminderRepository
 
     public function markAllPopupsAsRead(int $userId): void
     {
+        $recurringIds = RecurringTransaction::where('user_id', $userId)->pluck('recurring_id');
+
         ReminderLog::where('is_read', false)
             ->where('channel', 'popup')
-            ->where('user_id', $userId)
+            ->whereIn('recurring_id', $recurringIds)
             ->update(['is_read' => true]);
     }
 }

@@ -10,10 +10,6 @@
     <div class="bunrek-card-body">
         
         <form method="GET" action="{{ route('transactions.history') }}" id="filterForm">
-            <!-- Alert container for validation errors -->
-            <div class="bunrek-alert bunrek-alert-error" id="dateValidationError" style="display: none; margin-bottom: var(--space-md);">
-                <i class="bi bi-exclamation-triangle-fill"></i> <span id="dateValidationErrorMsg"></span>
-            </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md);">
                 <div class="bunrek-form-group" style="margin-bottom: 0;">
                     <label for="category_id" class="bunrek-label">Kategori</label>
@@ -41,12 +37,12 @@
 
                 <div class="bunrek-form-group" style="margin-bottom: 0;">
                     <label for="start_date" class="bunrek-label">Tanggal Awal</label>
-                    <input type="date" name="start_date" id="start_date" class="bunrek-input" value="{{ request('start_date') }}" max="{{ \Carbon\Carbon::today()->toDateString() }}">
+                    <input type="date" name="start_date" id="start_date" class="bunrek-input" value="{{ request('start_date') }}">
                 </div>
 
                 <div class="bunrek-form-group" style="margin-bottom: 0;">
                     <label for="end_date" class="bunrek-label">Tanggal Akhir</label>
-                    <input type="date" name="end_date" id="end_date" class="bunrek-input" value="{{ request('end_date') }}" max="{{ \Carbon\Carbon::today()->toDateString() }}">
+                    <input type="date" name="end_date" id="end_date" class="bunrek-input" value="{{ request('end_date') }}">
                 </div>
             </div>
 
@@ -59,41 +55,84 @@
     </div>
 </div>
 
-<div id="balance-cards-container" style="margin-bottom: var(--space-lg);">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
-        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-sm);">
-            <div>
-                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px;">Transaksi Ditemukan</div>
-                <div style="font-size: var(--fs-2xl); font-weight: 800; color: var(--text-dark);">{{ $transactions->total() }}</div>
-            </div>
-            <div style="font-size: var(--fs-sm); color: var(--text-muted);">Jumlah transaksi yang sesuai filter saat ini.</div>
-        </div>
-
-        <div style="background: var(--bg-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: var(--space-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-sm);">
-            <div>
-                <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px;">{{ $summaryTitle }}</div>
-                <div style="font-size: var(--fs-2xl); font-weight: 800; color: var(--text-dark);">Rp {{ number_format($totalNominal, 0, ',', '.') }}</div>
-            </div>
-            <div style="font-size: var(--fs-sm); color: var(--text-muted);">Total nominal transaksi yang sesuai filter.</div>
-        </div>
-    </div>
-</div>
-
 <div class="bunrek-card">
     <div class="bunrek-card-header">
         <h2 class="bunrek-card-title">Daftar Transaksi</h2>
         @php
             $membershipFeature = app(\App\Features\MembershipFeatureInterface::class);
         @endphp
-        <div style="display: flex; gap: var(--space-xs);">
-            <a href="#" id="btnExportExcel" class="btn-bunrek btn-sm btn-outline text-success" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
-                <i class="bi bi-file-earmark-excel"></i> Excel
-            </a>
-            <a href="#" id="btnExportPdf" class="btn-bunrek btn-sm btn-outline text-danger" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
-                <i class="bi bi-file-earmark-pdf"></i> PDF
-            </a>
-        </div>
+        @if ($membershipFeature->canExportPdf())
+            <div style="display: flex; gap: var(--space-xs);">
+                <a href="#" id="btnExportExcel" class="btn-bunrek btn-sm btn-outline text-success" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <a href="#" id="btnExportPdf" class="btn-bunrek btn-sm btn-outline text-danger" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
+        @else
+            <span style="font-size: var(--fs-xs); color: var(--text-muted); background: var(--bg-light); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+                <i class="bi bi-gem text-warning"></i> Export Premium
+            </span>
+        @endif
     </div>
+
+    @if ($isCategoryFiltered && $totalByCategory > 0)
+        <div style="background: var(--bg-light); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran Kategori:</span>
+                <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                    Rp {{ number_format($totalByCategory, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
+    @endif
+
+    @if ($isTypeFiltered)
+        <!-- Tampilkan balance untuk jenis yang dipilih -->
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            @if ($totalIncome > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pemasukan:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-income);">
+                        Rp {{ number_format($totalIncome, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+            @if ($totalExpense > 0)
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: var(--text-body);">Total Pengeluaran:</span>
+                    <span style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                        Rp {{ number_format($totalExpense, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+        </div>
+    @elseif (($totalIncome > 0 || $totalExpense > 0) && !$isTypeFiltered)
+        <!-- Tampilkan balance pemasukan dan pengeluaran ketika hanya tanggal yang dipilih -->
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); padding: var(--space-lg); border-bottom: 1px solid var(--border-light);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+                <div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Pemasukan</div>
+                    <div style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-income);">
+                        Rp {{ number_format($totalIncome, 0, ',', '.') }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Pengeluaran</div>
+                    <div style="font-size: var(--fs-lg); font-weight: 700; color: var(--color-expense);">
+                        Rp {{ number_format($totalExpense, 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: var(--text-body);">Saldo:</span>
+                <span style="font-size: var(--fs-lg); font-weight: 700; color: {{ $totalIncome >= $totalExpense ? 'var(--color-income)' : 'var(--color-expense)' }};">
+                    Rp {{ number_format($totalIncome - $totalExpense, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
+    @endif
 
     <div class="bunrek-card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
@@ -124,15 +163,15 @@
                             <td style="font-weight: 600; color: {{ $transaction->transactionType_id == 1 ? 'var(--color-income)' : 'var(--color-expense)' }}">
                                 Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
                             </td>
-                                                        <td style="text-align: right;">
-                                <div style="display: inline-flex; gap: 4px; justify-content: flex-end; align-items: center;">
-                                    <a href="{{ route('transactions.edit', $transaction->transaction_id) }}" class="btn-bunrek btn-sm btn-warning-sm" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 4px; justify-content: flex-end;">
+                                    <a href="{{ route('transactions.edit', $transaction->transaction_id) }}" class="btn-bunrek btn-sm btn-warning-sm">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('transactions.destroy', $transaction->transaction_id) }}" method="POST" onsubmit="return confirm('Hapus transaksi?')" style="margin: 0; padding: 0; display: inline-block;">
+                                    <form action="{{ route('transactions.destroy', $transaction->transaction_id) }}" method="POST" onsubmit="return confirm('Hapus transaksi?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-bunrek btn-sm btn-danger-sm" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: none;">
+                                        <button type="submit" class="btn-bunrek btn-sm btn-danger-sm">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -152,16 +191,12 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Pagination Links -->
-        <div id="pagination-container" style="padding: 0 var(--space-lg) var(--space-lg) var(--space-lg);">
-            {{ $transactions->appends(request()->query())->links('components.pagination') }}
-        </div>
     </div>
 </div>
 @endsection
 
 @push('scripts')
+@if ($membershipFeature->canExportPdf())
 <script>
     function buildExportUrl(baseUrl) {
         var params = new URLSearchParams();
@@ -188,142 +223,35 @@
         var transactionTypeId = document.getElementById('transactionType_id').value;
         var categorySelect = document.getElementById('category_id');
         var categoryHelpText = document.getElementById('categoryHelpText');
-
+        
         if (transactionTypeId == '1') {
             // Pemasukan (Income) - disable kategori
             categorySelect.disabled = true;
             categorySelect.value = '';
-            categorySelect.style.opacity = '0.4';
-            categorySelect.style.cursor = 'not-allowed';
             categoryHelpText.style.display = 'block';
+            categorySelect.style.opacity = '0.6';
+            categorySelect.style.cursor = 'not-allowed';
         } else {
             // Pengeluaran (Expense) atau Semua - enable kategori
             categorySelect.disabled = false;
+            categoryHelpText.style.display = 'none';
             categorySelect.style.opacity = '1';
             categorySelect.style.cursor = 'auto';
-            categoryHelpText.style.display = 'none';
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        updateExportLinks();
-        updateCategoryState();
-    });
+    // Update on page load
+    updateExportLinks();
+    updateCategoryState();
 
+    // Update when filters change
     document.getElementById('category_id').addEventListener('change', updateExportLinks);
-    document.getElementById('transactionType_id').addEventListener('change', function () {
+    document.getElementById('transactionType_id').addEventListener('change', function() {
         updateExportLinks();
         updateCategoryState();
     });
     document.getElementById('start_date').addEventListener('change', updateExportLinks);
     document.getElementById('end_date').addEventListener('change', updateExportLinks);
-
-    // Validate date inputs
-    function validateDates() {
-        var startDateInput = document.getElementById('start_date');
-        var endDateInput = document.getElementById('end_date');
-        var startDate = startDateInput.value;
-        var endDate = endDateInput.value;
-        var today = "{{ \Carbon\Carbon::today()->toDateString() }}";
-        
-        var errorDiv = document.getElementById('dateValidationError');
-        var errorMsg = document.getElementById('dateValidationErrorMsg');
-
-        // Hide old error
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
-        }
-
-        if (startDate && startDate > today) {
-            if (errorMsg && errorDiv) {
-                errorMsg.innerText = 'Tanggal Awal tidak boleh melebihi hari ini.';
-                errorDiv.style.display = 'block';
-            } else {
-                alert('Tanggal Awal tidak boleh melebihi hari ini.');
-            }
-            startDateInput.value = today;
-            return false;
-        }
-        if (endDate && endDate > today) {
-            if (errorMsg && errorDiv) {
-                errorMsg.innerText = 'Tanggal Akhir tidak boleh melebihi hari ini.';
-                errorDiv.style.display = 'block';
-            } else {
-                alert('Tanggal Akhir tidak boleh melebihi hari ini.');
-            }
-            endDateInput.value = today;
-            return false;
-        }
-        return true;
-    }
-
-    // AJAX pagination and filter handlers
-    function attachAjaxHandlers() {
-        // Hijack pagination link clicks
-        $(document).off('click', '#pagination-container a').on('click', '#pagination-container a', function(e) {
-            e.preventDefault();
-            var url = $(this).attr('href');
-            loadHistoryPage(url);
-        });
-
-        // Hijack filter form submission to use AJAX
-        $(document).off('submit', '#filterForm').on('submit', '#filterForm', function(e) {
-            e.preventDefault();
-            if (!validateDates()) {
-                return;
-            }
-            
-            var actionUrl = $(this).attr('action');
-            var formData = $(this).serialize();
-            var url = actionUrl + '?' + formData;
-            
-            loadHistoryPage(url);
-        });
-    }
-
-    function loadHistoryPage(url) {
-        $('.bunrek-table').css('opacity', '0.5');
-        $('#balance-cards-container').css('opacity', '0.5');
-
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(response) {
-                var htmlDom = $(response);
-                
-                // Update balance cards
-                $('#balance-cards-container').html(htmlDom.find('#balance-cards-container').html());
-                
-                // Update table body
-                $('.bunrek-table tbody').html(htmlDom.find('.bunrek-table tbody').html());
-                
-                // Update pagination
-                $('#pagination-container').html(htmlDom.find('#pagination-container').html());
-                
-                // Restore opacity
-                $('.bunrek-table').css('opacity', '1');
-                $('#balance-cards-container').css('opacity', '1');
-                
-                // Update URL in history without reloading
-                window.history.pushState({}, '', url);
-                
-                // Re-update export links to reflect current filters/page
-                updateExportLinks();
-            },
-            error: function(xhr) {
-                console.error("Gagal memuat halaman: ", xhr);
-                alert("Terjadi kesalahan saat memuat data.");
-                $('.bunrek-table').css('opacity', '1');
-                $('#balance-cards-container').css('opacity', '1');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        attachAjaxHandlers();
-    });
-
-    document.getElementById('start_date').addEventListener('change', validateDates);
-    document.getElementById('end_date').addEventListener('change', validateDates);
 </script>
+@endif
 @endpush

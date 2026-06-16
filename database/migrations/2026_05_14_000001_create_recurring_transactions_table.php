@@ -4,7 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
+    
+
     public function up(): void
     {
         if (!Schema::hasTable('recurring_transaction')) {
@@ -17,17 +20,20 @@ return new class extends Migration {
                 $table->date('start_date');
                 $table->date('end_date')->nullable();
                 $table->date('next_run_date')->index();
-                $table->unsignedBigInteger('reminder_id')->nullable();
+                $table->unsignedBigInteger('reminder_id')->nullable(); 
                 $table->string('description', 255);
                 $table->enum('amount_type', ['pemasukan', 'pengeluaran']);
                 $table->enum('status', ['aktif', 'dijeda', 'selesai'])->default('aktif');
                 $table->timestamps();
 
+                
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
                 $table->foreign('category_id')->references('category_id')->on('category')->onDelete('cascade');
             });
         }
     }
+
+    
 
     public function down(): void
     {

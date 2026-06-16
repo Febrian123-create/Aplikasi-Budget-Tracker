@@ -43,7 +43,6 @@ class BudgetRepository
             ],
             [
                 'amount'     => $data['amount'],
-                'duration'   => $data['duration'] ?? null,
                 'start_date' => $data['start_date'],
                 'end_date'   => $data['end_date'] ?? null,
             ]

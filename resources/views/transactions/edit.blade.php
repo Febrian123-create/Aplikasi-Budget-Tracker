@@ -109,15 +109,13 @@
                         <label class="bunrek-label">Tipe Transaksi</label>
                         <div class="bunrek-radio-group">
                             <label class="bunrek-radio-label" for="income">
-                                <input type="radio" name="type" value="income" id="income"
-                                    {{ $transaction->transactionType->name === 'income' ? 'checked' : '' }}
-                                    onchange="toggleKategori()">
+                                <input type="radio" name="type" value="income" id="income" 
+                                    {{ $transaction->transactionType->name === 'income' ? 'checked' : '' }}>
                                 <span>Pemasukan</span>
                             </label>
                             <label class="bunrek-radio-label" for="expense">
                                 <input type="radio" name="type" value="expense" id="expense"
-                                    {{ $transaction->transactionType->name === 'expense' ? 'checked' : '' }}
-                                    onchange="toggleKategori()">
+                                    {{ $transaction->transactionType->name === 'expense' ? 'checked' : '' }}>
                                 <span>Pengeluaran</span>
                             </label>
                         </div>
@@ -136,7 +134,7 @@
 
                     <div>
                         <label class="bunrek-label">Kategori</label>
-                        <select name="category" id="kategoriSelect" class="bunrek-select">
+                        <select name="category" class="bunrek-select" required>
                             <option value="">Pilih Kategori</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->category_id }}"
@@ -145,10 +143,6 @@
                                 </option>
                             @endforeach
                         </select>
-                        <input type="hidden" id="hiddenCategory" name="" value="10">
-                        <p id="kategoriInfo" style="display:none; margin: 6px 0 0 0; font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;">
-                            <i class="bi bi-info-circle"></i> Pemasukan tidak memerlukan kategori.
-                        </p>
                         @error('category') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -173,42 +167,5 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    function toggleKategori() {
-        const expenseRadio = document.getElementById('expense');
-        const kategoriSelect = document.getElementById('kategoriSelect');
-        const hiddenCategory = document.getElementById('hiddenCategory');
-        const kategoriInfo = document.getElementById('kategoriInfo');
-
-        if (expenseRadio.checked) {
-            // Pengeluaran: aktifkan dropdown kategori
-            kategoriSelect.disabled = false;
-            kategoriSelect.setAttribute('required', 'required');
-            kategoriSelect.name = 'category';
-            kategoriSelect.style.opacity = '1';
-            kategoriSelect.style.cursor = 'pointer';
-            hiddenCategory.name = '';
-            kategoriInfo.style.display = 'none';
-        } else {
-            // Pemasukan: nonaktifkan dropdown kategori
-            kategoriSelect.disabled = true;
-            kategoriSelect.removeAttribute('required');
-            kategoriSelect.name = '';
-            kategoriSelect.value = '';
-            kategoriSelect.style.opacity = '0.4';
-            kategoriSelect.style.cursor = 'not-allowed';
-            hiddenCategory.value = '';
-            hiddenCategory.name = 'category';
-            kategoriInfo.style.display = 'block';
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        toggleKategori(); // Set state awal berdasarkan tipe transaksi
-    });
-</script>
-@endpush
 
 @endsection

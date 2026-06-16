@@ -103,12 +103,6 @@
                     </label>
                 @endif
             </div>
-            @if($isPremium && !auth()->user()->hasGoogleCalendar())
-                <small style="color: var(--text-muted); font-size: var(--fs-xs); display: block; margin-top: 6px;">
-                    <i class="bi bi-info-circle"></i> Untuk memakai Google Calendar, sambungkan dulu di
-                    <a href="{{ route('budget.settings') }}" style="color: var(--primary-color); font-weight: 600;">Pengaturan Alert</a>.
-                </small>
-            @endif
         </div>
 
         {{-- Pesan custom --}}
