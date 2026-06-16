@@ -31,12 +31,11 @@ class RecurringTransactionController extends Controller
 
         $categories = Category::all();
         $user = Auth::user();
-        $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
+        $membershipName = $user->membership ? $user->membership->membership_name : 'Premium';
         $frequencies = RecurringHelper::getAvailableFrequencies($membershipName);
         $activeCount = $this->recurringService->countActive($userId);
-        $isPremium = strtolower($membershipName) === 'premium';
-        $maxFreeRecurring = 3;
-        $canCreate = $isPremium || $activeCount < $maxFreeRecurring;
+        $isPremium = true;
+        $canCreate = true;
 
         return view('recurring.index', compact(
             'recurrings',
@@ -46,7 +45,6 @@ class RecurringTransactionController extends Controller
             'pendingCount',
             'activeCount',
             'isPremium',
-            'maxFreeRecurring',
             'canCreate',
             'membershipName'
         ));
@@ -55,32 +53,6 @@ class RecurringTransactionController extends Controller
     public function store(RecurringTransactionRequest $request)
     {
         $userId = Auth::id();
-        $user = Auth::user();
-        $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
-        $isPremium = strtolower($membershipName) === 'premium';
-
-        if (!$isPremium) {
-            $activeCount = $this->recurringService->countActive($userId);
-            if ($activeCount >= 3) {
-                return redirect()->back()
-                    ->with('error', 'Kamu sudah mencapai batas 3 recurring. Upgrade ke Premium untuk menambah lebih banyak.')
-                    ->withInput();
-            }
-
-            $allowedFrequencies = ['bulanan', 'tahunan'];
-            if (!in_array($request->frequency, $allowedFrequencies)) {
-                return redirect()->back()
-                    ->with('error', 'User Free hanya bisa menggunakan frekuensi Bulanan dan Tahunan.')
-                    ->withInput();
-            }
-
-            // Free tidak bisa pakai Google Calendar
-            if (in_array('google_calendar', (array) $request->reminder_channels)) {
-                return redirect()->back()
-                    ->with('error', 'Google Calendar hanya tersedia untuk pengguna Premium.')
-                    ->withInput();
-            }
-        }
 
         $data = $request->validated();
         $data['reminder_enabled'] = $request->boolean('reminder_enabled');
@@ -115,9 +87,9 @@ class RecurringTransactionController extends Controller
 
         $categories = Category::all();
         $user = Auth::user();
-        $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
+        $membershipName = $user->membership ? $user->membership->membership_name : 'Premium';
         $frequencies = RecurringHelper::getAvailableFrequencies($membershipName);
-        $isPremium = strtolower($membershipName) === 'premium';
+        $isPremium = true;
 
         // Load reminder config jika ada
         $reminder = $recurring->reminder;
@@ -128,24 +100,6 @@ class RecurringTransactionController extends Controller
     public function update(RecurringTransactionRequest $request, int $id)
     {
         $userId = Auth::id();
-        $user = Auth::user();
-        $membershipName = $user->membership ? $user->membership->membership_name : 'Free';
-        $isPremium = strtolower($membershipName) === 'premium';
-
-        if (!$isPremium) {
-            $allowedFrequencies = ['bulanan', 'tahunan'];
-            if (!in_array($request->frequency, $allowedFrequencies)) {
-                return redirect()->back()
-                    ->with('error', 'User Free hanya bisa menggunakan frekuensi Bulanan dan Tahunan.')
-                    ->withInput();
-            }
-
-            if (in_array('google_calendar', (array) $request->reminder_channels)) {
-                return redirect()->back()
-                    ->with('error', 'Google Calendar hanya tersedia untuk pengguna Premium.')
-                    ->withInput();
-            }
-        }
 
         $data = $request->validated();
         $data['reminder_enabled'] = $request->boolean('reminder_enabled');
