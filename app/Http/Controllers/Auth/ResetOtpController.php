@@ -126,6 +126,9 @@ class ResetOtpController extends Controller
         
         $request->validate([
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'password.confirmed' => 'Password yang anda masukkan tidak sama dengan password baru.',
+            'password.required' => 'Password baru wajib diisi.',
         ]);
 
         $user = User::where('email', $email)->first();
