@@ -207,18 +207,35 @@ class ChartService
         $totalExpense = $this->transactionRepository->getTotalExpense($userId, $bulan, $tahun);
         $saldo        = $totalIncome - $totalExpense;
 
-        
+
         $expensePercentage = $totalIncome > 0
             ? round(($totalExpense / $totalIncome) * 100, 1)
             : ($totalExpense > 0 ? 100 : 0);
 
-        
+
         $progressLevel = 'green';
         if ($expensePercentage > 90) {
             $progressLevel = 'red';
         } elseif ($expensePercentage >= 70) {
             $progressLevel = 'yellow';
         }
+
+        // Tren bulan sebelumnya (month-over-month) untuk badge di tiap kartu metrik
+        $prevBulan = $bulan === 1 ? 12 : $bulan - 1;
+        $prevTahun = $bulan === 1 ? $tahun - 1 : $tahun;
+        $prevIncome  = $this->transactionRepository->getTotalIncome($userId, $prevBulan, $prevTahun);
+        $prevExpense = $this->transactionRepository->getTotalExpense($userId, $prevBulan, $prevTahun);
+        $prevSaldo   = $prevIncome - $prevExpense;
+        $prevRatio   = $prevIncome > 0
+            ? round(($prevExpense / $prevIncome) * 100, 1)
+            : ($prevExpense > 0 ? 100 : 0);
+
+        $incomeChange  = $prevIncome > 0  ? round((($totalIncome - $prevIncome) / $prevIncome) * 100, 1) : null;
+        $expenseChange = $prevExpense > 0 ? round((($totalExpense - $prevExpense) / $prevExpense) * 100, 1) : null;
+        $saldoChange   = $prevSaldo != 0  ? round((($saldo - $prevSaldo) / abs($prevSaldo)) * 100, 1) : null;
+        $ratioChange   = ($prevIncome > 0 || $prevExpense > 0)
+            ? round(min($expensePercentage, 100) - min($prevRatio, 100), 1)
+            : null;
 
         return [
             'totalIncome'          => $totalIncome,
@@ -231,6 +248,30 @@ class ChartService
             'expensePercentage'     => min($expensePercentage, 100),
             'progressLevel'         => $progressLevel,
             'overBudgetAmount'      => $saldo < 0 ? ChartHelper::formatRupiah(abs($saldo)) : null,
+            'incomeTrend'           => $this->buildTrend($incomeChange, true),
+            'expenseTrend'          => $this->buildTrend($expenseChange, false),
+            'saldoTrend'            => $this->buildTrend($saldoChange, true),
+            'ratioTrend'            => $this->buildTrend($ratioChange, false),
+        ];
+    }
+
+    /**
+     * Membangun data badge tren MoM: arah panah, persentase, dan apakah perubahan menguntungkan.
+     */
+    private function buildTrend(?float $changePercent, bool $upIsGood): array
+    {
+        if ($changePercent === null) {
+            return ['hasData' => false, 'percent' => null, 'direction' => 'flat', 'favorable' => true];
+        }
+
+        $direction = $changePercent > 0 ? 'up' : ($changePercent < 0 ? 'down' : 'flat');
+        $favorable = $changePercent == 0.0 ? true : (($changePercent > 0) === $upIsGood);
+
+        return [
+            'hasData'   => true,
+            'percent'   => number_format(abs($changePercent), 1) . '%',
+            'direction' => $direction,
+            'favorable' => $favorable,
         ];
     }
 }

@@ -681,10 +681,10 @@
                                     @endif
 
                                     <!-- Delete button -->
-                                    <form action="{{ route('recurring.destroy', $rec->recurring_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus transaksi rutin ini?')">
+                                    <form action="{{ route('recurring.destroy', $rec->recurring_id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="action-icon-btn btn-delete" title="Hapus Permanen">
+                                        <button type="button" onclick="openDeleteModal(this)" class="action-icon-btn btn-delete" title="Hapus Permanen">
                                             <i class="bi bi-trash3"></i>
                                         </button>
                                     </form>
@@ -804,6 +804,8 @@
     </div>
 </div>
 @endif
+
+<x-delete-confirm-modal message="Yakin ingin menghapus transaksi rutin ini?" subtitle="Transaksi rutin ini akan dihapus permanen." />
 @endsection
 
 @push('scripts')

@@ -101,11 +101,10 @@
                                     style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('budget.destroy', $budget->budget_id) }}" method="POST"
-                                      onsubmit="return confirm('Hapus budget ini?')" style="margin: 0;">
+                                <form action="{{ route('budget.destroy', $budget->budget_id) }}" method="POST" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Hapus">
+                                    <button type="button" onclick="openDeleteModal(this)" style="background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1rem;" title="Hapus">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
@@ -268,6 +267,8 @@
         </div>
     </div>
 </div>
+
+<x-delete-confirm-modal message="Anda yakin ingin menghapus budget ini?" />
 @endsection
 
 @push('scripts')
