@@ -16,11 +16,6 @@ class PremiumMembership implements MembershipFeatureInterface
         return true;
     }
 
-    public function canExportPdf(): bool
-    {
-        return true; // Unlocked untuk Premium
-    }
-
     public function canUseRecurring(): bool
     {
         return true;
