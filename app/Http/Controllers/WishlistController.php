@@ -137,20 +137,15 @@ class WishlistController extends Controller
             'jumlah' => 'required|integer|min:1000',
         ], [
             'jumlah.required' => 'Nominal alokasi wajib diisi.',
-            'jumlah.integer'  => 'Nominal alokasi harus berupa angka bulat tanpa koma.',
-            'jumlah.min'      => 'Jumlah alokasi minimum Rp 1.000',
+            'jumlah.integer' => 'Nominal alokasi harus berupa angka bulat tanpa koma.',
+            'jumlah.min' => 'Jumlah alokasi minimum Rp 1.000',
         ]);
 
         if ($validator->fails()) {
             return redirect()->route('wishlist.index')
                 ->withErrors($validator)
                 ->withInput()
-                ->with('allocationError', $validator->errors()->first('jumlah'))
-                ->with('allocationWishlist', [
-                    'id' => $wishlist->id,
-                    'nama' => $wishlist->nama,
-                    'sisa' => $maxAlokasi,
-                ]);
+                ->with('allocationError', $validator->errors()->first('jumlah'));
         }
 
         $validated = $validator->validated();
@@ -160,12 +155,7 @@ class WishlistController extends Controller
             return redirect()->route('wishlist.index')
                 ->withErrors(['jumlah' => 'Nominal melebihi sisa target. Maksimal yang bisa kamu alokasikan adalah Rp ' . number_format($maxAlokasi, 0, ',', '.') . '.'])
                 ->withInput()
-                ->with('allocationError', 'Nominal alokasi melebihi sisa target.')
-                ->with('allocationWishlist', [
-                    'id' => $wishlist->id,
-                    'nama' => $wishlist->nama,
-                    'sisa' => $maxAlokasi,
-                ]);
+                ->with('allocationError', 'Nominal alokasi melebihi sisa target.');
         }
 
         $wishlist->allocated_amount += $jumlah;

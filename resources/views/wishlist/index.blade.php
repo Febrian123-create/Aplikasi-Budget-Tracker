@@ -58,7 +58,7 @@
         </div>
 
         <!-- Available Balance Card -->
-        
+
     </div>
 
     <!-- Toast Notifikasi Alokasi -->
@@ -115,8 +115,8 @@
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Nama Wishlist</label>
-                        <input type="text" name="nama" class="bunrek-input @error('nama') is-invalid @enderror"
-                            required placeholder="Contoh: Liburan ke Bali" value="{{ old('nama') }}">
+                        <input type="text" name="nama" class="bunrek-input @error('nama') is-invalid @enderror" required
+                            placeholder="Contoh: Liburan ke Bali" value="{{ old('nama') }}">
                         @error('nama')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
@@ -143,7 +143,8 @@
 
                     <div class="bunrek-form-group">
                         <label class="bunrek-label">Catatan (Opsional)</label>
-                        <textarea name="catatan" class="bunrek-textarea" placeholder="Tambahkan catatan tentang wishlist ini...">{{ old('catatan') }}</textarea>
+                        <textarea name="catatan" class="bunrek-textarea"
+                            placeholder="Tambahkan catatan tentang wishlist ini...">{{ old('catatan') }}</textarea>
                     </div>
 
                     <button type="submit" class="btn-bunrek btn-primary btn-w-full">
@@ -232,8 +233,7 @@
                                             {{ number_format($wishlist->allocated_amount, 0, ',', '.') }}</span>
                                     </div>
                                     @if ($wishlist->deadline)
-                                        <div
-                                            style="display: flex; justify-content: space-between; font-size: var(--fs-sm);">
+                                        <div style="display: flex; justify-content: space-between; font-size: var(--fs-sm);">
                                             <span style="color: var(--text-muted);">Deadline:</span>
                                             <span style="color: var(--text-dark); font-weight: 500;">
                                                 {{ \Carbon\Carbon::parse($wishlist->deadline)->translatedFormat('d F Y') }}
@@ -253,449 +253,495 @@
                                         onclick="event.stopPropagation()">
                                         @if ($wishlist->status === 'aktif')
                                             <button type="button" class="btn-bunrek btn-sm btn-primary" style="flex: 1;"
-                                                onclick="openAlokasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->target_harga - $wishlist->allocated_amount }})">
-                                                <i class="bi bi-plus-circle"></i> Alokasi
-                                            </button>
-                                            <button type="button" class="btn-bunrek btn-sm btn-outline"
-                                                style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
-                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
-                                                <i class="bi bi-x-circle"></i> Batalkan
-                                            </button>
+                                                            onclick="openAlokasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->target_harga - $wishlist->allocated_amount }})">
+                                                            <i class="bi bi-plus-circle"></i> Alokasi
+                                                        </button>
+                                                        <button type="button" class="btn-bunrek btn-sm btn-outline"
+                                                            style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
+                                                            onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
+                                                            <i class="bi bi-x-circle"></i> Batalkan
+                                                        </button>
                                         @elseif ($wishlist->status === 'tercapai')
-                                            <button type="button" class="btn-bunrek btn-sm"
-                                                style="flex: 1; background-color: var(--color-income); color: white;"
-                                                onclick="openKonfirmasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}')">
-                                                <i class="bi bi-bag-check"></i> Konfirmasi Beli
-                                            </button>
-                                            <button type="button" class="btn-bunrek btn-sm btn-outline"
-                                                style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
-                                                onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
-                                                <i class="bi bi-x-circle"></i> Batalkan
-                                            </button>
-                                        @endif
+                                                    <button type="button" class="btn-bunrek btn-sm"
+                                                        style="flex: 1; background-color: var(--color-income); color: white;"
+                                                        onclick="openKonfirmasiModal({{ $wishlist->id }}, '{{ $wishlist->nama }}')">
+                                                        <i class="bi bi-bag-check"></i> Konfirmasi Beli
+                                                    </button>
+                                                    <button type="button" class="btn-bunrek btn-sm btn-outline"
+                                                        style="flex: 1; color: var(--color-expense); border-color: var(--color-expense);"
+                                                        onclick="openBatalModal({{ $wishlist->id }}, '{{ $wishlist->nama }}', {{ $wishlist->allocated_amount }})">
+                                                        <i class="bi bi-x-circle"></i> Batalkan
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
                 @empty
-                    <div
-                        style="grid-column: 1 / -1; padding: var(--space-xl) 0; text-align: center; color: var(--text-muted);">
-                        <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
-                        <p>Belum ada wishlist. Buat yang pertama sekarang!</p>
-                    </div>
-                @endforelse
+                        <div style="grid-column: 1 / -1; padding: var(--space-xl) 0; text-align: center; color: var(--text-muted);">
+                            <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                            <p>Belum ada wishlist. Buat yang pertama sekarang!</p>
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal Alokasi Dana -->
-    <div id="alokasiModal" class="delete-modal" style="display: none;">
-        <div class="delete-modal-overlay" onclick="closeAlokasiModal()"></div>
-        <div class="delete-modal-content">
-            <div class="delete-modal-header">
-                <h3 class="delete-modal-title">Alokasi Dana Wishlist</h3>
-                <button type="button" class="delete-modal-close" onclick="closeAlokasiModal()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-            <div class="delete-modal-body" style="text-align: left;">
-                <p id="modalWishlistName"
-                    style="margin: 0 0 var(--space-md) 0; color: var(--text-muted); font-weight: 500;"></p>
-                <div id="modalSisaKekurangan"
-                    style="margin-bottom: var(--space-md); font-size: var(--fs-sm); color: var(--text-dark);"></div>
-                <form id="alokasiForm" method="POST">
-                    @csrf
-                    <div class="bunrek-form-group">
-                        <label class="bunrek-label">Jumlah Alokasi (Rp)</label>
-                        <input type="number" name="jumlah" id="jumlahInput" class="bunrek-input" required
-                            placeholder="Minimum Rp 1.000" min="1000" step="1000" value="{{ old('jumlah') }}">
-                    </div>
-                </form>
-            </div>
-            <div class="delete-modal-footer">
-                <button type="button" class="btn-bunrek btn-outline" onclick="closeAlokasiModal()">
-                    Batal
-                </button>
-                <button type="button" class="btn-bunrek btn-primary" onclick="submitAlokasiForm()">
-                    <i class="bi bi-check-circle"></i> Alokasikan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Batal Custom -->
-    <div id="batalModal" class="delete-modal" style="display: none;">
-        <div class="delete-modal-overlay" onclick="closeBatalModal()"></div>
-        <div class="delete-modal-content">
-            <div class="delete-modal-header">
-                <h3 class="delete-modal-title">Batalkan Wishlist</h3>
-                <button type="button" class="delete-modal-close" onclick="closeBatalModal()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-            <div class="delete-modal-body" style="text-align: left;">
-                <p id="batalModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.5;"></p>
-            </div>
-            <div class="delete-modal-footer">
-                <button type="button" class="btn-bunrek btn-outline" onclick="closeBatalModal()">
-                    Tutup
-                </button>
-                <form id="batalForm" method="POST" style="margin: 0; display: inline-block;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-bunrek"
-                        style="background-color: var(--color-expense); color: white;">
-                        Batalkan Wishlist
+        <!-- Modal Alokasi Dana -->
+        <div id="alokasiModal" class="delete-modal" style="display: none;">
+            <div class="delete-modal-overlay" onclick="closeAlokasiModal()"></div>
+            <div class="delete-modal-content">
+                <div class="delete-modal-header">
+                    <h3 class="delete-modal-title">Alokasi Dana Wishlist</h3>
+                    <button type="button" class="delete-modal-close" onclick="closeAlokasiModal()">
+                        <i class="bi bi-x"></i>
                     </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Pembelian Custom -->
-    <div id="konfirmasiModal" class="delete-modal" style="display: none;">
-        <div class="delete-modal-overlay" onclick="closeKonfirmasiModal()"></div>
-        <div class="delete-modal-content">
-            <div class="delete-modal-header">
-                <h3 class="delete-modal-title">Konfirmasi Pembelian</h3>
-                <button type="button" class="delete-modal-close" onclick="closeKonfirmasiModal()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-            <div class="delete-modal-body" style="text-align: left;">
-                <p id="konfirmasiModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.5;"></p>
-            </div>
-            <div class="delete-modal-footer">
-                <button type="button" class="btn-bunrek btn-outline" onclick="closeKonfirmasiModal()">
-                    Batal
-                </button>
-                <form id="konfirmasiForm" method="POST" style="margin: 0; display: inline-block;">
-                    @csrf
-                    <button type="submit" class="btn-bunrek"
-                        style="background-color: var(--color-income); color: white;">
-                        Konfirmasi Pembelian
+                </div>
+                <div class="delete-modal-body" style="text-align: left;">
+                    <p id="modalWishlistName"
+                        style="margin: 0 0 var(--space-md) 0; color: var(--text-muted); font-weight: 500;"></p>
+                    <div id="modalSisaKekurangan"
+                        style="margin-bottom: var(--space-md); font-size: var(--fs-sm); color: var(--text-dark);"></div>
+                    <form id="alokasiForm" method="POST">
+                        @csrf
+                        <div class="bunrek-form-group">
+                            <label class="bunrek-label">Jumlah Alokasi (Rp)</label>
+                            <input type="number" name="jumlah" id="jumlahInput" class="bunrek-input" required
+                                placeholder="Minimum Rp 1.000" min="1000" step="1000" value="{{ old('jumlah') }}">
+                        </div>
+                    </form>
+                </div>
+                <div class="delete-modal-footer">
+                    <button type="button" class="btn-bunrek btn-outline" onclick="closeAlokasiModal()">
+                        Batal
                     </button>
-                </form>
+                    <button type="button" class="btn-bunrek btn-primary" onclick="submitAlokasiForm()">
+                        <i class="bi bi-check-circle"></i> Alokasikan
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    @push('styles')
-        <style>
-            .delete-modal {
-                position: fixed;
-                inset: 0;
-                z-index: 9999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                animation: modalFadeIn 0.2s ease-out;
-            }
+        <!-- Modal Batal Custom -->
+        <div id="batalModal" class="delete-modal" style="display: none;">
+            <div class="delete-modal-overlay" onclick="closeBatalModal()"></div>
+            <div class="delete-modal-content">
+                <div class="delete-modal-header">
+                    <h3 class="delete-modal-title">Batalkan Wishlist</h3>
+                    <button type="button" class="delete-modal-close" onclick="closeBatalModal()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="delete-modal-body" style="text-align: left;">
+                    <p id="batalModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.5;"></p>
+                </div>
+                <div class="delete-modal-footer">
+                    <button type="button" class="btn-bunrek btn-outline" onclick="closeBatalModal()">
+                        Tutup
+                    </button>
+                    <form id="batalForm" method="POST" style="margin: 0; display: inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-bunrek" style="background-color: var(--color-expense); color: white;">
+                            Batalkan Wishlist
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-            .delete-modal-overlay {
-                position: absolute;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(4px);
-                cursor: pointer;
-            }
+        <!-- Modal Gagal Custom -->
+        <div id="errorModal" class="delete-modal" style="display: none;">
+            <div class="delete-modal-overlay" onclick="closeErrorModal()"></div>
+            <div class="delete-modal-content">
+                <div class="delete-modal-header">
+                    <h3 class="delete-modal-title" style="color: var(--color-expense);">
+                        <i class="bi bi-exclamation-triangle-fill" style="margin-right: 8px;"></i>
+                        Gagal
+                    </h3>
+                    <button type="button" class="delete-modal-close" onclick="closeErrorModal()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="delete-modal-body" style="text-align: left;">
+                    <p id="errorModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.5;"></p>
+                </div>
+                <div class="delete-modal-footer">
+                    <button type="button" class="btn-bunrek btn-outline" onclick="closeErrorModal()" style="color: var(--color-expense); border-color: var(--color-expense);">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
 
-            .delete-modal-content {
-                position: relative;
-                background: var(--bg-white);
-                border-radius: var(--radius-lg);
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-                max-width: 440px;
-                width: 90%;
-                animation: modalSlideUp 0.3s ease-out;
-                overflow: hidden;
-            }
+        <!-- Modal Konfirmasi Pembelian Custom -->
+        <div id="konfirmasiModal" class="delete-modal" style="display: none;">
+            <div class="delete-modal-overlay" onclick="closeKonfirmasiModal()"></div>
+            <div class="delete-modal-content">
+                <div class="delete-modal-header">
+                    <h3 class="delete-modal-title">Konfirmasi Pembelian</h3>
+                    <button type="button" class="delete-modal-close" onclick="closeKonfirmasiModal()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="delete-modal-body" style="text-align: left;">
+                    <p id="konfirmasiModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.5;"></p>
+                </div>
+                <div class="delete-modal-footer">
+                    <button type="button" class="btn-bunrek btn-outline" onclick="closeKonfirmasiModal()">
+                        Batal
+                    </button>
+                    <form id="konfirmasiForm" method="POST" style="margin: 0; display: inline-block;">
+                        @csrf
+                        <button type="submit" class="btn-bunrek" style="background-color: var(--color-income); color: white;">
+                            Konfirmasi Pembelian
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-            .delete-modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: var(--space-lg);
-                border-bottom: 1px solid var(--border-light);
-            }
-
-            .delete-modal-title {
-                margin: 0;
-                color: var(--text-dark);
-                font-family: var(--font-heading);
-                font-weight: 700;
-                font-size: var(--fs-lg);
-            }
-
-            .delete-modal-close {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 32px;
-                height: 32px;
-                background: none;
-                border: none;
-                border-radius: var(--radius-md);
-                color: var(--text-muted);
-                cursor: pointer;
-                transition: var(--transition-fast);
-                font-size: 1.2rem;
-            }
-
-            .delete-modal-close:hover {
-                background: var(--bg-light);
-                color: var(--text-dark);
-            }
-
-            .delete-modal-body {
-                padding: var(--space-lg);
-            }
-
-            .delete-modal-footer {
-                display: flex;
-                justify-content: flex-end;
-                gap: var(--space-md);
-                padding: var(--space-lg);
-                border-top: 1px solid var(--border-light);
-                background: var(--bg-light);
-            }
-
-            @keyframes modalFadeIn {
-                from {
-                    opacity: 0;
+        @push('styles')
+            <style>
+                .delete-modal {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: modalFadeIn 0.2s ease-out;
                 }
 
-                to {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes modalSlideUp {
-                from {
-                    transform: translateY(20px);
-                    opacity: 0;
+                .delete-modal-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(4px);
+                    cursor: pointer;
                 }
 
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
+                .delete-modal-content {
+                    position: relative;
+                    background: var(--bg-white);
+                    border-radius: var(--radius-lg);
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    max-width: 440px;
+                    width: 90%;
+                    animation: modalSlideUp 0.3s ease-out;
+                    overflow: hidden;
                 }
-            }
 
-            .is-invalid {
-                border-color: var(--color-expense) !important;
-            }
-
-            .invalid-feedback {
-                display: block;
-                color: var(--color-expense);
-                font-size: var(--fs-xs);
-                margin-top: 4px;
-            }
-
-            /* Filter buttons */
-            .filter-btn {
-                background: var(--bg-light);
-                border: 1px solid var(--border-light);
-                color: var(--text-muted);
-                padding: 6px 16px;
-                border-radius: 20px;
-                font-size: var(--fs-sm);
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .filter-btn:hover {
-                background: var(--primary-light);
-                color: var(--primary-color);
-            }
-
-            .filter-btn.active {
-                background: var(--primary-color);
-                border-color: var(--primary-color);
-                color: white;
-            }
-        </style>
-    @endpush
-
-    @push('scripts')
-        <script>
-            let currentWishlistId = null;
-
-            // Accordion Logic
-            function toggleAccordion(wishlistId) {
-                const content = document.getElementById('accordion-content-' + wishlistId);
-                const icon = document.getElementById('accordion-icon-' + wishlistId);
-                const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px';
-
-                // Close all other accordions
-                document.querySelectorAll('.accordion-content').forEach(el => {
-                    el.style.maxHeight = '0px';
-                });
-                document.querySelectorAll('.accordion-icon').forEach(el => {
-                    el.style.transform = 'rotate(0deg)';
-                    el.innerHTML = '<i class="bi bi-plus-lg"></i>';
-                });
-
-                // Toggle selected
-                if (!isExpanded) {
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                    icon.style.transform = 'rotate(45deg)';
-                    icon.innerHTML = '<i class="bi bi-plus-lg"></i>';
+                .delete-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: var(--space-lg);
+                    border-bottom: 1px solid var(--border-light);
                 }
-            }
 
-            // Status Filter Logic
-            function filterStatus(status) {
-                // Update active button styling
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                event.target.classList.add('active');
+                .delete-modal-title {
+                    margin: 0;
+                    color: var(--text-dark);
+                    font-family: var(--font-heading);
+                    font-weight: 700;
+                    font-size: var(--fs-lg);
+                }
 
-                // Filter cards
-                const cards = document.querySelectorAll('.wishlist-card');
-                cards.forEach(card => {
-                    const cardStatus = card.getAttribute('data-status');
-                    if (status === 'all' || cardStatus === status) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
+                .delete-modal-close {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 32px;
+                    height: 32px;
+                    background: none;
+                    border: none;
+                    border-radius: var(--radius-md);
+                    color: var(--text-muted);
+                    cursor: pointer;
+                    transition: var(--transition-fast);
+                    font-size: 1.2rem;
+                }
+
+                .delete-modal-close:hover {
+                    background: var(--bg-light);
+                    color: var(--text-dark);
+                }
+
+                .delete-modal-body {
+                    padding: var(--space-lg);
+                }
+
+                .delete-modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: var(--space-md);
+                    padding: var(--space-lg);
+                    border-top: 1px solid var(--border-light);
+                    background: var(--bg-light);
+                }
+
+                @keyframes modalFadeIn {
+                    from {
+                        opacity: 0;
                     }
-                });
-            }
 
-            // Modal Alokasi Dana
-            function openAlokasiModal(wishlistId, wishlistName, sisaKekurangan) {
-                currentWishlistId = wishlistId;
-                document.getElementById('modalWishlistName').textContent = 'Wishlist: ' + wishlistName;
+                    to {
+                        opacity: 1;
+                    }
+                }
 
-                // Format sisa kekurangan ke Rupiah
-                const formattedSisa = new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    maximumFractionDigits: 0
-                }).format(sisaKekurangan);
-                document.getElementById('modalSisaKekurangan').innerHTML =
-                    `Sisa kekurangan dana: <strong>${formattedSisa}</strong>`;
+                @keyframes modalSlideUp {
+                    from {
+                        transform: translateY(20px);
+                        opacity: 0;
+                    }
 
-                const input = document.getElementById('jumlahInput');
-                input.max = sisaKekurangan;
-                input.value = '';
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
 
-                document.getElementById('alokasiForm').action = '/wishlist/' + wishlistId + '/alokasi';
-                document.getElementById('alokasiModal').style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-                input.focus();
-            }
+                .is-invalid {
+                    border-color: var(--color-expense) !important;
+                }
 
-            function closeAlokasiModal() {
-                document.getElementById('alokasiModal').style.display = 'none';
-                document.body.style.overflow = '';
-                currentWishlistId = null;
-            }
+                .invalid-feedback {
+                    display: block;
+                    color: var(--color-expense);
+                    font-size: var(--fs-xs);
+                    margin-top: 4px;
+                }
 
-            function submitAlokasiForm() {
-                if (currentWishlistId && document.getElementById('jumlahInput').value) {
+                /* Filter buttons */
+                .filter-btn {
+                    background: var(--bg-light);
+                    border: 1px solid var(--border-light);
+                    color: var(--text-muted);
+                    padding: 6px 16px;
+                    border-radius: 20px;
+                    font-size: var(--fs-sm);
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .filter-btn:hover {
+                    background: var(--primary-light);
+                    color: var(--primary-color);
+                }
+
+                .filter-btn.active {
+                    background: var(--primary-color);
+                    border-color: var(--primary-color);
+                    color: white;
+                }
+            </style>
+        @endpush
+
+        @push('scripts')
+            <script>
+                let currentWishlistId = null;
+                let currentSisaKekurangan = 0;
+
+                // Accordion Logic
+                function toggleAccordion(wishlistId) {
+                    const content = document.getElementById('accordion-content-' + wishlistId);
+                    const icon = document.getElementById('accordion-icon-' + wishlistId);
+                    const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                    // Close all other accordions
+                    document.querySelectorAll('.accordion-content').forEach(el => {
+                        el.style.maxHeight = '0px';
+                    });
+                    document.querySelectorAll('.accordion-icon').forEach(el => {
+                        el.style.transform = 'rotate(0deg)';
+                        el.innerHTML = '<i class="bi bi-plus-lg"></i>';
+                    });
+
+                    // Toggle selected
+                    if (!isExpanded) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(45deg)';
+                        icon.innerHTML = '<i class="bi bi-plus-lg"></i>';
+                    }
+                }
+
+                // Status Filter Logic
+                function filterStatus(status) {
+                    // Update active button styling
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+
+                    // Filter cards
+                    const cards = document.querySelectorAll('.wishlist-card');
+                    cards.forEach(card => {
+                        const cardStatus = card.getAttribute('data-status');
+                        if (status === 'all' || cardStatus === status) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Modal Alokasi Dana
+                function openAlokasiModal(wishlistId, wishlistName, sisaKekurangan) {
+                    currentWishlistId = wishlistId;
+                    currentSisaKekurangan = sisaKekurangan;
+                    document.getElementById('modalWishlistName').textContent = 'Wishlist: ' + wishlistName;
+
+                    // Format sisa kekurangan ke Rupiah
+                    const formattedSisa = new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        maximumFractionDigits: 0
+                    }).format(sisaKekurangan);
+                    document.getElementById('modalSisaKekurangan').innerHTML =
+                        `Sisa kekurangan dana: <strong>${formattedSisa}</strong>`;
+
+                    const input = document.getElementById('jumlahInput');
+                    input.max = sisaKekurangan;
+                    input.value = '';
+
+                    document.getElementById('alokasiForm').action = '/wishlist/' + wishlistId + '/alokasi';
+                    document.getElementById('alokasiModal').style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    input.focus();
+                }
+
+                function closeAlokasiModal() {
+                    document.getElementById('alokasiModal').style.display = 'none';
+                    document.body.style.overflow = '';
+                    currentWishlistId = null;
+                    currentSisaKekurangan = 0;
+                }
+
+                function submitAlokasiForm() {
+                    const inputVal = parseInt(document.getElementById('jumlahInput').value) || 0;
+
+                    if (!inputVal) {
+                        showErrorModal('Silakan masukkan jumlah alokasi');
+                        return;
+                    }
+
+                    if (inputVal < 1000) {
+                        showErrorModal('Jumlah alokasi minimum Rp 1.000');
+                        return;
+                    }
+
+                    if (inputVal > currentSisaKekurangan) {
+                        showErrorModal('Nominal alokasi melebihi sisa target.');
+                        return;
+                    }
+
                     document.getElementById('alokasiForm').submit();
-                } else {
-                    alert('Silakan masukkan jumlah alokasi');
-                }
-            }
-
-            // Modal Batal
-            function openBatalModal(wishlistId, wishlistName, terkumpul) {
-                const modal = document.getElementById('batalModal');
-                const form = document.getElementById('batalForm');
-                const message = document.getElementById('batalModalMessage');
-
-                form.action = '/wishlist/' + wishlistId;
-
-                const formattedAllocated = new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    maximumFractionDigits: 0
-                }).format(terkumpul);
-
-                if (terkumpul > 0) {
-                    message.innerHTML =
-                        `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?<br><br>Dana yang sudah dialokasikan sebesar <strong>${formattedAllocated}</strong> akan dibatalkan dan dibebaskan kembali ke saldo utama.`;
-                } else {
-                    message.innerHTML = `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?`;
                 }
 
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
+                // Modal Batal
+                function openBatalModal(wishlistId, wishlistName, terkumpul) {
+                    const modal = document.getElementById('batalModal');
+                    const form = document.getElementById('batalForm');
+                    const message = document.getElementById('batalModalMessage');
 
-            function closeBatalModal() {
-                document.getElementById('batalModal').style.display = 'none';
-                document.body.style.overflow = '';
-            }
+                    form.action = '/wishlist/' + wishlistId;
 
-            // Modal Konfirmasi Pembelian
-            function openKonfirmasiModal(wishlistId, wishlistName) {
-                const modal = document.getElementById('konfirmasiModal');
-                const form = document.getElementById('konfirmasiForm');
-                const message = document.getElementById('konfirmasiModalMessage');
+                    const formattedAllocated = new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        maximumFractionDigits: 0
+                    }).format(terkumpul);
 
-                form.action = '/wishlist/' + wishlistId + '/konfirmasi';
-                message.innerHTML = `Beli wishlist ini sekarang?`;
-
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeKonfirmasiModal() {
-                document.getElementById('konfirmasiModal').style.display = 'none';
-                document.body.style.overflow = '';
-            }
-
-            function showWishlistToast(message) {
-                const toast = document.getElementById('wishlistGlobalToast');
-                const toastMessage = document.getElementById('wishlistGlobalToastMessage');
-                if (!toast || !toastMessage || !message) return;
-                toastMessage.textContent = message;
-                toast.style.display = 'flex';
-                toast.style.opacity = '1';
-                setTimeout(() => {
-                    toast.style.transition = 'opacity 0.3s ease';
-                    toast.style.opacity = '0';
-                    setTimeout(() => {
-                        toast.style.display = 'none';
-                    }, 300);
-                }, 6000);
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const allocationError = @json(session('allocationError'));
-                const allocationWishlist = @json(session('allocationWishlist'));
-
-                if (allocationError) {
-                    if (allocationWishlist && allocationWishlist.id) {
-                        openAlokasiModal(allocationWishlist.id, allocationWishlist.nama, allocationWishlist.sisa);
+                    if (terkumpul > 0) {
+                        message.innerHTML =
+                            `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?<br><br>Dana yang sudah dialokasikan sebesar <strong>${formattedAllocated}</strong> akan dibatalkan dan dibebaskan kembali ke saldo utama.`;
+                    } else {
+                        message.innerHTML = `Apakah Anda yakin ingin membatalkan wishlist <strong>"${wishlistName}"</strong>?`;
                     }
-                    showWishlistToast(allocationError);
-                }
-            });
 
-            // Escape key handler
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    closeAlokasiModal();
-                    closeBatalModal();
-                    closeKonfirmasiModal();
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
                 }
-            });
 
-            // Enter key handler
-            document.getElementById('jumlahInput').addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    submitAlokasiForm();
+                function closeBatalModal() {
+                    document.getElementById('batalModal').style.display = 'none';
+                    document.body.style.overflow = '';
                 }
-            });
-        </script>
-    @endpush
+
+                // Modal Konfirmasi Pembelian
+                function openKonfirmasiModal(wishlistId, wishlistName) {
+                    const modal = document.getElementById('konfirmasiModal');
+                    const form = document.getElementById('konfirmasiForm');
+                    const message = document.getElementById('konfirmasiModalMessage');
+
+                    form.action = '/wishlist/' + wishlistId + '/konfirmasi';
+                    message.innerHTML = `Beli wishlist ini sekarang?`;
+
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeKonfirmasiModal() {
+                    document.getElementById('konfirmasiModal').style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+
+                // Error Modal functions
+                function showErrorModal(message) {
+                    document.getElementById('errorModalMessage').textContent = message;
+                    document.getElementById('errorModal').style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeErrorModal() {
+                    document.getElementById('errorModal').style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+
+                function showWishlistToast(message) {
+                    const toast = document.getElementById('wishlistGlobalToast');
+                    const toastMessage = document.getElementById('wishlistGlobalToastMessage');
+                    if (!toast || !toastMessage || !message) return;
+                    toastMessage.textContent = message;
+                    toast.style.display = 'flex';
+                    toast.style.opacity = '1';
+                    setTimeout(() => {
+                        toast.style.transition = 'opacity 0.3s ease';
+                        toast.style.opacity = '0';
+                        setTimeout(() => {
+                            toast.style.display = 'none';
+                        }, 300);
+                    }, 6000);
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const allocationError = @json(session('allocationError'));
+
+                    if (allocationError) {
+                        showErrorModal(allocationError);
+                    }
+                });
+
+                // Escape key handler
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeAlokasiModal();
+                        closeBatalModal();
+                        closeKonfirmasiModal();
+                        closeErrorModal();
+                    }
+                });
+
+                // Enter key handler
+                document.getElementById('jumlahInput').addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        submitAlokasiForm();
+                    }
+                });
+            </script>
+        @endpush
 @endsection
