@@ -70,29 +70,6 @@
                             </div>
                         </label>
 
-                        @if($isPremium)
-                            <label style="display: flex; align-items: center; gap: 10px; padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
-                                <input type="checkbox" name="channels[]" value="google_calendar"
-                                       {{ in_array('google_calendar', $selectedChannels) ? 'checked' : '' }}
-                                       style="accent-color: var(--primary-color); width: 16px; height: 16px;">
-                                <i class="bi bi-calendar-event-fill" style="color: #ef4444; font-size: 1rem;"></i>
-                                <div>
-                                    <div style="font-weight: 600; font-size: var(--fs-sm);">Google Calendar</div>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Buat event di Google Calendar kamu</div>
-                                </div>
-                            </label>
-                        @else
-                            <div style="display: flex; align-items: center; gap: 10px; padding: var(--space-sm) var(--space-md); border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;">
-                                <i class="bi bi-calendar-event-fill" style="color: #ef4444; font-size: 1rem;"></i>
-                                <div>
-                                    <div style="font-weight: 600; font-size: var(--fs-sm); display: flex; align-items: center; gap: 6px;">
-                                        Google Calendar
-                                        <span style="font-size: 0.65rem; background: #fbbf24; color: white; padding: 1px 6px; border-radius: 3px; font-weight: 700;">PREMIUM</span>
-                                    </div>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Upgrade ke Premium untuk menggunakan fitur ini</div>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                     @error('channels.*')
                         <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small>
@@ -103,6 +80,7 @@
                     <i class="bi bi-check-lg"></i> Simpan Pengaturan
                 </button>
             </form>
+
         </div>
     </div>
 </div>

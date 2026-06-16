@@ -16,7 +16,7 @@ class RecurringTransactionRequest extends FormRequest
     {
         return [
             'description'        => 'required|string|max:255',
-            'category_id'        => 'required|exists:category,category_id',
+            'category_id'        => 'required_if:amount_type,pengeluaran|nullable|exists:category,category_id',
             'amount'             => 'required|numeric|min:1',
             'amount_type'        => 'required|in:pemasukan,pengeluaran',
             'frequency'          => 'required|in:harian,mingguan,bulanan,tahunan',
@@ -36,8 +36,8 @@ class RecurringTransactionRequest extends FormRequest
         return [
             'description.required' => 'Deskripsi wajib diisi.',
             'description.max'      => 'Deskripsi maksimal 255 karakter.',
-            'category_id.required' => 'Kategori wajib dipilih.',
-            'category_id.exists'   => 'Kategori tidak ditemukan.',
+            'category_id.required_if' => 'Kategori wajib dipilih untuk pengeluaran.',
+            'category_id.exists'      => 'Kategori tidak ditemukan.',
             'amount.required'      => 'Nominal wajib diisi.',
             'amount.numeric'       => 'Nominal harus berupa angka.',
             'amount.min'           => 'Nominal harus lebih dari Rp 0.',
