@@ -201,88 +201,41 @@ class ChartService
         ];
     }
 
-    public function getHealthScore(int $userId, int $bulan, int $tahun): array
-    {
-        $totalIncome  = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
-        $totalExpense = $this->transactionRepository->getTotalExpense($userId, $bulan, $tahun);
-
-        if ($totalIncome === 0.0 && $totalExpense === 0.0) {
-            return [
-                'score' => 0, 'label' => 'Belum Ada Data', 'color' => '#9e9e9e',
-                'components' => [],
-                'tips'    => 'Mulai catat transaksi untuk melihat skor kesehatan finansialmu.',
-                'isEmpty' => true,
-            ];
-        }
-
-        $savingsScore = 0.0;
-        if ($totalIncome > 0) {
-            $savingsRate  = (($totalIncome - $totalExpense) / $totalIncome) * 100;
-            $savingsScore = max(0.0, min(100.0, ($savingsRate / 30) * 100));
-        }
-
-        $diversityScore = 70.0;
-        $categories = $this->transactionRepository->getCategoryExpenses($userId, $bulan, $tahun);
-        if (!$categories->isEmpty() && $totalExpense > 0) {
-            $maxCatPct      = ($categories->max('total') / $totalExpense) * 100;
-            $diversityScore = max(0.0, min(100.0, ((80 - $maxCatPct) / 40) * 100));
-        }
-
-        $budgetScore = 70.0;
-        $budgets = \App\Models\Budget::where('user_id', $userId)->get();
-        if ($budgets->isNotEmpty()) {
-            $onTrack     = $budgets->filter(fn($b) => !$b->isExceeded())->count();
-            $budgetScore = ($onTrack / $budgets->count()) * 100;
-        }
-
-        $totalScore = (int) round(($savingsScore * 0.4) + ($diversityScore * 0.3) + ($budgetScore * 0.3));
-
-        if ($totalScore >= 70)      { $label = 'Sehat';            $color = '#22C55E'; }
-        elseif ($totalScore >= 40)  { $label = 'Cukup';            $color = '#F59E0B'; }
-        else                        { $label = 'Perlu Perhatian';   $color = '#EF4444'; }
-
-        $scores    = ['savings' => $savingsScore, 'diversity' => $diversityScore, 'budget' => $budgetScore];
-        $lowestKey = (string) array_search(min($scores), $scores);
-        $tips = match ($lowestKey) {
-            'savings'   => 'Savings rate masih rendah. Coba kurangi pengeluaran atau cari sumber pemasukan tambahan.',
-            'diversity' => 'Pengeluaran terlalu terpusat di satu kategori. Coba distribusikan lebih merata.',
-            'budget'    => 'Ada budget yang sudah terlampaui. Cek halaman Budget untuk menyesuaikan.',
-            default     => 'Pertahankan kebiasaan finansial yang baik!',
-        };
-
-        return [
-            'score'      => $totalScore,
-            'label'      => $label,
-            'color'      => $color,
-            'components' => [
-                ['name' => 'Savings Rate',    'score' => (int) round($savingsScore),   'weight' => '40%'],
-                ['name' => 'Diversifikasi',    'score' => (int) round($diversityScore), 'weight' => '30%'],
-                ['name' => 'Kepatuhan Budget', 'score' => (int) round($budgetScore),    'weight' => '30%'],
-            ],
-            'tips'    => $tips,
-            'isEmpty' => false,
-        ];
-    }
-
-
     public function getMetricCards(int $userId, int $bulan, int $tahun): array
     {
         $totalIncome  = $this->transactionRepository->getTotalIncome($userId, $bulan, $tahun);
         $totalExpense = $this->transactionRepository->getTotalExpense($userId, $bulan, $tahun);
         $saldo        = $totalIncome - $totalExpense;
 
-        
+
         $expensePercentage = $totalIncome > 0
             ? round(($totalExpense / $totalIncome) * 100, 1)
             : ($totalExpense > 0 ? 100 : 0);
 
-        
+
         $progressLevel = 'green';
         if ($expensePercentage > 90) {
             $progressLevel = 'red';
         } elseif ($expensePercentage >= 70) {
             $progressLevel = 'yellow';
         }
+
+        // Tren bulan sebelumnya (month-over-month) untuk badge di tiap kartu metrik
+        $prevBulan = $bulan === 1 ? 12 : $bulan - 1;
+        $prevTahun = $bulan === 1 ? $tahun - 1 : $tahun;
+        $prevIncome  = $this->transactionRepository->getTotalIncome($userId, $prevBulan, $prevTahun);
+        $prevExpense = $this->transactionRepository->getTotalExpense($userId, $prevBulan, $prevTahun);
+        $prevSaldo   = $prevIncome - $prevExpense;
+        $prevRatio   = $prevIncome > 0
+            ? round(($prevExpense / $prevIncome) * 100, 1)
+            : ($prevExpense > 0 ? 100 : 0);
+
+        $incomeChange  = $prevIncome > 0  ? round((($totalIncome - $prevIncome) / $prevIncome) * 100, 1) : null;
+        $expenseChange = $prevExpense > 0 ? round((($totalExpense - $prevExpense) / $prevExpense) * 100, 1) : null;
+        $saldoChange   = $prevSaldo != 0  ? round((($saldo - $prevSaldo) / abs($prevSaldo)) * 100, 1) : null;
+        $ratioChange   = ($prevIncome > 0 || $prevExpense > 0)
+            ? round(min($expensePercentage, 100) - min($prevRatio, 100), 1)
+            : null;
 
         return [
             'totalIncome'          => $totalIncome,
@@ -295,6 +248,30 @@ class ChartService
             'expensePercentage'     => min($expensePercentage, 100),
             'progressLevel'         => $progressLevel,
             'overBudgetAmount'      => $saldo < 0 ? ChartHelper::formatRupiah(abs($saldo)) : null,
+            'incomeTrend'           => $this->buildTrend($incomeChange, true),
+            'expenseTrend'          => $this->buildTrend($expenseChange, false),
+            'saldoTrend'            => $this->buildTrend($saldoChange, true),
+            'ratioTrend'            => $this->buildTrend($ratioChange, false),
+        ];
+    }
+
+    /**
+     * Membangun data badge tren MoM: arah panah, persentase, dan apakah perubahan menguntungkan.
+     */
+    private function buildTrend(?float $changePercent, bool $upIsGood): array
+    {
+        if ($changePercent === null) {
+            return ['hasData' => false, 'percent' => null, 'direction' => 'flat', 'favorable' => true];
+        }
+
+        $direction = $changePercent > 0 ? 'up' : ($changePercent < 0 ? 'down' : 'flat');
+        $favorable = $changePercent == 0.0 ? true : (($changePercent > 0) === $upIsGood);
+
+        return [
+            'hasData'   => true,
+            'percent'   => number_format(abs($changePercent), 1) . '%',
+            'direction' => $direction,
+            'favorable' => $favorable,
         ];
     }
 }

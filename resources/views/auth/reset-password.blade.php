@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Reset Password - BUNREK</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,18 +49,7 @@
                     @endif
 
                     
-                    <div class="bunrek-form-group">
-                        <label for="email" class="bunrek-label">Email</label>
-                        <input type="email" id="email" name="email" class="bunrek-input"
-                               value="{{ old('email', isset($request) ? $request->email : '') }}"
-                               placeholder="nama@email.com"
-                               required autocomplete="username">
-                        @error('email')
-                            <p class="bunrek-alert bunrek-alert-error" style="margin-top: 6px; padding: 4px 8px; font-size: var(--fs-xs);">
-                                <i class="bi bi-exclamation-triangle-fill"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="email" value="{{ old('email', $email ?? '') }}">
 
                     
                     <div class="bunrek-form-group">
@@ -94,5 +84,32 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('password_confirmation').value;
+            
+            // Hapus alert error client-side sebelumnya jika ada
+            const existingAlert = document.getElementById('client-password-error');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                
+                const errorDiv = document.createElement('p');
+                errorDiv.id = 'client-password-error';
+                errorDiv.className = 'bunrek-alert bunrek-alert-error';
+                errorDiv.style.marginTop = '6px';
+                errorDiv.style.padding = '4px 8px';
+                errorDiv.style.fontSize = 'var(--fs-xs)';
+                errorDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>Password yang anda masukkan tidak sama dengan password baru.';
+                
+                document.getElementById('password_confirmation').parentNode.appendChild(errorDiv);
+            }
+        });
+    </script>
 </body>
 </html>

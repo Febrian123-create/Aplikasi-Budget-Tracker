@@ -43,10 +43,21 @@ class BudgetRepository
             ],
             [
                 'amount'     => $data['amount'],
+                'duration'   => $data['duration'] ?? null,
                 'start_date' => $data['start_date'],
                 'end_date'   => $data['end_date'] ?? null,
             ]
         );
+    }
+
+    public function updateById(int $budgetId, int $userId, array $data): ?Budget
+    {
+        $budget = $this->findById($budgetId, $userId);
+        if (!$budget) {
+            return null;
+        }
+        $budget->update($data);
+        return $budget->fresh();
     }
 
     public function delete(int $budgetId, int $userId): bool

@@ -71,15 +71,17 @@
                 </div>
 
                 <div class="bunrek-form-group text-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-                    <div>
+                    <div id="editCategoryGroup">
                         <label class="bunrek-label">Kategori</label>
-                        <select name="category_id" class="bunrek-select" required>
+                        <select name="category_id" id="editCategory" class="bunrek-select">
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $cat)
-                                <option value="{{ $cat->category_id }}"
-                                    {{ old('category_id', $recurring->category_id) == $cat->category_id ? 'selected' : '' }}>
-                                    {{ $cat->category_name }}
-                                </option>
+                                @if(!in_array($cat->category_id, [10, 11]))
+                                    <option value="{{ $cat->category_id }}"
+                                        {{ old('category_id', $recurring->category_id) == $cat->category_id ? 'selected' : '' }}>
+                                        {{ $cat->category_name }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                         @error('category_id') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
@@ -87,7 +89,7 @@
 
                     <div>
                         <label class="bunrek-label">Tipe Transaksi</label>
-                        <select name="amount_type" class="bunrek-select" required>
+                        <select name="amount_type" id="editAmountType" class="bunrek-select" required>
                             <option value="pengeluaran" {{ old('amount_type', $recurring->amount_type) === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
                             <option value="pemasukan" {{ old('amount_type', $recurring->amount_type) === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
                         </select>
@@ -120,14 +122,18 @@
                     <div>
                         <label class="bunrek-label">Tanggal Mulai</label>
                         <input type="date" name="start_date" class="bunrek-input" required
-                               value="{{ old('start_date', $recurring->start_date->format('Y-m-d')) }}" id="editStartDate">
+                               value="{{ old('start_date', $recurring->start_date->format('Y-m-d')) }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="editStartDate">
                         @error('start_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
 
                     <div>
                         <label class="bunrek-label">Tanggal Berakhir <small style="color: var(--text-muted); font-weight: 500;">(Opsional)</small></label>
                         <input type="date" name="end_date" class="bunrek-input"
-                               value="{{ old('end_date', $recurring->end_date ? $recurring->end_date->format('Y-m-d') : '') }}" id="editEndDate">
+                               value="{{ old('end_date', $recurring->end_date ? $recurring->end_date->format('Y-m-d') : '') }}"
+                               min="{{ date('Y-m-d') }}"
+                               id="editEndDate">
                         @error('end_date') <small style="color: var(--color-expense); font-size: var(--fs-xs); display: block; margin-top: 4px;">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -172,8 +178,25 @@ $(document).ready(function() {
         }
     }
     
-    $('#editFrequency, #editStartDate').on('change', updateEditPreview);
+    $('#editStartDate').on('change', function() {
+        const val = $(this).val();
+        if (val) $('#editEndDate').attr('min', val);
+        updateEditPreview();
+    });
+    $('#editFrequency').on('change', updateEditPreview);
     updateEditPreview();
+
+    function toggleEditCategory() {
+        if ($('#editAmountType').val() === 'pemasukan') {
+            $('#editCategoryGroup').hide();
+            $('#editCategory').prop('required', false).prop('disabled', true);
+        } else {
+            $('#editCategoryGroup').show();
+            $('#editCategory').prop('required', true).prop('disabled', false);
+        }
+    }
+    $('#editAmountType').on('change', toggleEditCategory);
+    toggleEditCategory();
 });
 </script>
 @endpush

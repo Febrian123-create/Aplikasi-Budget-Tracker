@@ -2,41 +2,107 @@
 
 @push('styles')
     <style>
+        .charts-page-wrapper {
+            width: 100%;
+        }
         .chart-card {
             background: #fff; border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #f0f0f0;
-            padding: 28px; transition: box-shadow .3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,.03); border: 1px solid #f0f0f0;
+            padding: 24px; transition: box-shadow .3s;
+            display: flex; flex-direction: column;
         }
-        .chart-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); }
+        .chart-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,.08); }
         .metric-card {
-            border-radius: 14px; padding: 22px 24px;
-            position: relative; overflow: hidden; transition: transform .2s;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            transition: var(--transition-fast), transform .2s;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .metric-card:hover { transform: translateY(-3px); }
+        .metric-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
         .metric-card .metric-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; margin-bottom: 14px;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            margin-bottom: 14px;
         }
-        .metric-card .metric-label { font-size: 13px; font-weight: 500; opacity: .8; margin-bottom: 6px; }
-        .metric-card .metric-value { font-size: 22px; font-weight: 700; }
-        .mc-income  { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); color:#2e7d32; }
-        .mc-income  .metric-icon { background: rgba(46,125,50,.15); color:#2e7d32; }
-        .mc-expense { background: linear-gradient(135deg,#ffebee,#ffcdd2); color:#c62828; }
-        .mc-expense .metric-icon { background: rgba(198,40,40,.15); color:#c62828; }
-        .mc-saldo-pos { background: linear-gradient(135deg,#e3f2fd,#bbdefb); color:#1565c0; }
-        .mc-saldo-pos .metric-icon { background: rgba(21,101,192,.15); color:#1565c0; }
-        .mc-saldo-neg { background: linear-gradient(135deg,#fce4ec,#f8bbd0); color:#ad1457; }
-        .mc-saldo-neg .metric-icon { background: rgba(173,20,87,.15); color:#ad1457; }
-        .mc-ratio { background: linear-gradient(135deg,#fff3e0,#ffe0b2); color:#e65100; }
-        .mc-ratio .metric-icon { background: rgba(230,81,0,.15); color:#e65100; }
-        .progress-bar-custom { height:8px; border-radius:4px; background:rgba(0,0,0,.1); overflow:hidden; margin-top:10px; }
-        .progress-bar-custom .fill { height:100%; border-radius:4px; transition:width 1s ease; }
-        .fill-green { background:#43a047; } .fill-yellow { background:#fb8c00; } .fill-red { background:#e53935; }
+        .metric-card .metric-label {
+            font-size: var(--fs-xs);
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .metric-card .metric-value {
+            font-family: var(--font-heading);
+            font-size: var(--fs-xl);
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .metric-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: var(--fs-xs);
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            margin-top: 10px;
+            width: fit-content;
+        }
+        .metric-trend.trend-good { background: var(--color-income-bg); color: var(--color-income); }
+        .metric-trend.trend-bad  { background: var(--color-expense-bg); color: var(--color-expense); }
+        .metric-trend.trend-flat { background: var(--bg-light); color: var(--text-muted); }
+        .metric-trend i { font-size: 0.85rem; }
+        .mc-income .metric-value  { color: var(--color-income); }
+        .mc-income .metric-icon { background: var(--color-income-bg); color: var(--color-income); }
+        .mc-expense .metric-value { color: var(--color-expense); }
+        .mc-expense .metric-icon { background: var(--color-expense-bg); color: var(--color-expense); }
+        .mc-saldo-pos .metric-value { color: var(--primary-color); }
+        .mc-saldo-pos .metric-icon { background: var(--primary-100); color: var(--primary-color); }
+        .mc-saldo-neg .metric-value { color: var(--color-expense); }
+        .mc-saldo-neg .metric-icon { background: var(--color-expense-bg); color: var(--color-expense); }
+        .mc-ratio .metric-value { color: var(--color-warning); }
+        .mc-ratio .metric-icon { background: var(--color-warning-bg); color: var(--color-warning); }
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: var(--radius-full);
+            background: var(--border-light);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar-custom .fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 1s ease;
+        }
+        .fill-green { background: var(--color-income); }
+        .fill-yellow { background: var(--color-warning); }
+        .fill-red { background: var(--color-expense); }
         .warning-banner {
-            background: linear-gradient(135deg,#fff3e0,#ffe0b2);
-            border:1px solid #ffb74d; border-radius:12px; padding:16px 20px;
-            display:flex; align-items:center; gap:12px; color:#e65100; font-weight:500; margin-bottom:24px;
+            background: var(--color-warning-bg);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #92400e;
+            font-weight: 500;
+            margin-bottom: 24px;
         }
         .empty-state { text-align:center; padding:48px 24px; color:#9e9e9e; }
         .empty-state .empty-icon { font-size:56px; margin-bottom:16px; opacity:.4; }
@@ -46,10 +112,10 @@
             color:#fff; border-radius:10px; text-decoration:none; font-weight:600;
         }
         .section-title {
-            font-size:18px; font-weight:700; color:#1a1a2e;
+            font-size: var(--fs-md); font-weight: 700; color: var(--text-dark);
             margin-bottom:20px; display:flex; align-items:center; gap:10px;
         }
-        .section-title i { color:#6366f1; }
+        .section-title i { color: var(--primary-color); }
         .filter-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .filter-bar select, .filter-bar .toggle-btn {
             padding:8px 16px; border:1px solid #e0e0e0; border-radius:10px;
@@ -66,12 +132,24 @@
         .legend-name { flex:1; font-weight:500; color:#333; }
         .legend-amount { font-weight:600; color:#555; }
         .legend-pct { font-size:12px; color:#999; min-width:45px; text-align:right; }
-        /* Monefy */
-        #monefyOuter { position:relative; width:380px; height:380px; margin:0 auto; }
-        #donutChart  { position:absolute; top:70px; left:70px; width:240px; height:240px; }
-        #iconSvg     { position:absolute; top:0; left:0; width:380px; height:380px; pointer-events:none; }
-        #monefyCenter { position:absolute; text-align:center; pointer-events:none; width:120px; }
-        .monefy-icon  { position:absolute; pointer-events:none; }
+        /* Donut */
+        #monefyOuter { position:relative; width:100%; max-width:260px; aspect-ratio:1/1; margin:8px auto 4px; }
+        #donutChart  { position:relative; z-index:1; }
+        #monefyCenter {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            text-align:center; pointer-events:none; z-index:2; width:62%;
+            display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+        }
+        #monefyCenter .center-label { font-size:10px; color:var(--text-muted); font-weight:600; letter-spacing:.8px; }
+        #monefyCenter .center-value { font-family:var(--font-heading); font-size:0.92rem; font-weight:800; color:var(--text-dark); line-height:1.15; white-space:nowrap; }
+        
+        /* CSS Grid Layouts */
+        .grid-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .grid-charts-1 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
+        .grid-charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 992px) {
+            .grid-charts-1, .grid-charts-2 { grid-template-columns: 1fr; }
+        }
         /* Area chart blur */
         .blur-overlay { position:relative; }
         .blur-overlay::after {
@@ -108,36 +186,22 @@
         .change-up   { background:#ffebee; color:#e53935; }
         .change-down { background:#e8f5e9; color:#43a047; }
         .change-nil  { background:#f5f5f5; color:#9e9e9e; }
-        /* Health Score */
-        .health-gauge-wrap { position:relative; width:200px; height:200px; margin:0 auto 8px; }
-        .health-gauge-wrap canvas { width:200px !important; height:200px !important; }
-        .health-gauge-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
-        .health-score-num   { font-size:36px; font-weight:800; line-height:1; color:#1a1a2e; }
-        .health-score-label { font-size:12px; font-weight:600; margin-top:4px; }
-        .health-comp-row    { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-        .health-comp-name   { font-size:12px; color:#555; flex:1; }
-        .health-comp-bar-wrap { width:90px; height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; }
-        .health-comp-bar    { height:100%; border-radius:3px; transition:width .8s ease; }
-        .health-comp-score  { font-size:11px; font-weight:700; color:#555; width:28px; text-align:right; }
-        .tips-box { background:#f8f9ff; border:1px solid #e8eaff; border-radius:10px; padding:12px 14px; font-size:12px; color:#4f46e5; margin-top:14px; display:flex; gap:8px; align-items:flex-start; }
-        .tips-box i { flex-shrink:0; margin-top:2px; }
     </style>
 @endpush
 
 @section('content')
-<div class="container">
-  <div class="page-inner">
+<div class="charts-page-wrapper">
 
     {{-- HEADER --}}
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap" style="gap:12px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-xl); flex-wrap: wrap; gap: var(--space-md);">
       <div>
-        <h3 class="fw-bold mb-1" style="color:#1a1a2e;">Visualisasi Keuangan</h3>
-        <p class="text-muted mb-0">
+        <h1 style="font-family: var(--font-heading); font-weight: 800; color: var(--text-dark); margin: 0; font-size: var(--fs-2xl);">Visualisasi Keuangan</h1>
+        <p style="color: var(--text-muted); font-size: var(--fs-sm); margin: 2px 0 0 0;">
           {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}
           @if(!$isPremium)
-            <span class="badge bg-secondary ms-2">Free</span>
+            <span style="font-size: 0.7rem; font-weight: 700; background: var(--border-color); color: var(--text-muted); padding: 2px 8px; border-radius: var(--radius-full); margin-left: var(--space-xs);">FREE</span>
           @else
-            <span class="badge ms-2" style="background:#6366f1;">Premium</span>
+            <span style="font-size: 0.7rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; padding: 2px 8px; border-radius: var(--radius-full); margin-left: var(--space-xs);">PREMIUM</span>
           @endif
         </p>
       </div>
@@ -161,86 +225,75 @@
     {{-- WARNING --}}
     @if($metricCards['overBudgetAmount'])
       <div class="warning-banner">
-        <i class="bi bi-exclamation-triangle-fill" style="font-size:20px;"></i>
+        <i class="bi bi-exclamation-triangle-fill" style="font-size:20px; flex-shrink:0;"></i>
         <span>Pengeluaran melebihi pemasukan sebesar <strong>{{ $metricCards['overBudgetAmount'] }}</strong></span>
       </div>
     @endif
 
     {{-- METRIC CARDS --}}
-    <div class="row g-3 mb-4">
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-income">
-          <div class="metric-icon"><i class="bi bi-arrow-down-circle"></i></div>
-          <div class="metric-label">Total Pemasukan</div>
-          <div class="metric-value">{{ $metricCards['totalIncomeFormatted'] }}</div>
-        </div>
+    <div class="grid-metrics">
+      <div class="metric-card mc-income">
+        <div class="metric-icon"><i class="bi bi-arrow-down-circle"></i></div>
+        <div class="metric-label">Total Pemasukan</div>
+        <div class="metric-value">{{ $metricCards['totalIncomeFormatted'] }}</div>
+        @include('charts.partials.metric-trend', ['trend' => $metricCards['incomeTrend']])
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-expense">
-          <div class="metric-icon"><i class="bi bi-arrow-up-circle"></i></div>
-          <div class="metric-label">Total Pengeluaran</div>
-          <div class="metric-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
-        </div>
+      <div class="metric-card mc-expense">
+        <div class="metric-icon"><i class="bi bi-arrow-up-circle"></i></div>
+        <div class="metric-label">Total Pengeluaran</div>
+        <div class="metric-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
+        @include('charts.partials.metric-trend', ['trend' => $metricCards['expenseTrend']])
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card {{ $metricCards['isSaldoPositif'] ? 'mc-saldo-pos' : 'mc-saldo-neg' }}">
-          <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
-          <div class="metric-label">Saldo</div>
-          <div class="metric-value">{{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}</div>
-        </div>
+      <div class="metric-card {{ $metricCards['isSaldoPositif'] ? 'mc-saldo-pos' : 'mc-saldo-neg' }}">
+        <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="metric-label">Saldo</div>
+        <div class="metric-value">{{ $metricCards['isSaldoPositif'] ? '' : '-' }}{{ $metricCards['saldoFormatted'] }}</div>
+        @include('charts.partials.metric-trend', ['trend' => $metricCards['saldoTrend']])
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="metric-card mc-ratio">
-          <div class="metric-icon"><i class="bi bi-percent"></i></div>
-          <div class="metric-label">Rasio Pengeluaran</div>
-          <div class="metric-value">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
-          <div class="progress-bar-custom">
-            <div class="fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
-          </div>
+      <div class="metric-card mc-ratio">
+        <div class="metric-icon"><i class="bi bi-percent"></i></div>
+        <div class="metric-label">Rasio Pengeluaran</div>
+        <div class="metric-value">{{ number_format($metricCards['expensePercentage'], 1) }}%</div>
+        <div class="progress-bar-custom">
+          <div class="fill fill-{{ $metricCards['progressLevel'] }}" style="width:{{ min($metricCards['expensePercentage'],100) }}%"></div>
         </div>
+        @include('charts.partials.metric-trend', ['trend' => $metricCards['ratioTrend']])
       </div>
     </div>
 
     {{-- ROW 1: MONEFY DONUT + AREA CHART --}}
-    <div class="row g-4 mb-4">
-      <div class="col-lg-5">
-        <div class="chart-card h-100">
-          <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Pengeluaran</div>
-          @if($categoryDistribution['isEmpty'] && $categoryDistribution['allIncome'])
-            <div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada pengeluaran bulan ini!</p></div>
-          @elseif($categoryDistribution['isEmpty'])
-            <div class="empty-state">
-              <div class="empty-icon">📊</div><p>Belum ada pengeluaran bulan ini.</p>
-              <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
+    <div class="grid-charts-1">
+      <div class="chart-card">
+        <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Pengeluaran</div>
+        @if($categoryDistribution['isEmpty'] && $categoryDistribution['allIncome'])
+          <div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada pengeluaran bulan ini!</p></div>
+        @elseif($categoryDistribution['isEmpty'])
+          <div class="empty-state">
+            <div class="empty-icon">📊</div><p>Belum ada pengeluaran bulan ini.</p>
+            <a href="{{ route('transactions.index') }}" class="cta-btn">Catat transaksi</a>
+          </div>
+        @else
+          <div id="monefyOuter">
+            <canvas id="donutChart"></canvas>
+            <div id="monefyCenter">
+              <div class="center-label">TOTAL</div>
+              <div class="center-value">{{ $metricCards['totalExpenseFormatted'] }}</div>
             </div>
-          @else
-            <div id="monefyOuter">
-              <canvas id="donutChart" width="240" height="240"></canvas>
-              <svg id="iconSvg"></svg>
-              <div id="monefyCenter">
-                <div style="font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px;">PEMASUKAN</div>
-                <div style="font-size:13px;font-weight:700;color:#22C55E;line-height:1.2;">{{ $metricCards['totalIncomeFormatted'] }}</div>
-                <div style="border-top:1px solid #eee;margin:5px auto;width:70px;"></div>
-                <div style="font-size:10px;color:#aaa;font-weight:500;letter-spacing:.5px;">PENGELUARAN</div>
-                <div style="font-size:13px;font-weight:700;color:#EF4444;line-height:1.2;">{{ $metricCards['totalExpenseFormatted'] }}</div>
+          </div>
+          <div class="mt-3" id="pieLegend">
+            @foreach($categoryDistribution['categories'] as $i => $cat)
+              <div class="legend-item" data-index="{{ $i }}" onclick="togglePieSegment({{ $i }})">
+                <span class="legend-dot" style="background:{{ $chartColors[$i % count($chartColors)] }}"></span>
+                <span class="legend-name">{{ $cat['name'] }}</span>
+                <span class="legend-amount">{{ $cat['formatted'] }}</span>
+                <span class="legend-pct">{{ $cat['percentage'] }}</span>
               </div>
-            </div>
-            <div class="mt-3" id="pieLegend">
-              @foreach($categoryDistribution['categories'] as $i => $cat)
-                <div class="legend-item" data-index="{{ $i }}" onclick="togglePieSegment({{ $i }})">
-                  <span class="legend-dot" style="background:{{ $chartColors[$i % count($chartColors)] }}"></span>
-                  <span class="legend-name">{{ $cat['name'] }}</span>
-                  <span class="legend-amount">{{ $cat['formatted'] }}</span>
-                  <span class="legend-pct">{{ $cat['percentage'] }}</span>
-                </div>
-              @endforeach
-            </div>
-          @endif
-        </div>
+            @endforeach
+          </div>
+        @endif
       </div>
-
-      <div class="col-lg-7">
-        <div class="chart-card">
+      <div class="d-flex flex-column gap-3">
+        <div class="chart-card" style="position: relative; flex: 1;">
           <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
             <div class="section-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tren Keuangan</div>
             <div class="filter-bar">
@@ -272,7 +325,7 @@
           @endif
         </div>
         @if(!$isPremium && $barRange >= 3)
-          <div class="chart-card mt-3 blur-overlay" style="min-height:80px;">
+          <div class="chart-card blur-overlay" style="min-height:80px;">
             <div class="upgrade-badge"><i class="bi bi-gem me-2"></i> Upgrade ke Premium<br><small style="font-weight:400;opacity:.9;">Lihat data hingga 12 bulan</small></div>
           </div>
         @endif
@@ -280,117 +333,83 @@
     </div>
 
     {{-- ROW 2: HEATMAP --}}
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="chart-card">
-          <div class="section-title">
-            <i class="bi bi-calendar3"></i> Heatmap Pengeluaran Harian
-            <span style="font-size:13px;color:#9e9e9e;font-weight:400;">— {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}</span>
-          </div>
-          @php
-            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
-            $firstDow    = \Carbon\Carbon::create($tahun, $bulan, 1)->dayOfWeek;
-            $startOffset = ($firstDow + 6) % 7;
-            $maxSpend    = !empty($dailySpending) ? max($dailySpending) : 1;
-            $today       = \Carbon\Carbon::today();
-          @endphp
-          <div class="cal-header">
-            @foreach(['Sen','Sel','Rab','Kam','Jum','Sab','Min'] as $d)<span>{{ $d }}</span>@endforeach
-          </div>
-          <div class="cal-grid">
-            @for($e=0; $e<$startOffset; $e++)<div class="cal-day cal-empty"></div>@endfor
-            @for($day=1; $day<=$daysInMonth; $day++)
-              @php
-                $spend   = $dailySpending[$day] ?? 0;
-                $opacity = $spend > 0 ? max(0.18, min(0.95, $spend/$maxSpend)) : 0;
-                $bg      = $spend > 0 ? "rgba(239,68,68,{$opacity})" : '#f5f5f5';
-                $isToday = ($today->year==$tahun && $today->month==$bulan && $today->day==$day);
-              @endphp
-              <div class="cal-day {{ $spend>0 ? 'has-spend':'' }} {{ $isToday ? 'cal-today':'' }}"
-                   style="background:{{ $bg }};"
-                   title="{{ $spend>0 ? number_format($spend,0,',','.') : 'Tidak ada pengeluaran' }}">
-                <span class="cal-num">{{ $day }}</span>
-                @if($spend > 0)
-                  <span class="cal-amt">{{ \App\Helpers\ChartHelper::formatRupiahRingkas($spend) }}</span>
-                @endif
-              </div>
-            @endfor
-          </div>
-          <div class="cal-legend">
-            <span>Sedikit</span>
-            <div class="cal-legend-bar">
-              @foreach([0.18,0.35,0.55,0.75,0.95] as $op)
-                <span style="background:rgba(239,68,68,{{ $op }})"></span>
-              @endforeach
-            </div>
-            <span>Banyak</span>
-            @if(empty($dailySpending))
-              <span style="margin-left:12px;color:#bbb;">— Belum ada data pengeluaran</span>
-            @endif
-          </div>
+    <div style="margin-bottom: 24px;">
+      <div class="chart-card">
+        <div class="section-title">
+          <i class="bi bi-calendar3"></i> Heatmap Pengeluaran Harian
+          <span style="font-size:13px;color:#9e9e9e;font-weight:400;">— {{ \App\Helpers\ChartHelper::formatBulanLengkap($bulan) }} {{ $tahun }}</span>
         </div>
-      </div>
-    </div>
-
-    {{-- ROW 3: COMPARISON + HEALTH SCORE --}}
-    <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="chart-card h-100">
-          <div class="section-title">
-            <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
-            <span style="font-size:12px;color:#9e9e9e;font-weight:400;">vs {{ $monthComparison['prevLabel'] }}</span>
-          </div>
-          @if($monthComparison['isEmpty'])
-            <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">📉</div><p>Belum ada data untuk dibandingkan.</p></div>
-          @else
-            <div style="position:relative;"><canvas id="comparisonChart" height="260"></canvas></div>
-            <div class="mt-3 d-flex flex-wrap gap-2">
-              @foreach($monthComparison['comparison'] as $item)
-                @if($item['change'] !== null)
-                  <span class="change-badge {{ $item['isIncrease'] ? 'change-up':'change-down' }}">
-                    <i class="bi {{ $item['isIncrease'] ? 'bi-arrow-up-short':'bi-arrow-down-short' }}"></i>
-                    {{ $item['name'] }}: {{ $item['isIncrease'] ? '+':'' }}{{ $item['change'] }}%
-                  </span>
-                @else
-                  <span class="change-badge change-nil">{{ $item['name'] }}: baru</span>
-                @endif
-              @endforeach
-            </div>
-          @endif
+        @php
+          $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+          $firstDow    = \Carbon\Carbon::create($tahun, $bulan, 1)->dayOfWeek;
+          $startOffset = ($firstDow + 6) % 7;
+          $maxSpend    = !empty($dailySpending) ? max($dailySpending) : 1;
+          $today       = \Carbon\Carbon::today();
+        @endphp
+        <div class="cal-header">
+          @foreach(['Sen','Sel','Rab','Kam','Jum','Sab','Min'] as $d)<span>{{ $d }}</span>@endforeach
         </div>
-      </div>
-
-      <div class="col-lg-6">
-        <div class="chart-card h-100">
-          <div class="section-title"><i class="bi bi-heart-pulse-fill"></i> Financial Health Score</div>
-          @if($healthScore['isEmpty'])
-            <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">🏥</div><p>{{ $healthScore['tips'] }}</p></div>
-          @else
-            <div class="health-gauge-wrap">
-              <canvas id="healthGauge"></canvas>
-              <div class="health-gauge-center">
-                <div class="health-score-num" style="color:{{ $healthScore['color'] }};">{{ $healthScore['score'] }}</div>
-                <div class="health-score-label" style="color:{{ $healthScore['color'] }};">{{ $healthScore['label'] }}</div>
-              </div>
+        <div class="cal-grid">
+          @for($e=0; $e<$startOffset; $e++)<div class="cal-day cal-empty"></div>@endfor
+          @for($day=1; $day<=$daysInMonth; $day++)
+            @php
+              $spend   = $dailySpending[$day] ?? 0;
+              $opacity = $spend > 0 ? max(0.18, min(0.95, $spend/$maxSpend)) : 0;
+              $bg      = $spend > 0 ? "rgba(239,68,68,{$opacity})" : '#f5f5f5';
+              $isToday = ($today->year==$tahun && $today->month==$bulan && $today->day==$day);
+            @endphp
+            <div class="cal-day {{ $spend>0 ? 'has-spend':'' }} {{ $isToday ? 'cal-today':'' }}"
+                 style="background:{{ $bg }};"
+                 title="{{ $spend>0 ? number_format($spend,0,',','.') : 'Tidak ada pengeluaran' }}">
+              <span class="cal-num">{{ $day }}</span>
+              @if($spend > 0)
+                <span class="cal-amt">{{ \App\Helpers\ChartHelper::formatRupiahRingkas($spend) }}</span>
+              @endif
             </div>
-            <div class="mt-3">
-              @foreach($healthScore['components'] as $comp)
-                <div class="health-comp-row">
-                  <div class="health-comp-name">{{ $comp['name'] }} <span style="color:#bbb;font-size:10px;">({{ $comp['weight'] }})</span></div>
-                  <div class="health-comp-bar-wrap">
-                    <div class="health-comp-bar" style="width:{{ $comp['score'] }}%;background:{{ $comp['score']>=70?'#22C55E':($comp['score']>=40?'#F59E0B':'#EF4444') }};"></div>
-                  </div>
-                  <div class="health-comp-score">{{ $comp['score'] }}</div>
-                </div>
-              @endforeach
-            </div>
-            <div class="tips-box"><i class="bi bi-lightbulb-fill"></i><span>{{ $healthScore['tips'] }}</span></div>
+          @endfor
+        </div>
+        <div class="cal-legend">
+          <span>Sedikit</span>
+          <div class="cal-legend-bar">
+            @foreach([0.18,0.35,0.55,0.75,0.95] as $op)
+              <span style="background:rgba(239,68,68,{{ $op }})"></span>
+            @endforeach
+          </div>
+          <span>Banyak</span>
+          @if(empty($dailySpending))
+            <span style="margin-left:12px;color:#bbb;">— Belum ada data pengeluaran</span>
           @endif
         </div>
       </div>
     </div>
 
-  </div>
+    {{-- ROW 3: COMPARISON --}}
+    <div style="margin-bottom: 24px;">
+      <div class="chart-card">
+        <div class="section-title">
+          <i class="bi bi-bar-chart-steps"></i> Perbandingan Kategori
+          <span style="font-size:12px;color:#9e9e9e;font-weight:400;">vs {{ $monthComparison['prevLabel'] }}</span>
+        </div>
+        @if($monthComparison['isEmpty'])
+          <div class="empty-state" style="padding:32px 0;"><div class="empty-icon">📉</div><p>Belum ada data untuk dibandingkan.</p></div>
+        @else
+          <div style="position:relative;"><canvas id="comparisonChart" height="260"></canvas></div>
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            @foreach($monthComparison['comparison'] as $item)
+              @if($item['change'] !== null)
+                <span class="change-badge {{ $item['isIncrease'] ? 'change-up':'change-down' }}">
+                  <i class="bi {{ $item['isIncrease'] ? 'bi-arrow-up-short':'bi-arrow-down-short' }}"></i>
+                  {{ $item['name'] }}: {{ $item['isIncrease'] ? '+':'' }}{{ $item['change'] }}%
+                </span>
+              @else
+                <span class="change-badge change-nil">{{ $item['name'] }}: baru</span>
+              @endif
+            @endforeach
+          </div>
+        @endif
+      </div>
+    </div>
+
 </div>
 @endsection
 
@@ -400,7 +419,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const catData    = @json($categoryDistribution);
     const monthData  = @json($monthlyChartData);
     const compData   = @json($monthComparison);
-    const healthData = @json($healthScore);
     const colors     = @json($chartColors);
     const currentMonth = {{ $bulan }};
     const currentYear  = {{ $tahun }};
@@ -414,65 +432,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (n >= 1e3) return (n/1e3).toFixed(1).replace('.0','').replace('.',',')+'rb';
         return n.toString();
     }
-    function getCategoryIcon(name) {
-        const map = {
-            'food':'bi bi-egg-fried','transport':'bi bi-car-front-fill',
-            'bills':'bi bi-receipt-cutoff','clothes':'bi bi-bag-fill',
-            'health':'bi bi-heart-pulse-fill','grocery':'bi bi-cart3',
-            'house':'bi bi-house-fill','communications':'bi bi-telephone-fill',
-            'other':'bi bi-three-dots','lainnya':'bi bi-collection-fill',
-        };
-        return map[name.toLowerCase()] || 'bi bi-tag-fill';
-    }
-
-    // ===== MONEFY DONUT =====
+    // ===== DONUT =====
     let pieChart = null;
     let hiddenSegments = new Set();
 
-    function positionIcons(chart) {
+    // Tempatkan teks tengah tepat di pusat donut (apa pun layout-nya).
+    function centerDonutText(chart) {
+        const el = document.getElementById('monefyCenter');
+        const canvas = document.getElementById('donutChart');
         const outer = document.getElementById('monefyOuter');
-        const svg   = document.getElementById('iconSvg');
-        const centerEl = document.getElementById('monefyCenter');
-        if (!outer || !svg) return;
-        svg.innerHTML = '';
-        outer.querySelectorAll('.monefy-icon').forEach(e => e.remove());
+        if (!el || !canvas || !outer) return;
         const meta = chart.getDatasetMeta(0);
-        if (!meta.data.length) return;
-        const OFFSET = 70;
-        const ccx = meta.data[0].x, ccy = meta.data[0].y;
-        const outerR = meta.data[0].outerRadius;
-        const wcx = OFFSET + ccx, wcy = OFFSET + ccy;
-        const iconR = outerR + 50, pctR = outerR + 80, iconSz = 36;
-
-        catData.categories.forEach((cat, i) => {
-            const arc = meta.data[i]; if (!arc) return;
-            const mid = (arc.startAngle + arc.endAngle) / 2;
-            const col = colors[i % colors.length];
-            const ix = wcx + Math.cos(mid)*iconR, iy = wcy + Math.sin(mid)*iconR;
-            const iconDiv = document.createElement('div');
-            iconDiv.className = 'monefy-icon';
-            Object.assign(iconDiv.style, {
-                left:(ix-iconSz/2)+'px', top:(iy-iconSz/2)+'px',
-                width:iconSz+'px', height:iconSz+'px', borderRadius:'50%',
-                background:col+'22', border:'2px solid '+col,
-                display:'flex', alignItems:'center', justifyContent:'center',
-            });
-            iconDiv.innerHTML = `<i class="${getCategoryIcon(cat.name)}" style="color:${col};font-size:15px;"></i>`;
-            outer.appendChild(iconDiv);
-            const px = wcx+Math.cos(mid)*pctR, py = wcy+Math.sin(mid)*pctR;
-            const pctDiv = document.createElement('div');
-            pctDiv.className = 'monefy-icon';
-            Object.assign(pctDiv.style, { left:(px-18)+'px', top:(py-9)+'px', fontSize:'11px', fontWeight:'700', color:col, whiteSpace:'nowrap' });
-            pctDiv.textContent = cat.percentNum+'%';
-            outer.appendChild(pctDiv);
-            const x1 = wcx+Math.cos(mid)*(outerR+3), y1 = wcy+Math.sin(mid)*(outerR+3);
-            const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-            line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-            line.setAttribute('x2',ix); line.setAttribute('y2',iy);
-            line.setAttribute('stroke',col); line.setAttribute('stroke-width','1.5'); line.setAttribute('stroke-opacity','0.5');
-            svg.appendChild(line);
-        });
-        if (centerEl) { centerEl.style.left=(wcx-60)+'px'; centerEl.style.top=(wcy-42)+'px'; }
+        if (!meta || !meta.data.length) return;
+        const arc = meta.data[0];
+        const outerRect = outer.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        el.style.left = ((canvasRect.left - outerRect.left) + arc.x) + 'px';
+        el.style.top  = ((canvasRect.top  - outerRect.top)  + arc.y) + 'px';
     }
 
     if (!catData.isEmpty && document.getElementById('donutChart')) {
@@ -481,20 +457,22 @@ document.addEventListener('DOMContentLoaded', function () {
             type: 'doughnut',
             data: {
                 labels: catData.categories.map(c=>c.name),
-                datasets: [{ data: catData.categories.map(c=>c.amount), backgroundColor: catData.categories.map((_,i)=>colors[i%colors.length]), borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
+                datasets: [{ data: catData.categories.map(c=>c.amount), backgroundColor: catData.categories.map((_,i)=>colors[i%colors.length]), borderWidth:3, borderColor:'#fff', hoverOffset:6 }]
             },
             options: {
-                responsive: false, cutout: '62%',
-                animation: { onComplete: function(e){ positionIcons(e.chart); } },
+                responsive: true, maintainAspectRatio: false, cutout: '68%',
+                animation: { onComplete: e => centerDonutText(e.chart) },
+                onResize: chart => centerDonutText(chart),
                 plugins: {
                     legend: { display:false },
                     tooltip: {
-                        backgroundColor:'#1a1a2e', padding:12, cornerRadius:10,
-                        callbacks: { label: ctx => { const c=catData.categories[ctx.dataIndex]; return [c.formatted, c.percentage]; } }
+                        backgroundColor:'#1a1a2e', padding:12, cornerRadius:10, usePointStyle:true,
+                        callbacks: { label: ctx => { const c=catData.categories[ctx.dataIndex]; return ' ' + c.formatted + ' (' + c.percentage + ')'; } }
                     }
                 }
             }
         });
+        window.addEventListener('resize', () => { if (pieChart) centerDonutText(pieChart); });
     }
 
     window.togglePieSegment = function(index) {
@@ -509,7 +487,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.querySelector('.legend-pct').textContent = String(p).replace('.',',')+' %';
             }
         });
-        setTimeout(()=>{ if(pieChart) positionIcons(pieChart); }, 450);
     };
 
     // ===== AREA CHART =====
@@ -586,15 +563,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== HEALTH GAUGE =====
-    if (!healthData.isEmpty && document.getElementById('healthGauge')) {
-        const ctx = document.getElementById('healthGauge').getContext('2d');
-        new Chart(ctx, {
-            type:'doughnut',
-            data:{ datasets:[{ data:[healthData.score, 100-healthData.score], backgroundColor:[healthData.color,'#f0f0f0'], borderWidth:0 }] },
-            options:{ responsive:false, cutout:'74%', rotation:-90, circumference:360, animation:{duration:1200,easing:'easeInOutQuart'}, plugins:{legend:{display:false},tooltip:{enabled:false}} }
-        });
-    }
 });
+
 </script>
 @endpush

@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('recurring:execute')->dailyAt('00:05');
 Schedule::command('reminders:send')->dailyAt('07:00');
+Schedule::command('budget-report:generate-weekly')->weeklyOn(1, '00:15');
