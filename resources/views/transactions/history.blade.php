@@ -129,13 +129,13 @@
                                     <a href="{{ route('transactions.edit', $transaction->transaction_id) }}" class="btn-bunrek btn-sm btn-warning-sm" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('transactions.destroy', $transaction->transaction_id) }}" method="POST" onsubmit="return confirm('Hapus transaksi?')" style="margin: 0; padding: 0; display: inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-bunrek btn-sm btn-danger-sm" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: none;">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="btn-bunrek btn-sm btn-danger-sm"
+                                        style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: none;"
+                                        onclick="openDeleteModal('{{ route('transactions.destroy', $transaction->transaction_id) }}', '{{ addslashes($transaction->description) }}')"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -159,7 +159,130 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Hapus Transaksi --}}
+<div id="deleteTransactionModal" class="delete-modal" style="display: none;">
+    <div class="delete-modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="delete-modal-content">
+        <div class="delete-modal-header">
+            <h3 class="delete-modal-title">
+                <i class="bi bi-trash" style="color: var(--color-expense); margin-right: 8px;"></i>
+                Hapus Transaksi
+            </h3>
+            <button type="button" class="delete-modal-close" onclick="closeDeleteModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="delete-modal-body">
+            <p id="deleteModalMessage" style="margin: 0; color: var(--text-dark); line-height: 1.6;"></p>
+        </div>
+        <div class="delete-modal-footer">
+            <button type="button" class="btn-bunrek btn-outline" onclick="closeDeleteModal()">
+                Batal
+            </button>
+            <form id="deleteTransactionForm" method="POST" style="margin: 0; display: inline-block;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-bunrek" style="background-color: var(--color-expense); color: white;">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('styles')
+<style>
+    .delete-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: modalFadeIn 0.2s ease-out;
+    }
+
+    .delete-modal-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        cursor: pointer;
+    }
+
+    .delete-modal-content {
+        position: relative;
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        max-width: 440px;
+        width: 90%;
+        animation: modalSlideUp 0.3s ease-out;
+        overflow: hidden;
+    }
+
+    .delete-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-lg);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .delete-modal-title {
+        margin: 0;
+        color: var(--text-dark);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: var(--fs-lg);
+    }
+
+    .delete-modal-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: none;
+        border: none;
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: var(--transition-fast);
+        font-size: 1.2rem;
+    }
+
+    .delete-modal-close:hover {
+        background: var(--bg-light);
+        color: var(--text-dark);
+    }
+
+    .delete-modal-body {
+        padding: var(--space-lg);
+    }
+
+    .delete-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        border-top: 1px solid var(--border-light);
+        background: var(--bg-light);
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -325,5 +448,34 @@
 
     document.getElementById('start_date').addEventListener('change', validateDates);
     document.getElementById('end_date').addEventListener('change', validateDates);
+
+    // ── Delete Modal ──────────────────────────────────────────────
+    function openDeleteModal(actionUrl, description) {
+        const modal   = document.getElementById('deleteTransactionModal');
+        const form    = document.getElementById('deleteTransactionForm');
+        const message = document.getElementById('deleteModalMessage');
+
+        form.action = actionUrl;
+        const label = description ? `<strong>"${description}"</strong>` : 'ini';
+        message.innerHTML =
+            `Apakah Anda yakin ingin menghapus transaksi ${label}?<br><br>
+            <span style="color: var(--color-expense); font-size: var(--fs-sm);">
+                <i class="bi bi-exclamation-triangle"></i>
+                Tindakan ini tidak dapat dibatalkan.
+            </span>`;
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteTransactionModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
 </script>
 @endpush
