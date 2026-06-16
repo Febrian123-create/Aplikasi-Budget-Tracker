@@ -369,11 +369,7 @@
             <h1 style="font-family: var(--font-heading); font-weight: 800; color: var(--text-dark); margin: 0; font-size: var(--fs-2xl);">Transaksi Rutin</h1>
             <p style="color: var(--text-muted); font-size: var(--fs-sm); margin: 0; margin-top: 2px;">
                 Catat pengeluaran dan pemasukan otomatis secara periodik
-                @if(!$isPremium)
-                    <span style="font-size: 0.7rem; font-weight: 700; background: var(--border-color); color: var(--text-muted); padding: 2px 8px; border-radius: var(--radius-full); margin-left: var(--space-xs);">FREE</span>
-                @else
-                    <span style="font-size: 0.7rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; padding: 2px 8px; border-radius: var(--radius-full); margin-left: var(--space-xs);">PREMIUM</span>
-                @endif
+                <span style="font-size: 0.7rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; padding: 2px 8px; border-radius: var(--radius-full); margin-left: var(--space-xs);">PREMIUM</span>
             </p>
         </div>
         
@@ -401,18 +397,6 @@
     @if($pendingCount > 0)
         <div class="bunrek-alert" style="margin-bottom: var(--space-lg); background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; border-radius: var(--radius-md);">
             <i class="bi bi-bell-fill"></i> {{ $pendingCount }} transaksi rutin menunggu konfirmasi pembayaran dari kamu.
-        </div>
-    @endif
-
-    <!-- Free limit upgrade warning banner (Only if limit reached) -->
-    @if(!$isPremium && $activeCount >= $maxFreeRecurring)
-        <div class="premium-card-upgrade">
-            <div style="font-size: 2.2rem; margin-bottom: var(--space-sm);">👑</div>
-            <h5>Batas Transaksi Rutin Terpenuhi</h5>
-            <p>Kamu sudah menggunakan limit gratis {{ $activeCount }}/{{ $maxFreeRecurring }} transaksi rutin. Upgrade sekarang untuk mendapatkan limit tidak terbatas & semua pilihan frekuensi.</p>
-            <a href="{{ route('membership.index') }}" class="btn-upgrade">
-                <i class="bi bi-gem"></i> Upgrade Premium
-            </a>
         </div>
     @endif
 
