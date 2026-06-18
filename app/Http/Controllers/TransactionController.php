@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\TransactionType;
 use App\Models\Category;
 use App\Observers\TransactionSubject;
+use App\Factories\TransactionFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -21,6 +22,7 @@ class TransactionController extends Controller
             ->whereDate('transaction_date', Carbon::today())
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
+            ->orderBy('transaction_id', 'desc')
             ->paginate(10);
 
         // Calculate today's income and expenses
@@ -51,8 +53,6 @@ class TransactionController extends Controller
             'date.before_or_equal' => 'Tanggal transaksi tidak boleh melebihi hari ini.',
         ]);
 
-        $transactionTypeId = TransactionType::where('name', $validated['type'])->value('transactionType_id');
-
         $categoryId = null;
         if ($validated['type'] === 'expense') {
             $categoryId = $validated['category'];
@@ -60,12 +60,12 @@ class TransactionController extends Controller
             $categoryId = $validated['category'] ?: 10;
         }
 
-        $transaction = Transaction::create([
-            'user_id' => Auth::id(),
+        $transaction = TransactionFactory::createRegularTransaction([
+            'user_id'     => Auth::id(),
             'category_id' => $categoryId,
-            'transactionType_id' => $transactionTypeId,
-            'total_amount' => $validated['amount'],
-            'transaction_date' => $validated['date'],
+            'type'        => $validated['type'],
+            'amount'      => $validated['amount'],
+            'date'        => $validated['date'],
             'description' => $validated['description'],
         ]);
 
@@ -144,6 +144,7 @@ class TransactionController extends Controller
 
         $transactions = $query->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
+            ->orderBy('transaction_id', 'desc')
             ->paginate(10);
 
         $categories = Category::all();

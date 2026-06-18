@@ -447,8 +447,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const arc = meta.data[0];
         const outerRect = outer.getBoundingClientRect();
         const canvasRect = canvas.getBoundingClientRect();
-        el.style.left = ((canvasRect.left - outerRect.left) + arc.x) + 'px';
-        el.style.top  = ((canvasRect.top  - outerRect.top)  + arc.y) + 'px';
+        const x = arc._model ? arc._model.x : (arc.x !== undefined ? arc.x : canvas.width / 2);
+        const y = arc._model ? arc._model.y : (arc.y !== undefined ? arc.y : canvas.height / 2);
+        el.style.left = ((canvasRect.left - outerRect.left) + x) + 'px';
+        el.style.top  = ((canvasRect.top  - outerRect.top)  + y) + 'px';
     }
 
     if (!catData.isEmpty && document.getElementById('donutChart')) {
@@ -460,14 +462,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{ data: catData.categories.map(c=>c.amount), backgroundColor: catData.categories.map((_,i)=>colors[i%colors.length]), borderWidth:3, borderColor:'#fff', hoverOffset:6 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false, cutout: '68%',
-                animation: { onComplete: e => centerDonutText(e.chart) },
-                onResize: chart => centerDonutText(chart),
-                plugins: {
-                    legend: { display:false },
-                    tooltip: {
-                        backgroundColor:'#1a1a2e', padding:12, cornerRadius:10, usePointStyle:true,
-                        callbacks: { label: ctx => { const c=catData.categories[ctx.dataIndex]; return ' ' + c.formatted + ' (' + c.percentage + ')'; } }
+                responsive: true, maintainAspectRatio: false, cutoutPercentage: 68,
+                legend: { display: false },
+                animation: { onComplete: function() { centerDonutText(this.chart); } },
+                onResize: function(chart) { centerDonutText(chart); },
+                tooltips: {
+                    backgroundColor: '#1a1a2e', padding: 12, cornerRadius: 10, usePointStyle: true,
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            const c = catData.categories[tooltipItem.index];
+                            return ' ' + c.name + ': ' + c.formatted + ' (' + c.percentage + ')';
+                        }
                     }
                 }
             }
@@ -507,31 +512,105 @@ document.addEventListener('DOMContentLoaded', function () {
             areaChart = new Chart(ctx, {
                 type:'line',
                 data: { labels: months.map(m=>m.label), datasets: [
-                    { label:'Pemasukan', data:months.map(m=>m.pemasukan), borderColor:'#22C55E', borderWidth:2.5, backgroundColor:ig, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#22C55E', pointHoverRadius:7 },
-                    { label:'Pengeluaran', data:months.map(m=>m.pengeluaran), borderColor:'#EF4444', borderWidth:2.5, backgroundColor:eg, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#EF4444', pointHoverRadius:7 }
+                    { label:'Pemasukan', data:months.map(m=>m.pemasukan), borderColor:'#22C55E', borderWidth:2.5, backgroundColor:ig, fill:true, lineTension:0.4, pointRadius:4, pointBackgroundColor:'#22C55E', pointHoverRadius:7 },
+                    { label:'Pengeluaran', data:months.map(m=>m.pengeluaran), borderColor:'#EF4444', borderWidth:2.5, backgroundColor:eg, fill:true, lineTension:0.4, pointRadius:4, pointBackgroundColor:'#EF4444', pointHoverRadius:7 }
                 ]},
                 options: {
                     responsive:true, maintainAspectRatio:false,
-                    interaction:{ mode:'index', intersect:false },
-                    plugins: {
-                        legend:{ position:'bottom', labels:{ padding:16, usePointStyle:true, pointStyleWidth:10, font:{size:12} } },
-                        tooltip:{ backgroundColor:'#1a1a2e', padding:14, cornerRadius:10, titleFont:{size:13,weight:'600'}, bodyFont:{size:12},
-                            callbacks:{ title:items=>months[items[0].dataIndex].labelLengkap, label:ctx=>ctx.dataset.label+': '+formatRupiah(ctx.raw), afterBody:items=>months[items[0].dataIndex].selisihFormatted } }
+                    hover: { mode: 'index', intersect: false },
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 16, usePointStyle: true, boxWidth: 10, fontSize: 12 }
                     },
-                    scales:{ y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{size:11}, callback:v=>formatRupiahRingkas(v)} }, x:{ grid:{display:false}, ticks:{font:ctx2=>{ const m=months[ctx2.index]; return m&&m.bulan===currentMonth&&m.tahun===currentYear?{size:12,weight:'bold'}:{size:11}; }} } }
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1a1a2e',
+                        xPadding: 14,
+                        yPadding: 14,
+                        cornerRadius: 10,
+                        titleFontSize: 13,
+                        bodyFontSize: 12,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return months[tooltipItems[0].index].labelLengkap;
+                            },
+                            label: function(tooltipItem, data) {
+                                return data.datasets[tooltipItem.datasetIndex].label + ': ' + formatRupiah(tooltipItem.yLabel);
+                            },
+                            afterBody: function(tooltipItems) {
+                                return months[tooltipItems[0].index].selisihFormatted;
+                            }
+                        }
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                fontSize: 11,
+                                callback: function(value) {
+                                    return formatRupiahRingkas(value);
+                                }
+                            },
+                            gridLines: { color: 'rgba(0,0,0,.05)' }
+                        }],
+                        xAxes: [{
+                            gridLines: { display: false },
+                            ticks: {
+                                fontSize: 11
+                            }
+                        }]
+                    }
                 }
             });
         } else {
             areaChart = new Chart(ctx, {
                 type:'bar',
                 data:{ labels:months.map(m=>m.label), datasets:[
-                    { label:'% Pemasukan', data:months.map(m=>m.growthIncome??0), backgroundColor:'rgba(34,197,94,.8)', borderRadius:6, barPercentage:0.7, categoryPercentage:0.6 },
-                    { label:'% Pengeluaran', data:months.map(m=>m.growthExpense??0), backgroundColor:'rgba(239,68,68,.8)', borderRadius:6, barPercentage:0.7, categoryPercentage:0.6 }
+                    { label:'% Pemasukan', data:months.map(m=>m.growthIncome??0), backgroundColor:'rgba(34,197,94,.8)', barPercentage:0.7, categoryPercentage:0.6 },
+                    { label:'% Pengeluaran', data:months.map(m=>m.growthExpense??0), backgroundColor:'rgba(239,68,68,.8)', barPercentage:0.7, categoryPercentage:0.6 }
                 ]},
-                options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-                    plugins:{ legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:10,font:{size:12}}},
-                        tooltip:{backgroundColor:'#1a1a2e',padding:14,cornerRadius:10,callbacks:{title:items=>months[items[0].dataIndex].labelLengkap,label:ctx=>ctx.dataset.label+': '+(ctx.raw>=0?'+':'')+ctx.raw.toFixed(1)+'%'}}},
-                    scales:{ y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{font:{size:11}}} }
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    hover: { mode: 'index', intersect: false },
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 16, usePointStyle: true, boxWidth: 10, fontSize: 12 }
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1a1a2e',
+                        xPadding: 14,
+                        yPadding: 14,
+                        cornerRadius: 10,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return months[tooltipItems[0].index].labelLengkap;
+                            },
+                            label: function(tooltipItem, data) {
+                                const val = parseFloat(tooltipItem.yLabel);
+                                return data.datasets[tooltipItem.datasetIndex].label + ': ' + (val >= 0 ? '+' : '') + val.toFixed(1) + '%';
+                            }
+                        }
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                fontSize: 11,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            gridLines: { color: 'rgba(0,0,0,.05)' }
+                        }],
+                        xAxes: [{
+                            gridLines: { display: false },
+                            ticks: {
+                                fontSize: 11
+                            }
+                        }]
+                    }
                 }
             });
         }
@@ -550,15 +629,49 @@ document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('comparisonChart').getContext('2d');
         const cats = compData.comparison;
         new Chart(ctx, {
-            type:'bar',
+            type:'horizontalBar',
             data:{ labels:cats.map(c=>c.name.length>12?c.name.substring(0,12)+'…':c.name), datasets:[
-                { label:compData.currentLabel, data:cats.map(c=>c.current), backgroundColor:'rgba(99,102,241,.85)', borderRadius:5, borderSkipped:false },
-                { label:compData.prevLabel,    data:cats.map(c=>c.previous), backgroundColor:'rgba(99,102,241,.25)', borderRadius:5, borderSkipped:false }
+                { label:compData.currentLabel, data:cats.map(c=>c.current), backgroundColor:'rgba(99,102,241,.85)', borderSkipped:false },
+                { label:compData.prevLabel,    data:cats.map(c=>c.previous), backgroundColor:'rgba(99,102,241,.25)', borderSkipped:false }
             ]},
-            options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-                plugins:{ legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:10,font:{size:12}}},
-                    tooltip:{backgroundColor:'#1a1a2e',padding:12,cornerRadius:10,callbacks:{label:ctx=>ctx.dataset.label+': '+formatRupiah(ctx.raw)}} },
-                scales:{ x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},callback:v=>formatRupiahRingkas(v)}}, y:{grid:{display:false},ticks:{font:{size:11}}} }
+            options: {
+                responsive:true, maintainAspectRatio:false,
+                hover: { mode: 'index', intersect: false },
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, boxWidth: 10, fontSize: 12 }
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#1a1a2e',
+                    xPadding: 12,
+                    yPadding: 12,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return data.datasets[tooltipItem.datasetIndex].label + ': ' + formatRupiah(tooltipItem.xLabel);
+                        }
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            fontSize: 11,
+                            callback: function(value) {
+                                return formatRupiahRingkas(value);
+                            }
+                        },
+                        gridLines: { color: 'rgba(0,0,0,.05)' }
+                    }],
+                    yAxes: [{
+                        gridLines: { display: false },
+                        ticks: {
+                            fontSize: 11
+                        }
+                    }]
+                }
             }
         });
     }
