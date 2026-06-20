@@ -31,7 +31,8 @@ class ExportController extends Controller
         }
 
         return $query->with(['category', 'transactionType'])
-            ->orderBy('transaction_date', 'desc');
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('transaction_id', 'desc');
     }
 
     
@@ -87,6 +88,7 @@ class ExportController extends Controller
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
+            ->orderBy('transaction_id', 'desc')
             ->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
@@ -103,6 +105,7 @@ class ExportController extends Controller
             ->where('transaction_date', $today)
             ->with(['category', 'transactionType'])
             ->orderBy('transaction_date', 'desc')
+            ->orderBy('transaction_id', 'desc')
             ->get();
         $data = $this->prepareExportData($transactions);
         $data['title'] = 'Laporan Transaksi Hari Ini';
