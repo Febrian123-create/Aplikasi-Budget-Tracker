@@ -37,24 +37,26 @@ class Budget extends Model
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
 
-    public function getCurrentSpending(): float
+    public function getCurrentSpending(?string $startDate = null, ?string $endDate = null): float
     {
         $expenseTypeId = \App\Models\TransactionType::where('name', 'expense')->value('transactionType_id');
+        $start = $startDate ?? $this->getPeriodStart();
+        $end = $endDate ?? $this->getPeriodEnd();
 
         return (float) Transaction::where('user_id', $this->user_id)
             ->where('category_id', $this->category_id)
             ->where('transactionType_id', $expenseTypeId)
-            ->whereBetween('transaction_date', [$this->getPeriodStart(), $this->getPeriodEnd()])
+            ->whereBetween('transaction_date', [$start, $end])
             ->sum('total_amount');
     }
 
-    public function getUsagePercentage(): float
+    public function getUsagePercentage(?string $startDate = null, ?string $endDate = null): float
     {
         if ($this->amount <= 0) {
             return 0;
         }
 
-        return round(($this->getCurrentSpending() / (float) $this->amount) * 100, 1);
+        return round(($this->getCurrentSpending($startDate, $endDate) / (float) $this->amount) * 100, 1);
     }
 
     public function isExceeded(): bool

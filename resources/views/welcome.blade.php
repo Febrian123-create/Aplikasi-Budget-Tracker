@@ -839,7 +839,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-glass fixed-top py-3" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold fs-3" href="#">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3" href="{{ route('login') }}">
                 <i class="bi bi-wallet2 text-primary me-2"></i>
                 <span class="font-heading">BUNREK</span>
             </a>
@@ -974,7 +974,7 @@
                                     <div class="mockup-sidebar-user">
                                         <div class="mockup-avatar">TU</div>
                                         <div class="mockup-user-info">
-                                            <div class="mockup-user-name">Test User</div>
+                                            <div class="mockup-user-name">User</div>
                                             <span class="mockup-user-badge">FREE</span>
                                         </div>
                                     </div>
@@ -987,7 +987,7 @@
                                 <div class="mockup-topbar">
                                     <div class="mockup-page-title">Dashboard</div>
                                     <div class="mockup-top-user">
-                                        <span>Test User</span>
+                                        <span>User</span>
                                         <div class="mockup-avatar"
                                             style="width: 16px; height: 16px; font-size: 0.45rem;">TU</div>
                                     </div>
@@ -995,7 +995,7 @@
 
                                 <!-- Welcome row -->
                                 <div class="mockup-welcome-row">
-                                    <div class="mockup-welcome-text">Selamat Datang, Test User!</div>
+                                    <div class="mockup-welcome-text">Selamat Datang, User!</div>
                                     <div class="mockup-date">Senin, 15 Juni 2026</div>
                                 </div>
 
