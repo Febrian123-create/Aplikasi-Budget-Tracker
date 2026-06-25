@@ -98,7 +98,7 @@ class DashboardController extends Controller
             // Data chart distribusi pengeluaran untuk user membership (premium)
             $transactionRepository = new \App\Repositories\TransactionRepository();
             $chartService = new \App\Services\ChartService($transactionRepository);
-            $categoryDistribution = $chartService->getCategoryDistribution(Auth::id(), $month, $year);
+            $categoryDistribution = $chartService->getCategoryDistribution(Auth::id(), $month, $year, $startDate, $endDate);
             $chartColors = \App\Helpers\ChartHelper::getChartColors();
         }
 
